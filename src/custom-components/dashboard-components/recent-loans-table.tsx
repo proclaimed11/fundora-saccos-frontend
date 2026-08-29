@@ -1,4 +1,4 @@
-import { MoreVerticalIcon, PrinterIcon, ListChecksIcon } from "lucide-react"
+import { MoreVerticalIcon,ListChecksIcon } from "lucide-react"
 import SectionCard from "../section-card"
 import { Button } from "../../components/ui/button"
 import { Badge } from "../../components/ui/badge"

@@ -7,8 +7,7 @@ import {
   ShieldCheckIcon,
   UploadCloudIcon,
   XIcon,
-  FileIcon,
-  PencilIcon,
+  FileIcon
 } from "lucide-react"
 import { PDFViewer } from "@react-pdf/renderer"
 import { Card, CardContent } from "@/components/ui/card"
