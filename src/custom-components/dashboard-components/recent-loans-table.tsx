@@ -50,12 +50,9 @@ const RecentLoanApplicationsTable = () => {
       title="Recent Loan Applications"
       headerAction={
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            View All
-          </Button>
-          <Button variant="outline" size="icon" className="size-8">
-            <PrinterIcon className="size-4" />
-          </Button>
+        <Button variant="link" size="sm" className="h-auto p-0 text-sm">
+          View All
+        </Button>
         </div>
       }
     >

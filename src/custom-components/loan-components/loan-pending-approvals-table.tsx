@@ -190,7 +190,7 @@ const PendingApprovalsTable = ({
             setSearchQuery(value)
             setPage(1)
           }}
-          searchPlaceholder={searchPlaceholder ?? "Search by applicant name, application ID..."}
+          searchPlaceholder={searchPlaceholder ?? "Search"}
           filters={[
             {
               key: "status",

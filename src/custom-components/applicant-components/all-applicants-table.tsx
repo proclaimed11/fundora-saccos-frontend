@@ -149,7 +149,7 @@ const ApplicantsTable = ({
             setSearchQuery(value)
             setCurrentPage(1)
           }}
-          searchPlaceholder="Search by name, ID, phone, or email..."
+          searchPlaceholder="Search"
           filters={[
             {
               key: "kycStatus",

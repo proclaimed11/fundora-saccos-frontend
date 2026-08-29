@@ -122,7 +122,7 @@ const LoanGuarantorsTable = ({ guarantors, onAddGuarantor, onVerify, onEdit, onR
           title="Guarantors"
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
-          searchPlaceholder="Search by name..."
+          searchPlaceholder="Search"
           filters={[
             {
               key: "relationship",

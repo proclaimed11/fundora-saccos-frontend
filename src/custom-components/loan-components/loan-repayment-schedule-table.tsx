@@ -4,15 +4,12 @@ import {
   PencilIcon,
   CheckIcon,
   XIcon,
-  WalletIcon,
-  BanknoteIcon,
-  ClockIcon,
-  CheckCircleIcon,
 } from "lucide-react"
 import { Badge } from "../../components/ui/badge"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent } from "../../components/ui/card"
 import { Input } from "../../components/ui/input"
+import { Separator } from "../../components/ui/separator"
 import {
   Select,
   SelectContent,
@@ -29,7 +26,6 @@ import {
   TableRow,
 } from "../../components/ui/table"
 import { exportToCsv } from "../../lib/export-csv"
-import SummaryCards, { type SummaryWidget } from "../summary-cards"
 import TableEmptyState from "../table-empty-state"
 
 export type InstallmentStatus = "PENDING" | "PAID" | "OVERDUE"
@@ -76,6 +72,12 @@ const parseAmount = (value: string | number | null | undefined): number => {
 
 const formatCurrency = (value: number): string => `TZS ${value.toLocaleString("en-US")}`
 
+type SummaryWidget = {
+  key: string
+  label: string
+  value: string
+}
+
 const LoanRepaymentScheduleTable = ({
   principalAmount,
   totalScheduledAmount,
@@ -85,42 +87,33 @@ const LoanRepaymentScheduleTable = ({
   const [schedule, setSchedule] = useState(initialSchedule)
   const [drafts, setDrafts] = useState<Record<string, RepaymentScheduleItem>>({})
 
-const summaryWidgets: SummaryWidget[] = useMemo(() => {
-  const paidCount = schedule.filter((item) => item.status === "PAID").length
-  //const overdueCount = schedule.filter((item) => item.status === "OVERDUE").length
-  const totalOutstanding = schedule.reduce((sum, item) => sum + parseAmount(item.outstandingAmount), 0)
+  const summaryWidgets: SummaryWidget[] = useMemo(() => {
+    const paidCount = schedule.filter((item) => item.status === "PAID").length
+    const totalOutstanding = schedule.reduce((sum, item) => sum + parseAmount(item.outstandingAmount), 0)
 
-  return [
-    {
-      key: "principal",
-      label: "Principal Amount",
-      value: principalAmount,
-      icon: WalletIcon,
-      iconClassName: "bg-blue-100 text-blue-600",
-    },
-    {
-      key: "total",
-      label: "Total Scheduled",
-      value: totalScheduledAmount,
-      icon: BanknoteIcon,
-      iconClassName: "bg-emerald-100 text-emerald-600",
-    },
-    {
-      key: "outstanding",
-      label: "Outstanding",
-      value: formatCurrency(totalOutstanding),
-      icon: ClockIcon,
-      iconClassName: "bg-amber-100 text-amber-600",
-    },
-    {
-      key: "paid",
-      label: "Paid",
-      value: `${paidCount} / ${schedule.length}`,
-      icon: CheckCircleIcon,
-      iconClassName: "bg-slate-100 text-slate-600",
-    },
-  ]
-}, [schedule, principalAmount, totalScheduledAmount])
+    return [
+      {
+        key: "principal",
+        label: "Principal Amount",
+        value: principalAmount,
+      },
+      {
+        key: "total",
+        label: "Total Scheduled",
+        value: totalScheduledAmount,
+      },
+      {
+        key: "outstanding",
+        label: "Outstanding",
+        value: formatCurrency(totalOutstanding),
+      },
+      {
+        key: "paid",
+        label: "Paid",
+        value: `${paidCount} / ${schedule.length}`,
+      },
+    ]
+  }, [schedule, principalAmount, totalScheduledAmount])
 
   const handleExport = () => {
     exportToCsv(
@@ -172,17 +165,30 @@ const summaryWidgets: SummaryWidget[] = useMemo(() => {
       <CardContent className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold">Repayment Schedule</h2>
-          <Button variant="outline" size="sm" onClick={handleExport}>
+          <Button variant="outline" size="sm" className="bg-white" onClick={handleExport}>
             <DownloadIcon className="size-4" />
             Export
           </Button>
         </div>
 
-        <SummaryCards widgets={summaryWidgets} />
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
+          {summaryWidgets.map(({ key, label, value }, index) => (
+            <div key={key} className="flex flex-1 items-stretch gap-4">
+              <div className="flex flex-1 flex-col gap-1">
+                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="text-base font-semibold text-foreground">{value}</p>
+              </div>
+
+              {index < summaryWidgets.length - 1 && (
+                <Separator orientation="vertical" className="hidden self-center !h-10 sm:block" />
+              )}
+            </div>
+          ))}
+        </div>
 
         <div className="overflow-x-auto rounded-md border">
           <Table className="border-collapse">
-            <TableHeader className="bg-muted">
+            <TableHeader>
               <TableRow>
                 <TableHead className="border-r border-b">#</TableHead>
                 <TableHead className="border-r border-b">Due Date</TableHead>

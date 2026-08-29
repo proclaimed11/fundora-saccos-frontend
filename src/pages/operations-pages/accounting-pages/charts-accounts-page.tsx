@@ -1,5 +1,19 @@
 import { useState } from "react"
-import { MoreVerticalIcon, PencilIcon, EyeIcon, ArchiveIcon, PlusIcon } from "lucide-react"
+import {
+  MoreVerticalIcon,
+  PencilIcon,
+  EyeIcon,
+  ArchiveIcon,
+  PlusIcon,
+  LayersIcon,
+  CircleCheckIcon,
+  WalletIcon,
+  ScaleIcon,
+  LandmarkIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
+  ActivityIcon,
+} from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -22,6 +36,7 @@ import {
 import { cn } from "@/lib/utils"
 import TableFilterBar from "@/custom-components/table-filter-bar"
 import TableEmptyState from "@/custom-components/table-empty-state"
+import SummaryCards, { type SummaryWidget } from "@/custom-components/summary-cards"
 
 export type AccountType = "Asset" | "Contra Asset" | "Liability" | "Equity" | "Income" | "Expense"
 export type AccountStatus = "Active" | "Inactive"
@@ -133,6 +148,66 @@ const ChartOfAccountsPage = () => {
   })
   const showTrailingEllipsis = totalPages > 4 && visiblePages[visiblePages.length - 1] < totalPages
 
+  const summaryWidgets: SummaryWidget[] = [
+    {
+      key: "total-accounts",
+      label: "Total Accounts",
+      value: "15",
+      icon: LayersIcon,
+      iconClassName: "bg-blue-500"
+    },
+    {
+      key: "active-accounts",
+      label: "Active Accounts",
+      value: "14",
+      icon: CircleCheckIcon,
+      iconClassName: "bg-emerald-500",
+    },
+    {
+      key: "total-assets",
+      label: "Total Assets",
+      value: "TZS 37.3M",
+      icon: WalletIcon,
+      iconClassName: "bg-indigo-500",
+    },
+    {
+      key: "total-liabilities",
+      label: "Total Liabilities",
+      value: "TZS 10.7M",
+      icon: ScaleIcon,
+      iconClassName: "bg-amber-500",
+    },
+    {
+      key: "total-equity",
+      label: "Total Equity",
+      value: "TZS 11.9M",
+      icon: LandmarkIcon,
+      iconClassName: "bg-purple-500",
+    },
+    {
+      key: "total-income",
+      label: "Total Income",
+      value: "TZS 3.96M",
+      icon: TrendingUpIcon,
+      iconClassName: "bg-teal-500",
+    },
+    {
+      key: "total-expenses",
+      label: "Total Expenses",
+      value: "TZS 1.33M",
+      icon: TrendingDownIcon,
+      iconClassName: "bg-red-500",
+    },
+    {
+      key: "net-income",
+      label: "Net Income",
+      value: "TZS 2.63M",
+      icon: ActivityIcon,
+      iconClassName: "bg-emerald-600",
+      caption: "surplus",
+    },
+  ]
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -145,6 +220,8 @@ const ChartOfAccountsPage = () => {
           Add Account
         </Button>
       </div>
+
+      <SummaryCards widgets={summaryWidgets} />
 
       <Tabs
         value={activeTab}

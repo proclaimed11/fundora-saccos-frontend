@@ -144,8 +144,8 @@ const TableFilterBar = ({
           {hasFilters && (
             <CollapsibleTrigger
               render={
-                <Button variant="outline" className="gap-1.5">
-                  <SlidersHorizontalIcon className="size-4 text-muted-foreground" strokeWidth={1.75} />
+                <Button variant="outline" className="gap-1.5 bg-white">
+                  <SlidersHorizontalIcon className="size-4" strokeWidth={1.75} />
                   Filter
                   {activeFilterCount > 0 && (
                     <Badge className="ml-0.5 flex size-5 items-center justify-center rounded-full p-0 text-xs">
@@ -158,8 +158,8 @@ const TableFilterBar = ({
           )}
 
           {onExport && (
-            <Button variant="outline" onClick={onExport}>
-              <DownloadIcon className="size-4 text-muted-foreground" strokeWidth={1.75} />
+            <Button variant="outline" className="bg-white" onClick={onExport}>
+              <DownloadIcon className="size-4" strokeWidth={1.75} />
               Export
             </Button>
           )}
@@ -195,7 +195,7 @@ const TableFilterBar = ({
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={handleClearAll}>
+            <Button variant="outline" className="bg-white" size="sm" onClick={handleClearAll}>
               Clear All
             </Button>
             <Button size="sm" onClick={() => setFiltersOpen(false)}>

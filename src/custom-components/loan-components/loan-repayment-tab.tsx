@@ -1,38 +1,31 @@
 import LoanRepaymentScheduleTable from "./loan-repayment-schedule-table"
 import LoanRepaymentTransactionsTable from "./loan-repayment-table"
-import PaymentSummaryCard from "./loan-repayment-summary-card"
-
-const completedLoans = [
-  { label: "LA-1786", value: "LA-1786" },
-  { label: "LA-1792", value: "LA-1792" },
-  { label: "LA-1804", value: "LA-1804" },
-]
-
-const pendingLoans = [
-  { label: "LA-1811", value: "LA-1811" },
-  { label: "LA-1823", value: "LA-1823" },
-]
-
-const discardedLoans = [
-  { label: "LA-1798", value: "LA-1798" },
-  { label: "LA-1806", value: "LA-1806" },
-]
+import SummaryStatusCard from "../summary-status-card"
+import type { FlatSummaryWidget } from "../flat-summary-card"
 
 const LoanRepaymentHistoryTab = () => {
+  const paymentSummaryData = {
+    totalAmount: "TZS 2,500,000",
+    amountPaid: "TZS 1,250,000",
+    amountOutstanding: "TZS 1,250,000",
+    paymentsMade: 6,
+    totalPayments: 12,
+  }
+
+  const paymentWidgets: FlatSummaryWidget[] = [
+    { key: "totalAmount", label: "Total Amount", value: paymentSummaryData.totalAmount },
+    { key: "amountPaid", label: "Amount Paid", value: paymentSummaryData.amountPaid },
+    { key: "amountOutstanding", label: "Amount Outstanding", value: paymentSummaryData.amountOutstanding },
+    {
+      key: "paymentsMade",
+      label: "Payments Made",
+      value: `${paymentSummaryData.paymentsMade} / ${paymentSummaryData.totalPayments}`,
+    },
+  ]
+
   return (
     <div className="flex flex-col gap-4">
-      <PaymentSummaryCard
-        data={{
-          totalAmount: "TZS 2,500,000",
-          amountPaid: "TZS 1,250,000",
-          amountOutstanding: "TZS 1,250,000",
-          paymentsMade: 6,
-          totalPayments: 12,
-        }}
-        pendingLoans={pendingLoans}
-        completedLoans={completedLoans}
-        discardedLoans={discardedLoans}
-      />
+      <SummaryStatusCard title="Payment Summary" widgets={paymentWidgets} />
 
       <LoanRepaymentTransactionsTable
         transactions={[

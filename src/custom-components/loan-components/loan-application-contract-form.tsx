@@ -8,6 +8,7 @@ import {
   UploadCloudIcon,
   XIcon,
   FileIcon,
+  PencilIcon,
 } from "lucide-react"
 import { PDFViewer } from "@react-pdf/renderer"
 import { Card, CardContent } from "@/components/ui/card"
@@ -215,10 +216,16 @@ const ContractInformationPanel = () => {
             <p className="text-xs text-muted-foreground">
               Preview the contract before sending or after it has been signed.
             </p>
-            <Button variant="outline" size="sm" className="w-fit gap-1.5" onClick={() => setPreviewOpen(true)}>
-              <EyeIcon className="size-4" />
-              Preview Contract
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="gap-1.5 bg-white" onClick={() => setPreviewOpen(true)}>
+                <EyeIcon className="size-4" />
+                Preview Contract
+              </Button>
+              {/* <Button variant="outline" size="sm" className="gap-1.5 bg-white">
+                <PencilIcon className="size-4" />
+                Edit
+              </Button> */}
+            </div>
           </div>
 
           <div className="flex flex-col gap-3 lg:pl-4 lg:border-l">

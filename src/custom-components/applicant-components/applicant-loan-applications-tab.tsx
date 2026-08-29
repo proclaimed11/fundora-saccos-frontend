@@ -1,4 +1,5 @@
-import LoanStatusCard from "./applicant-loan-applications-card"
+import SummaryStatusCard from "../summary-status-card"
+import type { FlatSummaryWidget } from "../flat-summary-card"
 import LoanApplicationsTable from "./applicant-loan-applications-table"
 
 const ApplicantLoanApplicationsTab = () => {
@@ -6,20 +7,25 @@ const ApplicantLoanApplicationsTab = () => {
     // Open a new loan application dialog here
   }
 
+  const statusData = {
+    allApplications: 6,
+    pending: 1,
+    approved: 3,
+    rejected: 1,
+    withdrawn: 0,
+  }
+
+  const statusWidgets: FlatSummaryWidget[] = [
+    { key: "allApplications", label: "All Applications", value: String(statusData.allApplications) },
+    { key: "pending", label: "Pending", value: String(statusData.pending) },
+    { key: "approved", label: "Approved", value: String(statusData.approved) },
+    { key: "rejected", label: "Rejected", value: String(statusData.rejected) },
+    { key: "withdrawn", label: "Withdrawn", value: String(statusData.withdrawn) },
+  ]
+
   return (
     <div className="flex flex-col gap-4">
-      <LoanStatusCard
-        data={{
-          allApplications: 5,
-          pending: 1,
-          approved: 3,
-          rejected: 1,
-          withdrawn: 0,
-        }}
-        pendingLoans={[]}
-        completedLoans={[]}
-        discardedLoans={[]}
-      />
+      <SummaryStatusCard title="Loan Applications" widgets={statusWidgets} />
 
       <LoanApplicationsTable
         onSendMessage={handleNewLoan}

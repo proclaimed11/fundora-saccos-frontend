@@ -116,7 +116,7 @@ const ApplicantsCommunicationsTable = ({ communications, onSendMessage }: Applic
           title="Communications"
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
-          searchPlaceholder="Search by reference or message..."
+          searchPlaceholder="Search"
           filters={[
             {
               key: "type",

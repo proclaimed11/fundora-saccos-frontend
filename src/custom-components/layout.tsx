@@ -1,28 +1,39 @@
 import { Outlet } from "react-router-dom"
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarProvider, useSidebar } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import { MoonIcon, SunIcon } from "lucide-react"
+import { MenuIcon, MoonIcon, SunIcon } from "lucide-react"
 import { useTheme } from "@/lib/theme-provider"
 import AppSidebar from "./app-sidebar"
 import NavUser from "./nav-user"
 import PageBreadcrumb from "./page-breadcrumb"
+
+const MenuTrigger = () => {
+  const { toggleSidebar } = useSidebar()
+
+  return (
+    <Button variant="ghost" size="icon" aria-label="Toggle Sidebar" onClick={toggleSidebar}>
+      <MenuIcon />
+    </Button>
+  )
+}
 
 const Layout = () => {
   const { theme, setTheme } = useTheme()
 
   return (
     <SidebarProvider style={{ "--sidebar-width": "12rem" } as React.CSSProperties}>
-      <AppSidebar />
-      <main className="flex w-full flex-col bg-background">
-        <div className="flex items-center justify-between gap-2 px-6 py-4">
+      <AppSidebar className="shadow-md" />
+      <main className="flex h-svh w-full flex-col overflow-hidden bg-background">
+        <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between gap-2 bg-card px-6 py-2 shadow-md">
           <div className="flex items-center gap-2">
-            <SidebarTrigger />
+            <MenuTrigger />
             <PageBreadcrumb />
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="icon"
+              className="bg-white"
               aria-label="Toggle theme"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
@@ -32,7 +43,7 @@ const Layout = () => {
             <NavUser />
           </div>
         </div>
-        <div className="flex-1 px-6 pb-6">
+        <div className="flex-1 overflow-y-auto px-6 pt-4 pb-6">
           <Outlet />
         </div>
       </main>

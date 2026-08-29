@@ -49,36 +49,36 @@ const AllApplicantsPage = () => {
     (a) => a.registrationStatus === "Continue Registration"
   ).length
 
-  const summaryWidgets: SummaryWidget[] = [
-    {
-      key: "totalApplicants",
-      label: "Total Applicants",
-      value: String(totalApplicants),
-      icon: UsersIcon,
-      iconClassName: "bg-blue-50 text-blue-500",
-    },
-    {
-      key: "verified",
-      label: "KYC Verified",
-      value: String(verifiedCount),
-      icon: BadgeCheckIcon,
-      iconClassName: "bg-emerald-50 text-emerald-500",
-    },
-    {
-      key: "pending",
-      label: "KYC Pending",
-      value: String(pendingCount),
-      icon: ClockIcon,
-      iconClassName: "bg-amber-50 text-amber-500",
-    },
-    {
-      key: "continueRegistration",
-      label: "Continue Registration",
-      value: String(continueRegistrationCount),
-      icon: UserRoundPlusIcon,
-      iconClassName: "bg-sky-50 text-sky-500",
-    },
-  ]
+const summaryWidgets: SummaryWidget[] = [
+  {
+    key: "totalApplicants",
+    label: "Total Applicants",
+    value: String(totalApplicants),
+    icon: UsersIcon,
+    iconClassName: "bg-blue-500",
+  },
+  {
+    key: "verified",
+    label: "KYC Verified",
+    value: String(verifiedCount),
+    icon: BadgeCheckIcon,
+    iconClassName: "bg-emerald-500",
+  },
+  {
+    key: "pending",
+    label: "KYC Pending",
+    value: String(pendingCount),
+    icon: ClockIcon,
+    iconClassName: "bg-red-400",
+  },
+  {
+    key: "continueRegistration",
+    label: "Continue Registration",
+    value: String(continueRegistrationCount),
+    icon: UserRoundPlusIcon,
+    iconClassName: "bg-sky-400",
+  },
+]
 
   return (
     <div className="flex flex-col gap-4">

@@ -28,7 +28,7 @@ const SectionCard = ({
           <div className="-mx-(--card-spacing) -mt-(--card-spacing) flex h-9 items-center justify-between gap-2 rounded-tl-xl border-l-4 border-l-primary px-3">
             <div className="flex items-center gap-2">
               {Icon && <Icon className="size-5 text-muted-foreground/60" strokeWidth={1.0} />}
-              <h3 className="text-base font-semibold">{title}</h3>
+              <h3 className="text-base font-medium">{title}</h3>
             </div>
             {headerAction}
           </div>

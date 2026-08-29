@@ -49,43 +49,43 @@ const LoansApplicationsPage = () => {
   ).length
   const loanCreatedCount = allLoanApplications.filter((a) => a.status === "LOAN_CREATED").length
 
-  const summaryWidgets: SummaryWidget[] = [
-    {
-      key: "totalApplications",
-      label: "Total Applications",
-      value: String(totalApplications),
-      icon: FileTextIcon,
-      iconClassName: "bg-blue-50 text-blue-500",
-    },
-    {
-      key: "drafts",
-      label: "Drafts",
-      value: String(draftCount),
-      icon: ClockIcon,
-      iconClassName: "bg-slate-50 text-slate-500",
-    },
-    {
-      key: "pendingApproval",
-      label: "Pending Approval",
-      value: String(pendingApprovalCount),
-      icon: ClockIcon,
-      iconClassName: "bg-amber-50 text-amber-500",
-    },
-    {
-      key: "approved",
-      label: "Approved",
-      value: String(approvedCount),
-      icon: CheckCircle2Icon,
-      iconClassName: "bg-emerald-50 text-emerald-500",
-    },
-    {
-      key: "loanCreated",
-      label: "Loans Created",
-      value: String(loanCreatedCount),
-      icon: BanknoteIcon,
-      iconClassName: "bg-sky-50 text-sky-500",
-    },
-  ]
+const summaryWidgets: SummaryWidget[] = [
+  {
+    key: "totalApplications",
+    label: "Total Applications",
+    value: String(totalApplications),
+    icon: FileTextIcon,
+    iconClassName: "bg-blue-500",
+  },
+  {
+    key: "drafts",
+    label: "Drafts",
+    value: String(draftCount),
+    icon: ClockIcon,
+    iconClassName: "bg-slate-500",
+  },
+  {
+    key: "pendingApproval",
+    label: "Pending Approval",
+    value: String(pendingApprovalCount),
+    icon: ClockIcon,
+    iconClassName: "bg-amber-500",
+  },
+  {
+    key: "approved",
+    label: "Approved",
+    value: String(approvedCount),
+    icon: CheckCircle2Icon,
+    iconClassName: "bg-emerald-500",
+  },
+  {
+    key: "loanCreated",
+    label: "Loans Created",
+    value: String(loanCreatedCount),
+    icon: BanknoteIcon,
+    iconClassName: "bg-sky-500",
+  },
+]
 
   return (
     <div className="flex flex-col gap-4">

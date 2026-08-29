@@ -12,8 +12,8 @@ const DashboardDatePicker = () => {
     <Popover>
       <PopoverTrigger
         render={
-          <Button variant="outline" className="gap-2 font-normal">
-            <CalendarIcon className="size-4 text-muted-foreground" />
+          <Button variant="outline" className="gap-2 font-normal bg-white">
+            <CalendarIcon className="size-4 text-muted-foreground" strokeWidth={0.7}/>
             {date ? format(date, "MMM d, yyyy") : "Pick a date"}
           </Button>
         }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState, type ComponentProps } from "react"
 import { useLocation, Link } from "react-router-dom"
 import {
   UsersIcon,
@@ -29,6 +29,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "../../src/components/ui/sidebar"
 
 const singleItems = [
@@ -47,7 +48,7 @@ const sections = [
     title: "Loans",
     icon: FileTextIcon,
     items: [
-      { title: "Loan Applications", url: "/loans" },
+      { title: "Applications", url: "/loans" },
       { title: "Approve Loans", url: "/loans/approvals" },
     ],
   },
@@ -89,48 +90,75 @@ const settingsSection = {
   ],
 }
 
+// Every collapsible group (the four operational sections + Settings) lives in
+// one accordion — this is the flat list used to resolve "which one contains
+// the active route" so only that one is ever open at a time.
+const allCollapsibleGroups = [...sections, settingsSection]
+
 const activeMenuButtonClass =
   "data-active:bg-sidebar-primary data-active:text-sidebar-primary-foreground data-active:font-medium data-active:hover:bg-sidebar-primary data-active:hover:text-sidebar-primary-foreground [&>svg]:data-active:opacity-100"
 
 const subButtonClass =
-  "hover:bg-transparent data-active:bg-transparent data-active:font-medium data-active:text-primary data-active:hover:bg-transparent data-active:hover:text-primary"
+  "text-[13.5px]! hover:bg-transparent data-active:bg-transparent data-active:font-medium data-active:text-primary data-active:hover:bg-transparent data-active:hover:text-primary"
 
 const matches = (title: string, query: string) => title.toLowerCase().includes(query.toLowerCase())
 
-const AppSidebar = () => {
+const AppSidebar = ({ className, ...props }: ComponentProps<typeof Sidebar>) => {
   const location = useLocation()
   const [query, setQuery] = useState("")
 
+  const { setOpen, isMobile, setOpenMobile } = useSidebar()
+
   const isActive = (url: string) => location.pathname === url
 
-  // Controlled open-state for each collapsible section, keyed by title.
-  // Initialized once from whichever section contains the current route.
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {}
-    sections.forEach((section) => {
-      initial[section.title] = section.items.some((item) => isActive(item.url))
-    })
-    return initial
+  // Accordion state: at most ONE collapsible group is open at a time,
+  // identified by its title ("Loans", "Settings", etc.), or null if none.
+  const [openGroupTitle, setOpenGroupTitle] = useState<string | null>(() => {
+    const match = allCollapsibleGroups.find((group) =>
+      group.items.some((item) => isActive(item.url))
+    )
+    return match ? match.title : null
   })
 
-  const [settingsOpen, setSettingsOpen] = useState(() =>
-    settingsSection.items.some((item) => isActive(item.url))
-  )
+  // Keep the accordion in sync if the route changes by some means other than
+  // clicking a sidebar link (browser back/forward, a direct link elsewhere).
+  useEffect(() => {
+    const match = allCollapsibleGroups.find((group) =>
+      group.items.some((item) => isActive(item.url))
+    )
+    if (match) setOpenGroupTitle(match.title)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
 
-  const toggleSection = (title: string, open: boolean) => {
-    setOpenSections((prev) => ({ ...prev, [title]: open }))
+  const expandSidebar = () => {
+    setOpen(true)
+    if (isMobile) setOpenMobile(true)
   }
 
-  // Filtered views — when query is empty, everything passes through unchanged.
+  // Called whenever a sub-nav item is clicked: makes its group the only open
+  // one (accordion behavior) and expands the overall sidebar if collapsed.
+  const handleSubNavClick = (groupTitle: string) => {
+    setOpenGroupTitle(groupTitle)
+    expandSidebar()
+  }
+
+  // Called for top-level links that aren't inside a collapsible group
+  // (Dashboard, Applicants, Reports, Notifications) — these don't belong to
+  // an accordion group, so we just make sure the sidebar itself is expanded.
+  const handleTopLevelNavClick = () => {
+    setOpenGroupTitle(null)
+    expandSidebar()
+  }
+
   const filteredSingleItems = useMemo(
     () => singleItems.filter((item) => matches(item.title, query)),
     [query]
   )
 
   const filteredApplicantsItem = useMemo(
-  () => (matches(applicantsItem.title, query) ? applicantsItem : null),
-  [query]
-)
+    () => (matches(applicantsItem.title, query) ? applicantsItem : null),
+    [query]
+  )
 
   const filteredBottomSingleItems = useMemo(
     () => bottomSingleItems.filter((item) => matches(item.title, query)),
@@ -166,7 +194,7 @@ const AppSidebar = () => {
     filteredSettingsItems.length === 0
 
   return (
-    <Sidebar>
+     <Sidebar className={className} {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -182,7 +210,6 @@ const AppSidebar = () => {
           </SidebarMenuItem>
         </SidebarMenu>
 
-        {/* Search input — filters nav items across all groups as you type */}
         <div className="relative px-2 pt-1">
           <SearchIcon className="pointer-events-none absolute left-4 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -207,9 +234,10 @@ const AppSidebar = () => {
                         <SidebarMenuButton
                           isActive={isActive(item.url)}
                           className={activeMenuButtonClass}
+                          onClick={handleTopLevelNavClick}
                           render={<Link to={item.url} />}
                         >
-                          <item.icon className="opacity-60" />
+                          <item.icon className="opacity-70" />
                           <span>{item.title}</span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -228,6 +256,7 @@ const AppSidebar = () => {
                         <SidebarMenuButton
                           isActive={isActive(filteredApplicantsItem.url)}
                           className={activeMenuButtonClass}
+                          onClick={handleTopLevelNavClick}
                           render={<Link to={filteredApplicantsItem.url} />}
                         >
                           <filteredApplicantsItem.icon className="opacity-60" />
@@ -238,12 +267,14 @@ const AppSidebar = () => {
 
                     {filteredSections.map((section) => {
                       const sectionActive = section.items.some((item) => isActive(item.url))
-                      const isOpen = isSearching || (openSections[section.title] ?? sectionActive)
+                      const isOpen = isSearching || openGroupTitle === section.title
                       return (
                         <Collapsible
                           key={section.title}
                           open={isOpen}
-                          onOpenChange={(open) => toggleSection(section.title, open)}
+                          onOpenChange={(open) =>
+                            setOpenGroupTitle(open ? section.title : null)
+                          }
                           className="group/collapsible"
                         >
                           <SidebarMenuItem>
@@ -266,6 +297,7 @@ const AppSidebar = () => {
                                     <SidebarMenuSubButton
                                       isActive={isActive(item.url)}
                                       className={subButtonClass}
+                                      onClick={() => handleSubNavClick(section.title)}
                                       render={<Link to={item.url} />}
                                     >
                                       <span>{item.title}</span>
@@ -293,6 +325,7 @@ const AppSidebar = () => {
                         <SidebarMenuButton
                           isActive={isActive(item.url)}
                           className={activeMenuButtonClass}
+                          onClick={handleTopLevelNavClick}
                           render={<Link to={item.url} />}
                         >
                           <item.icon className="opacity-60" />
@@ -311,11 +344,13 @@ const AppSidebar = () => {
                   <SidebarMenu>
                     {(() => {
                       const settingsActive = settingsSection.items.some((item) => isActive(item.url))
-                      const isOpen = isSearching || settingsOpen
+                      const isOpen = isSearching || openGroupTitle === settingsSection.title
                       return (
                         <Collapsible
                           open={isOpen}
-                          onOpenChange={setSettingsOpen}
+                          onOpenChange={(open) =>
+                            setOpenGroupTitle(open ? settingsSection.title : null)
+                          }
                           className="group/collapsible"
                         >
                           <SidebarMenuItem>
@@ -338,6 +373,7 @@ const AppSidebar = () => {
                                     <SidebarMenuSubButton
                                       isActive={isActive(item.url)}
                                       className={subButtonClass}
+                                      onClick={() => handleSubNavClick(settingsSection.title)}
                                       render={<Link to={item.url} />}
                                     >
                                       <span>{item.title}</span>

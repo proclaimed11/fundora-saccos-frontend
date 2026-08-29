@@ -143,7 +143,7 @@ const LoanApplicationsTable = ({
           title="Loan Applications"
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
-          searchPlaceholder="Search by loan ID or type..."
+          searchPlaceholder="Search"
           filters={[
             {
               key: "type",

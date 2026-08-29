@@ -31,7 +31,7 @@ const RepaymentDueTodayTable = () => {
       icon={ClockIcon}
       title="Repayment Due Today"
       headerAction={
-        <Button variant="outline" size="sm">
+        <Button variant="link" size="sm" className="h-auto p-0 text-sm">
           View All
         </Button>
       }
