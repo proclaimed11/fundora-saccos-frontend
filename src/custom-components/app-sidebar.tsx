@@ -32,6 +32,8 @@ import {
   useSidebar,
 } from "../../src/components/ui/sidebar"
 
+const ICON_STROKE_WIDTH = 1.5
+
 const singleItems = [
   { title: "Dashboard", url: "/dashboard", icon: HomeIcon },
 ]
@@ -200,7 +202,7 @@ const AppSidebar = ({ className, ...props }: ComponentProps<typeof Sidebar>) => 
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" className="cursor-default hover:bg-transparent">
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <Building2Icon className="size-4" />
+                <Building2Icon className="size-4" strokeWidth={ICON_STROKE_WIDTH} />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">FUNDORA</span>
@@ -211,7 +213,10 @@ const AppSidebar = ({ className, ...props }: ComponentProps<typeof Sidebar>) => 
         </SidebarMenu>
 
         <div className="relative px-2 pt-1">
-          <SearchIcon className="pointer-events-none absolute left-4 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <SearchIcon
+            className="pointer-events-none absolute left-4 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
+            strokeWidth={ICON_STROKE_WIDTH}
+          />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -237,7 +242,7 @@ const AppSidebar = ({ className, ...props }: ComponentProps<typeof Sidebar>) => 
                           onClick={handleTopLevelNavClick}
                           render={<Link to={item.url} />}
                         >
-                          <item.icon className="opacity-70" />
+                          <item.icon className="opacity-70" strokeWidth={ICON_STROKE_WIDTH} />
                           <span>{item.title}</span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -259,7 +264,7 @@ const AppSidebar = ({ className, ...props }: ComponentProps<typeof Sidebar>) => 
                           onClick={handleTopLevelNavClick}
                           render={<Link to={filteredApplicantsItem.url} />}
                         >
-                          <filteredApplicantsItem.icon className="opacity-60" />
+                          <filteredApplicantsItem.icon className="opacity-60" strokeWidth={ICON_STROKE_WIDTH} />
                           <span>{filteredApplicantsItem.title}</span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -286,9 +291,12 @@ const AppSidebar = ({ className, ...props }: ComponentProps<typeof Sidebar>) => 
                                 />
                               }
                             >
-                              <section.icon className="opacity-60" />
+                              <section.icon className="opacity-60" strokeWidth={ICON_STROKE_WIDTH} />
                               <span>{section.title}</span>
-                              <ChevronRightIcon className="ml-auto opacity-60 transition-transform group-data-open/collapsible:rotate-90" />
+                              <ChevronRightIcon
+                                className="ml-auto opacity-60 transition-transform group-data-open/collapsible:rotate-90"
+                                strokeWidth={ICON_STROKE_WIDTH}
+                              />
                             </CollapsibleTrigger>
                             <CollapsibleContent>
                               <SidebarMenuSub>
@@ -328,7 +336,7 @@ const AppSidebar = ({ className, ...props }: ComponentProps<typeof Sidebar>) => 
                           onClick={handleTopLevelNavClick}
                           render={<Link to={item.url} />}
                         >
-                          <item.icon className="opacity-60" />
+                          <item.icon className="opacity-60" strokeWidth={ICON_STROKE_WIDTH} />
                           <span>{item.title}</span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -362,9 +370,12 @@ const AppSidebar = ({ className, ...props }: ComponentProps<typeof Sidebar>) => 
                                 />
                               }
                             >
-                              <settingsSection.icon className="opacity-60" />
+                              <settingsSection.icon className="opacity-60" strokeWidth={ICON_STROKE_WIDTH} />
                               <span>{settingsSection.title}</span>
-                              <ChevronRightIcon className="ml-auto opacity-60 transition-transform group-data-open/collapsible:rotate-90" />
+                              <ChevronRightIcon
+                                className="ml-auto opacity-60 transition-transform group-data-open/collapsible:rotate-90"
+                                strokeWidth={ICON_STROKE_WIDTH}
+                              />
                             </CollapsibleTrigger>
                             <CollapsibleContent>
                               <SidebarMenuSub>
