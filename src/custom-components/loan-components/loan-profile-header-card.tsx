@@ -1,5 +1,6 @@
 import { FileTextIcon } from "lucide-react"
 import { Card, CardContent } from "../../components/ui/card"
+import ProfileHeaderSkeleton from "../skeleton-loaders/profile-header-skeleton-loader"
 
 export type LoanProfileHeaderData = {
   applicationNo: string
@@ -9,9 +10,9 @@ export type LoanProfileHeaderData = {
   submittedOn: string
 }
 
-type LoanProfileHeaderProps = {
-  data: LoanProfileHeaderData
-}
+type LoanProfileHeaderProps =
+  | { data: LoanProfileHeaderData; isLoading?: false }
+  | { data?: undefined; isLoading: true }
 
 const SummaryField = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col gap-1">
@@ -20,7 +21,13 @@ const SummaryField = ({ label, value }: { label: string; value: string }) => (
   </div>
 )
 
-const LoansProfileHeader = ({ data }: LoanProfileHeaderProps) => {
+const LoansProfileHeader = (props: LoanProfileHeaderProps) => {
+  if (props.isLoading) {
+    return <ProfileHeaderSkeleton leadingShape="square" leadingSize="size-9" leadingLines={2} fieldCount={3} />
+  }
+
+  const { data } = props
+
   return (
     <Card>
       <CardContent>

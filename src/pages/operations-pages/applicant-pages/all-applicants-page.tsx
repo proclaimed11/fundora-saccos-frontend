@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react"
 import ApplicantsTable, { type Applicant } from "@/custom-components/applicant-components/all-applicants-table"
+import TableSkeleton from "@/custom-components/skeleton-loaders/table-skeleton-loader"
 import SummaryCards, { type SummaryWidget } from "@/custom-components/summary-cards"
 import { exportToCsv } from "@/lib/export-csv"
 import { useNavigate } from "react-router-dom"
@@ -21,6 +23,20 @@ const allApplicants: Applicant[] = [
 
 const AllApplicantsPage = () => {
   const navigate = useNavigate()
+  const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingWidget, setIsLoadingWidget] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1500)
+    return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoadingWidget(false), 1000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // ...rest unchanged...
 
   const handleExport = (filteredApplicants: Applicant[]) => {
     exportToCsv(
@@ -49,36 +65,36 @@ const AllApplicantsPage = () => {
     (a) => a.registrationStatus === "Continue Registration"
   ).length
 
-const summaryWidgets: SummaryWidget[] = [
-  {
-    key: "totalApplicants",
-    label: "Total Applicants",
-    value: String(totalApplicants),
-    icon: UsersIcon,
-    iconClassName: "bg-blue-500",
-  },
-  {
-    key: "verified",
-    label: "KYC Verified",
-    value: String(verifiedCount),
-    icon: BadgeCheckIcon,
-    iconClassName: "bg-emerald-500",
-  },
-  {
-    key: "pending",
-    label: "KYC Pending",
-    value: String(pendingCount),
-    icon: ClockIcon,
-    iconClassName: "bg-red-400",
-  },
-  {
-    key: "continueRegistration",
-    label: "Continue Registration",
-    value: String(continueRegistrationCount),
-    icon: UserRoundPlusIcon,
-    iconClassName: "bg-sky-400",
-  },
-]
+  const summaryWidgets: SummaryWidget[] = [
+    {
+      key: "totalApplicants",
+      label: "Total Applicants",
+      value: String(totalApplicants),
+      icon: UsersIcon,
+      iconClassName: "bg-blue-500",
+    },
+    {
+      key: "verified",
+      label: "KYC Verified",
+      value: String(verifiedCount),
+      icon: BadgeCheckIcon,
+      iconClassName: "bg-emerald-500",
+    },
+    {
+      key: "pending",
+      label: "KYC Pending",
+      value: String(pendingCount),
+      icon: ClockIcon,
+      iconClassName: "bg-red-400",
+    },
+    {
+      key: "continueRegistration",
+      label: "Continue Registration",
+      value: String(continueRegistrationCount),
+      icon: UserRoundPlusIcon,
+      iconClassName: "bg-sky-400",
+    },
+  ]
 
   return (
     <div className="flex flex-col gap-4">
@@ -94,13 +110,28 @@ const summaryWidgets: SummaryWidget[] = [
         </Button>
       </div>
 
-      <SummaryCards widgets={summaryWidgets} />
+      <SummaryCards widgets={summaryWidgets} isLoading={isLoadingWidget}/>
 
-      <ApplicantsTable
-        applicants={allApplicants}
-        onViewProfile={(applicant) => navigate(`/applicants/${applicant.id}`)}
-        onExport={handleExport}
-      />
+      {isLoading ? (
+        <TableSkeleton
+          columnHeaders={[
+            "Applicant ID",
+            "Full Name",
+            "Phone Number",
+            "Email Address",
+            "KYC Status",
+            "Registration",
+            "Registered On",
+          ]}
+          rows={allApplicants.length}
+        />
+      ) : (
+        <ApplicantsTable
+          applicants={allApplicants}
+          onViewProfile={(applicant) => navigate(`/applicants/${applicant.id}`)}
+          onExport={handleExport}
+        />
+      )}
     </div>
   )
 }

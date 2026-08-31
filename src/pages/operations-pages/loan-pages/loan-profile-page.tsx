@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import {
   ArrowLeftIcon,
   ClipboardCheckIcon,
@@ -15,22 +16,34 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import LoansProfileHeader from "@/custom-components/loan-components/loan-profile-header-card"
+import LoansProfileHeader, { type LoanProfileHeaderData } from "@/custom-components/loan-components/loan-profile-header-card"
 import LoanProfileTabs from "@/custom-components/loan-components/loan-profile-tabs"
 
 const LoansProfilePage = () => {
   const navigate = useNavigate()
   // Present only when reached via /applicants/:applicantId/loan-applications/:loanId
   // undefined when reached via /loans/:loanId
-  const { applicantId } = useParams<{ applicantId: string }>()
+  const { applicantId, loanId } = useParams<{ applicantId: string; loanId: string }>()
 
-  const loanData = {
-    applicationNo: "LA-0000241",
-    applicantName: "Juma Ali Said",
-    applicantId: "APP-1786436767272",
-    loanType: "Personal Loan",
-    submittedOn: "May 10, 2024 09:15 AM",
-  }
+  const [isLoading, setIsLoading] = useState(true)
+  const [loanData, setLoanData] = useState<LoanProfileHeaderData | null>(null)
+
+  useEffect(() => {
+    setIsLoading(true)
+    // Replace with your real fetch, e.g. fetch(`/api/loan-origination/applications/${loanId}/workflow`)
+    const timer = setTimeout(() => {
+      setLoanData({
+        applicationNo: "LA-0000241",
+        applicantName: "Juma Ali Said",
+        applicantId: "APP-1786436767272",
+        loanType: "Personal Loan",
+        submittedOn: "May 10, 2024 09:15 AM",
+      })
+      setIsLoading(false)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [loanId])
 
   const backTo = applicantId ? `/applicants/${applicantId}/loan-applications` : "/loans"
 
@@ -78,7 +91,11 @@ const LoansProfilePage = () => {
         </div>
       </div>
 
-      <LoansProfileHeader data={loanData} />
+      {isLoading || !loanData ? (
+        <LoansProfileHeader isLoading />
+      ) : (
+        <LoansProfileHeader data={loanData} />
+      )}
 
       <LoanProfileTabs />
 

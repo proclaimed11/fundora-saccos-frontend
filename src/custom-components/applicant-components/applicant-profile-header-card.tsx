@@ -1,6 +1,7 @@
 import { Card, CardContent } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { Avatar, AvatarFallback } from "../../components/ui/avatar"
+import ProfileHeaderSkeleton from "../skeleton-loaders/profile-header-skeleton-loader"
 
 export type ApplicantProfileHeaderData = {
   fullName: string
@@ -13,9 +14,9 @@ export type ApplicantProfileHeaderData = {
   nationality: string
 }
 
-type ApplicantProfileHeaderProps = {
-  data: ApplicantProfileHeaderData
-}
+type ApplicantProfileHeaderProps =
+  | { data: ApplicantProfileHeaderData; isLoading?: false }
+  | { data?: undefined; isLoading: true }
 
 const getInitials = (fullName: string) =>
   fullName
@@ -32,7 +33,15 @@ const SummaryField = ({ label, value }: { label: string; value: string }) => (
   </div>
 )
 
-const ApplicantProfileHeader = ({ data }: ApplicantProfileHeaderProps) => {
+const ApplicantProfileHeader = (props: ApplicantProfileHeaderProps) => {
+  if (props.isLoading) {
+    return (
+      <ProfileHeaderSkeleton leadingShape="circle" leadingSize="size-14" leadingLines={1} showLeadingBadge fieldCount={4}/>
+    )
+  }
+
+  const { data } = props
+
   return (
     <Card>
       <CardContent>

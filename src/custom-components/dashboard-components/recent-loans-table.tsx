@@ -1,4 +1,5 @@
-import { MoreVerticalIcon,ListChecksIcon } from "lucide-react"
+import { useEffect, useState } from "react"
+import { MoreVerticalIcon, ListChecksIcon } from "lucide-react"
 import SectionCard from "../section-card"
 import { Button } from "../../components/ui/button"
 import { Badge } from "../../components/ui/badge"
@@ -17,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu"
 import { cn } from "../../lib/utils"
+import SectionCardSkeleton from "../skeleton-loaders/skeleton-summary-loader"
 
 type ApplicationStatus = "Under Review" | "Approved" | "Rejected"
 
@@ -35,24 +37,48 @@ const statusStyles: Record<ApplicationStatus, string> = {
   Rejected: "bg-red-100 text-red-700 hover:bg-red-100",
 }
 
-const applications: LoanApplication[] = [
-  { id: "APP-2025-0148", loanee: "Juma Said", amount: "25,000,000", purpose: "Business", status: "Under Review", appliedOn: "May 14, 2025" },
-  { id: "APP-2025-0147", loanee: "Fatuma Ali", amount: "15,000,000", purpose: "Education", status: "Under Review", appliedOn: "May 14, 2025" },
-  { id: "APP-2025-0146", loanee: "Abdul Karim", amount: "30,000,000", purpose: "Business", status: "Approved", appliedOn: "May 13, 2025" },
-  { id: "APP-2025-0145", loanee: "Asha Mwinyi", amount: "10,000,000", purpose: "Personal", status: "Under Review", appliedOn: "May 13, 2025" },
-  { id: "APP-2025-0144", loanee: "Hassan M.", amount: "50,000,000", purpose: "Business", status: "Rejected", appliedOn: "May 12, 2025" },
-]
-
 const RecentLoanApplicationsTable = () => {
+  const [isLoading, setIsLoading] = useState(true)
+  const [applications, setApplications] = useState<LoanApplication[] | null>(null)
+
+  useEffect(() => {
+    setIsLoading(true)
+    // Replace with your real fetch, e.g. fetch(`/api/loan-applications?limit=5&sort=recent`)
+    const timer = setTimeout(() => {
+      setApplications([
+        { id: "APP-2025-0148", loanee: "Juma Said", amount: "25,000,000", purpose: "Business", status: "Under Review", appliedOn: "May 14, 2025" },
+        { id: "APP-2025-0147", loanee: "Fatuma Ali", amount: "15,000,000", purpose: "Education", status: "Under Review", appliedOn: "May 14, 2025" },
+        { id: "APP-2025-0146", loanee: "Abdul Karim", amount: "30,000,000", purpose: "Business", status: "Approved", appliedOn: "May 13, 2025" },
+        { id: "APP-2025-0145", loanee: "Asha Mwinyi", amount: "10,000,000", purpose: "Personal", status: "Under Review", appliedOn: "May 13, 2025" },
+        { id: "APP-2025-0144", loanee: "Hassan M.", amount: "50,000,000", purpose: "Business", status: "Rejected", appliedOn: "May 12, 2025" },
+      ])
+      setIsLoading(false)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (isLoading || !applications) {
+    return (
+      <SectionCardSkeleton
+        variant="table"
+        rows={5}
+        columns={7}
+        titleWidth="w-48"
+        showHeaderAction
+      />
+    )
+  }
+
   return (
     <SectionCard
       icon={ListChecksIcon}
       title="Recent Loan Applications"
       headerAction={
         <div className="flex items-center gap-2">
-        <Button variant="link" size="sm" className="h-auto p-0 text-sm">
-          View All
-        </Button>
+          <Button variant="link" size="sm" className="h-auto p-0 text-sm">
+            View All
+          </Button>
         </div>
       }
     >
@@ -96,7 +122,7 @@ const RecentLoanApplicationsTable = () => {
             </TableRow>
           ))}
         </TableBody>
-      </Table>s
+      </Table>
     </SectionCard>
   )
 }

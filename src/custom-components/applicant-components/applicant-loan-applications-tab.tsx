@@ -1,8 +1,16 @@
 import SummaryStatusCard from "../summary-status-card"
 import type { FlatSummaryWidget } from "../flat-summary-card"
 import LoanApplicationsTable from "./applicant-loan-applications-table"
+import { useEffect, useState } from "react"
 
 const ApplicantLoanApplicationsTab = () => {
+  const [isLoadingWidget, setIsLoadingWidget] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoadingWidget(false), 1000)
+    return () => clearTimeout(timer)
+  }, [])
+
   const handleNewLoan = () => {
     // Open a new loan application dialog here
   }
@@ -25,7 +33,7 @@ const ApplicantLoanApplicationsTab = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <SummaryStatusCard title="Loan Applications" widgets={statusWidgets} />
+      <SummaryStatusCard title="Loan Applications" widgets={statusWidgets} isLoading={isLoadingWidget} />
 
       <LoanApplicationsTable
         onSendMessage={handleNewLoan}

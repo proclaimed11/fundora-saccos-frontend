@@ -1,15 +1,15 @@
 import type { ReactNode } from "react"
-import { Card, CardContent} from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import FlatSummaryWidgets, { type FlatSummaryWidget } from "./flat-summary-card"
-
 
 type SummaryStatusCardProps = {
   title: string
   widgets: FlatSummaryWidget[]
   headerAction?: ReactNode
+  isLoading?: boolean
 }
 
-const SummaryStatusCard = ({ title, widgets, headerAction }: SummaryStatusCardProps) => {
+const SummaryStatusCard = ({ title, widgets, headerAction, isLoading = false }: SummaryStatusCardProps) => {
   return (
     <Card>
       <CardContent className="flex flex-col gap-4">
@@ -18,7 +18,7 @@ const SummaryStatusCard = ({ title, widgets, headerAction }: SummaryStatusCardPr
           {headerAction && <div className="flex items-center gap-2">{headerAction}</div>}
         </div>
 
-        <FlatSummaryWidgets widgets={widgets} />
+        <FlatSummaryWidgets widgets={widgets} isLoading={isLoading} />
       </CardContent>
     </Card>
   )

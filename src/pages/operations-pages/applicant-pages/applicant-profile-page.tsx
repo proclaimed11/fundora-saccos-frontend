@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   ArrowLeftIcon,
   PencilIcon,
@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import ApplicantProfileHeader from "@/custom-components/applicant-components/applicant-profile-header-card"
+import ApplicantProfileHeader, { type ApplicantProfileHeaderData } from "@/custom-components/applicant-components/applicant-profile-header-card"
 import ApplicantProfileTabs from "@/custom-components/applicant-components/applicant-profile-tabs"
 
 const ApplicantProfilePage = () => {
@@ -26,16 +26,28 @@ const ApplicantProfilePage = () => {
   const { applicantId } = useParams<{ applicantId: string }>()
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false)
 
-  const profileData = {
-    fullName: "Juma Ali Said",
-    applicantTag: "Verified",
-    phone: "+255 712 345 678",
-    email: "juma.said@example.com",
-    addressLine1: "Mikocheni, Biafra Road,",
-    addressLine2: "House No. 123, Dar es Salaam, Tanzania",
-    applicantId: "APP-1243",
-    nationality: "Tanzanian",
-  }
+  const [isLoading, setIsLoading] = useState(true)
+  const [profileData, setProfileData] = useState<ApplicantProfileHeaderData | null>(null)
+
+  useEffect(() => {
+    setIsLoading(true)
+    // Replace with your real fetch, e.g. fetch(`/api/onboarding/${applicantId}/status`)
+    const timer = setTimeout(() => {
+      setProfileData({
+        fullName: "Juma Ali Said",
+        applicantTag: "Verified",
+        phone: "+255 712 345 678",
+        email: "juma.said@example.com",
+        addressLine1: "Mikocheni, Biafra Road,",
+        addressLine2: "House No. 123, Dar es Salaam, Tanzania",
+        applicantId: "APP-1243",
+        nationality: "Tanzanian",
+      })
+      setIsLoading(false)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [applicantId])
 
   const handleArchive = () => {
     console.log("archive", applicantId)
@@ -79,8 +91,9 @@ const ApplicantProfilePage = () => {
               <AlertDialogHeader>
                 <AlertDialogTitle>Archive this applicant?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will archive {profileData.fullName}'s profile. They'll no longer appear in the active
-                  applicants list, but their records will be preserved and can be restored later.
+                  This will archive {profileData?.fullName ?? "this applicant"}'s profile. They'll no longer
+                  appear in the active applicants list, but their records will be preserved and can be restored
+                  later.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -97,7 +110,11 @@ const ApplicantProfilePage = () => {
         </div>
       </div>
 
-      <ApplicantProfileHeader data={profileData} />
+      {isLoading || !profileData ? (
+        <ApplicantProfileHeader isLoading />
+      ) : (
+        <ApplicantProfileHeader data={profileData} />
+      )}
 
       <ApplicantProfileTabs />
 

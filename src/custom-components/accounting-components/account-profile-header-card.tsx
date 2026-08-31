@@ -1,6 +1,7 @@
 import { BookTextIcon } from "lucide-react"
 import { Card, CardContent } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
+import ProfileHeaderSkeleton from "../skeleton-loaders/profile-header-skeleton-loader"
 
 export type AccountProfileHeaderData = {
   accountCode: string
@@ -10,9 +11,9 @@ export type AccountProfileHeaderData = {
   currency: string
 }
 
-type AccountProfileHeaderProps = {
-  data: AccountProfileHeaderData
-}
+type AccountProfileHeaderProps =
+  | { data: AccountProfileHeaderData; isLoading?: false }
+  | { data?: undefined; isLoading: true }
 
 const statusBadgeStyles: Record<string, string> = {
   Active: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100",
@@ -35,7 +36,15 @@ const SummaryField = ({ label, value }: { label: string; value: React.ReactNode 
   </div>
 )
 
-const AccountProfileHeader = ({ data }: AccountProfileHeaderProps) => {
+const AccountProfileHeader = (props: AccountProfileHeaderProps) => {
+  if (props.isLoading) {
+    return (
+      <ProfileHeaderSkeleton leadingShape="square" leadingSize="size-12" leadingLines={2} showLeadingBadge fieldCount={3} />
+    )
+  }
+
+  const { data } = props
+
   return (
     <Card>
       <CardContent>
@@ -49,10 +58,7 @@ const AccountProfileHeader = ({ data }: AccountProfileHeaderProps) => {
               <div className="flex items-center gap-2">
                 <p className="text-sm text-muted-foreground">{data.accountName}</p>
               </div>
-              <Badge
-                className={accountTypeBadgeStyles[data.accountType]}
-                variant="secondary"
-              >
+              <Badge className={accountTypeBadgeStyles[data.accountType]} variant="secondary">
                 {data.accountType}
               </Badge>
             </div>
@@ -67,7 +73,14 @@ const AccountProfileHeader = ({ data }: AccountProfileHeaderProps) => {
           </div>
 
           <div className="pt-4 md:pl-6 md:pt-0">
-            <SummaryField label="Status" value={<Badge className={statusBadgeStyles[data.status]} variant="secondary">{data.status}</Badge>} />
+            <SummaryField
+              label="Status"
+              value={
+                <Badge className={statusBadgeStyles[data.status]} variant="secondary">
+                  {data.status}
+                </Badge>
+              }
+            />
           </div>
         </div>
       </CardContent>

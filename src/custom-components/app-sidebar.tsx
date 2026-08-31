@@ -5,7 +5,6 @@ import {
   FileTextIcon,
   HandCoins,
   BanknoteIcon,
-  BarChartIcon,
   BellIcon,
   SettingsIcon,
   ChevronRightIcon,
@@ -13,6 +12,7 @@ import {
   HomeIcon,
   SearchIcon,
   BookTextIcon,
+  Wallet2Icon
 } from "lucide-react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../../src/components/ui/collapsible"
 import { Input } from "../../src/components/ui/input"
@@ -39,14 +39,14 @@ const singleItems = [
 const applicantsItem = { title: "Applicants", url: "/applicants", icon: UsersIcon }
 
 const bottomSingleItems = [
-  { title: "Reports", url: "/reports", icon: BarChartIcon },
+  { title: "Reports", url: "/reports", icon: FileTextIcon },
   { title: "Notifications", url: "/notifications", icon: BellIcon },
 ]
 
 const sections = [
   {
     title: "Loans",
-    icon: FileTextIcon,
+    icon: Wallet2Icon,
     items: [
       { title: "Applications", url: "/loans" },
       { title: "Approve Loans", url: "/loans/approvals" },
@@ -57,7 +57,7 @@ const sections = [
     icon: BookTextIcon,
     items: [
       { title: "Chart of Accounts", url: "/accounts" },
-      { title: "GL Posting", url: "/accounting/gl-posting" }
+      { title: "General Ledger", url: "/accounting/gl-posting" }
     ],
   },
   {
@@ -96,10 +96,10 @@ const settingsSection = {
 const allCollapsibleGroups = [...sections, settingsSection]
 
 const activeMenuButtonClass =
-  "data-active:bg-sidebar-primary data-active:text-sidebar-primary-foreground data-active:font-medium data-active:hover:bg-sidebar-primary data-active:hover:text-sidebar-primary-foreground [&>svg]:data-active:opacity-100"
+  "text-[13.5px]! data-active:bg-sidebar-primary data-active:text-sidebar-primary-foreground data-active:font-medium data-active:hover:bg-sidebar-primary data-active:hover:text-sidebar-primary-foreground [&>svg]:data-active:opacity-100"
 
 const subButtonClass =
-  "text-[13.5px]! hover:bg-transparent data-active:bg-transparent data-active:font-medium data-active:text-primary data-active:hover:bg-transparent data-active:hover:text-primary"
+  "text-[13.5px]! text-muted-foreground hover:bg-transparent hover:text-muted-foreground data-active:bg-transparent data-active:font-medium data-active:text-primary data-active:hover:bg-transparent data-active:hover:text-primary"
 
 const matches = (title: string, query: string) => title.toLowerCase().includes(query.toLowerCase())
 
@@ -215,7 +215,7 @@ const AppSidebar = ({ className, ...props }: ComponentProps<typeof Sidebar>) => 
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search navigation..."
+            placeholder="Go to"
             className="h-8 pl-7 text-sm"
           />
         </div>
@@ -248,7 +248,7 @@ const AppSidebar = ({ className, ...props }: ComponentProps<typeof Sidebar>) => 
             )}
             {(filteredApplicantsItem || filteredSections.length > 0) && (
               <SidebarGroup>
-                <SidebarGroupLabel>OPERATIONS</SidebarGroupLabel>
+                <SidebarGroupLabel className="opacity-60">OPERATIONS</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {filteredApplicantsItem && (
@@ -317,7 +317,7 @@ const AppSidebar = ({ className, ...props }: ComponentProps<typeof Sidebar>) => 
 
             {filteredBottomSingleItems.length > 0 && (
               <SidebarGroup>
-                <SidebarGroupLabel>INSIGHTS & MONITORNG</SidebarGroupLabel>
+                <SidebarGroupLabel className="opacity-60">INSIGHTS & MONITORNG</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {filteredBottomSingleItems.map((item) => (

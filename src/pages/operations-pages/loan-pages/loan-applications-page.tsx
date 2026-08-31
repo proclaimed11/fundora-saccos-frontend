@@ -10,6 +10,7 @@ import {
   CheckCircle2Icon,
   BanknoteIcon,
 } from "lucide-react"
+import { useEffect, useState } from "react"
 
 const allLoanApplications: LoanApplication[] = [
   { id: "1", applicationNo: "LA-1786", applicantId: "1", applicantName: "Juma Ali Said", loanOfficerName: "Herman Mushi", requestedAmount: "TZS 5,000,000", status: "PENDING_APPROVAL", finalized: true, submittedOn: "May 14, 2024 10:25 AM" },
@@ -21,6 +22,12 @@ const allLoanApplications: LoanApplication[] = [
 
 const LoansApplicationsPage = () => {
   const navigate = useNavigate()
+  const [isLoadingWidget, setIsLoadingWidget] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoadingWidget(false), 1000)
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleExport = (filteredApplications: LoanApplication[]) => {
     exportToCsv(
@@ -101,7 +108,7 @@ const summaryWidgets: SummaryWidget[] = [
         </Button>
       </div>
 
-      <SummaryCards widgets={summaryWidgets} />
+      <SummaryCards widgets={summaryWidgets} isLoading={isLoadingWidget} />
 
       <LoanApplicationTable
         applications={allLoanApplications}

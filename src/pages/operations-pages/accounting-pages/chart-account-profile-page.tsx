@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   ArrowLeftIcon,
   PencilIcon,
@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import AccountProfileHeader from "@/custom-components/accounting-components/account-profile-header-card"
+import AccountProfileHeader, { type AccountProfileHeaderData } from "@/custom-components/accounting-components/account-profile-header-card"
 import AccountSummaryCard from "@/custom-components/accounting-components/account-summary-card"
 import AccountTransactionsTable from "@/custom-components/accounting-components/account-transactions-table"
 
@@ -26,13 +26,25 @@ const AccountProfilePage = () => {
   const { accountId } = useParams<{ accountId: string }>()
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false)
 
-  const headerData = {
-    accountCode: "1001-00",
-    accountName: "Bank - Main Operational Account",
-    accountType: "Asset",
-    status: "Active" as const,
-    currency: "TZS",
-  }
+  const [isLoading, setIsLoading] = useState(true)
+  const [headerData, setHeaderData] = useState<AccountProfileHeaderData | null>(null)
+
+  useEffect(() => {
+    setIsLoading(true)
+    // Replace with your real fetch, e.g. fetch(`/api/chart-of-accounts/${accountId}`)
+    const timer = setTimeout(() => {
+      setHeaderData({
+        accountCode: "1001-00",
+        accountName: "Bank - Main Operational Account",
+        accountType: "Asset",
+        status: "Active",
+        currency: "TZS",
+      })
+      setIsLoading(false)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [accountId])
 
   const summaryData = {
     openingBalance: "TZS 23,500,000.00",
@@ -76,8 +88,8 @@ const AccountProfilePage = () => {
               <AlertDialogHeader>
                 <AlertDialogTitle>Archive this account?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will archive {headerData.accountName}. It will no longer appear in the active
-                  chart of accounts, but its records will be preserved and can be restored later.
+                  This will archive {headerData?.accountName ?? "this account"}. It will no longer appear in the
+                  active chart of accounts, but its records will be preserved and can be restored later.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -94,7 +106,11 @@ const AccountProfilePage = () => {
         </div>
       </div>
 
-      <AccountProfileHeader data={headerData} />
+      {isLoading || !headerData ? (
+        <AccountProfileHeader isLoading />
+      ) : (
+        <AccountProfileHeader data={headerData} />
+      )}
       <AccountSummaryCard data={summaryData} />
       <AccountTransactionsTable
         transactions={[

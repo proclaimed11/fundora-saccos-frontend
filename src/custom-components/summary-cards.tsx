@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react"
 import type { LucideIcon } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Carousel,
   CarouselContent,
@@ -21,6 +22,7 @@ export type SummaryWidget = {
 
 type SummaryCardsProps = {
   widgets: SummaryWidget[]
+  isLoading?: boolean
 }
 
 // Estimated minimum comfortable width for one card — used only to decide
@@ -29,7 +31,9 @@ type SummaryCardsProps = {
 const MIN_CARD_WIDTH = 200
 const GAP = 12 // matches gap-3
 
-const WidgetCard = ({ label, value, icon: Icon, iconClassName, caption }: SummaryWidget) => (
+type WidgetCardProps = SummaryWidget & { isLoading?: boolean }
+
+const WidgetCard = ({ label, value, icon: Icon, iconClassName, caption, isLoading }: WidgetCardProps) => (
   <Card className="relative overflow-visible gap-0 py-0">
     <span
       className={cn(
@@ -45,12 +49,16 @@ const WidgetCard = ({ label, value, icon: Icon, iconClassName, caption }: Summar
         <p className="truncate text-xs text-muted-foreground">{label}</p>
         {caption && <p className="truncate text-xs text-muted-foreground">{caption}</p>}
       </div>
-      <p className="truncate text-lg font-semibold">{value}</p>
+      {isLoading ? (
+        <Skeleton className="h-5 w-20" />
+      ) : (
+        <p className="truncate text-lg font-semibold">{value}</p>
+      )}
     </CardContent>
   </Card>
 )
 
-const SummaryCards = ({ widgets }: SummaryCardsProps) => {
+const SummaryCards = ({ widgets, isLoading = false }: SummaryCardsProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [fits, setFits] = useState(true)
 
@@ -78,7 +86,7 @@ const SummaryCards = ({ widgets }: SummaryCardsProps) => {
           style={{ gridTemplateColumns: `repeat(${widgets.length}, minmax(0, 1fr))` }}
         >
           {widgets.map(({ key, ...widget }) => (
-            <WidgetCard key={key} {...widget} />
+            <WidgetCard {...widget} isLoading={isLoading} key={key} />
           ))}
         </div>
       ) : (
@@ -87,7 +95,7 @@ const SummaryCards = ({ widgets }: SummaryCardsProps) => {
             {widgets.map((widget) => (
               <CarouselItem key={widget.key} className="basis-auto pt-3 pl-3">
                 <div className="shrink-0" style={{ width: MIN_CARD_WIDTH }}>
-                  <WidgetCard {...widget} />
+                  <WidgetCard {...widget} isLoading={isLoading} />
                 </div>
               </CarouselItem>
             ))}

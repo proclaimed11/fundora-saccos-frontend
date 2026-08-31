@@ -9,7 +9,6 @@ import { Badge } from "../../components/ui/badge"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent } from "../../components/ui/card"
 import { Input } from "../../components/ui/input"
-import { Separator } from "../../components/ui/separator"
 import {
   Select,
   SelectContent,
@@ -27,6 +26,7 @@ import {
 } from "../../components/ui/table"
 import { exportToCsv } from "../../lib/export-csv"
 import TableEmptyState from "../table-empty-state"
+import FlatSummaryWidgets, { type FlatSummaryWidget } from "../flat-summary-card"
 
 export type InstallmentStatus = "PENDING" | "PAID" | "OVERDUE"
 
@@ -46,6 +46,7 @@ type LoanRepaymentScheduleTableProps = {
   totalScheduledAmount: string
   schedule: RepaymentScheduleItem[]
   onScheduleChange?: (schedule: RepaymentScheduleItem[]) => void
+  isLoadingWidget?: boolean
 }
 
 const statusBadgeStyles: Record<InstallmentStatus, string> = {
@@ -72,22 +73,17 @@ const parseAmount = (value: string | number | null | undefined): number => {
 
 const formatCurrency = (value: number): string => `TZS ${value.toLocaleString("en-US")}`
 
-type SummaryWidget = {
-  key: string
-  label: string
-  value: string
-}
-
 const LoanRepaymentScheduleTable = ({
   principalAmount,
   totalScheduledAmount,
   schedule: initialSchedule,
   onScheduleChange,
+  isLoadingWidget = false,
 }: LoanRepaymentScheduleTableProps) => {
   const [schedule, setSchedule] = useState(initialSchedule)
   const [drafts, setDrafts] = useState<Record<string, RepaymentScheduleItem>>({})
 
-  const summaryWidgets: SummaryWidget[] = useMemo(() => {
+  const summaryWidgets: FlatSummaryWidget[] = useMemo(() => {
     const paidCount = schedule.filter((item) => item.status === "PAID").length
     const totalOutstanding = schedule.reduce((sum, item) => sum + parseAmount(item.outstandingAmount), 0)
 
@@ -171,20 +167,7 @@ const LoanRepaymentScheduleTable = ({
           </Button>
         </div>
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
-          {summaryWidgets.map(({ key, label, value }, index) => (
-            <div key={key} className="flex flex-1 items-stretch gap-4">
-              <div className="flex flex-1 flex-col gap-1">
-                <p className="text-xs text-muted-foreground">{label}</p>
-                <p className="text-base font-semibold text-foreground">{value}</p>
-              </div>
-
-              {index < summaryWidgets.length - 1 && (
-                <Separator orientation="vertical" className="hidden self-center !h-10 sm:block" />
-              )}
-            </div>
-          ))}
-        </div>
+        <FlatSummaryWidgets widgets={summaryWidgets} isLoading={isLoadingWidget} />
 
         <div className="overflow-x-auto rounded-md border">
           <Table className="border-collapse">

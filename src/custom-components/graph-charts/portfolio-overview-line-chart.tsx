@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
 import { TrendingUpIcon } from "lucide-react"
 import SectionCard from "../section-card"
@@ -16,17 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../src/components/ui/select"
+import SectionCardSkeleton from "../skeleton-loaders/skeleton-summary-loader"
 
-const portfolioData = [
-  { date: "May 1", disbursed: 40000000, repaid: 20000000 },
-  { date: "May 5", disbursed: 95000000, repaid: 55000000 },
-  { date: "May 9", disbursed: 130000000, repaid: 90000000 },
-  { date: "May 13", disbursed: 175000000, repaid: 120000000 },
-  { date: "May 17", disbursed: 220000000, repaid: 150000000 },
-  { date: "May 21", disbursed: 260000000, repaid: 190000000 },
-  { date: "May 25", disbursed: 340000000, repaid: 230000000 },
-  { date: "May 31", disbursed: 400000000, repaid: 270000000 },
-]
+type PortfolioPoint = {
+  date: string
+  disbursed: number
+  repaid: number
+}
 
 const chartConfig = {
   disbursed: {
@@ -40,6 +37,41 @@ const chartConfig = {
 } satisfies ChartConfig
 
 const PortfolioOverviewChart = () => {
+  const [isLoading, setIsLoading] = useState(true)
+  const [portfolioData, setPortfolioData] = useState<PortfolioPoint[] | null>(null)
+
+  useEffect(() => {
+    setIsLoading(true)
+    // Replace with your real fetch, e.g. fetch(`/api/reports/portfolio-summary?range=this-month`)
+    const timer = setTimeout(() => {
+      setPortfolioData([
+        { date: "May 1", disbursed: 40000000, repaid: 20000000 },
+        { date: "May 5", disbursed: 95000000, repaid: 55000000 },
+        { date: "May 9", disbursed: 130000000, repaid: 90000000 },
+        { date: "May 13", disbursed: 175000000, repaid: 120000000 },
+        { date: "May 17", disbursed: 220000000, repaid: 150000000 },
+        { date: "May 21", disbursed: 260000000, repaid: 190000000 },
+        { date: "May 25", disbursed: 340000000, repaid: 230000000 },
+        { date: "May 31", disbursed: 400000000, repaid: 270000000 },
+      ])
+      setIsLoading(false)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (isLoading || !portfolioData) {
+    return (
+      <SectionCardSkeleton
+        variant="chart"
+        chartHeight="h-[260px]"
+        titleWidth="w-36"
+        showHeaderAction
+        className="lg:col-span-2"
+      />
+    )
+  }
+
   return (
     <SectionCard
       icon={TrendingUpIcon}

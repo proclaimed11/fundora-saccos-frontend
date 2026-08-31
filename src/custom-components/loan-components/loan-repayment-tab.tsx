@@ -2,6 +2,7 @@ import LoanRepaymentScheduleTable from "./loan-repayment-schedule-table"
 import LoanRepaymentTransactionsTable from "./loan-repayment-table"
 import SummaryStatusCard from "../summary-status-card"
 import type { FlatSummaryWidget } from "../flat-summary-card"
+import { useEffect, useState } from "react"
 
 const LoanRepaymentHistoryTab = () => {
   const paymentSummaryData = {
@@ -11,6 +12,13 @@ const LoanRepaymentHistoryTab = () => {
     paymentsMade: 6,
     totalPayments: 12,
   }
+
+  const [isLoadingWidget, setIsLoadingWidget] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoadingWidget(false), 1000)
+    return () => clearTimeout(timer)
+  }, [])
 
   const paymentWidgets: FlatSummaryWidget[] = [
     { key: "totalAmount", label: "Total Amount", value: paymentSummaryData.totalAmount },
@@ -25,7 +33,7 @@ const LoanRepaymentHistoryTab = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <SummaryStatusCard title="Payment Summary" widgets={paymentWidgets} />
+      <SummaryStatusCard title="Payment Summary" widgets={paymentWidgets} isLoading={isLoadingWidget} />
 
       <LoanRepaymentTransactionsTable
         transactions={[
@@ -41,6 +49,7 @@ const LoanRepaymentHistoryTab = () => {
       <LoanRepaymentScheduleTable
         principalAmount="TZS 1,000,000"
         totalScheduledAmount="TZS 1,071,154.86"
+        isLoadingWidget={isLoadingWidget}
         schedule={[
           { id: "1", installmentNo: 1, dueDate: "Sep 11, 2026", principalDue: "TZS 158,477.86", interestDue: "TZS 20,000.00", totalDue: "TZS 178,477.86", outstandingAmount: "TZS 0.00", status: "PAID" },
           { id: "2", installmentNo: 2, dueDate: "Oct 11, 2026", principalDue: "TZS 161,647.42", interestDue: "TZS 16,830.44", totalDue: "TZS 178,477.86", outstandingAmount: "TZS 178,477.86", status: "OVERDUE" },

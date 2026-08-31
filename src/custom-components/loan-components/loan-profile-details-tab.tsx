@@ -1,51 +1,61 @@
+import { useEffect, useState } from "react"
 import { UserIcon, FileTextIcon, WalletIcon, ShieldCheckIcon } from "lucide-react"
 import SectionCard from "../section-card"
 import { Badge } from "../../components/ui/badge"
+import SectionCardSkeleton from "../skeleton-loaders/skeleton-summary-loader"
+import { Skeleton } from "@/components/ui/skeleton"
 
-const applicantInformation = {
-  applicantNo: "APP-1786436767272",
-  fullName: "Juma Ali Said",
-  phone: "+255 712 345 678",
-  email: "juma.said@example.com",
-  addressLine1: "Mikocheni, Biafra Road,",
-  addressLine2: "House No. 123, Dar es Salaam, Tanzania",
-  kycStatus: "Approved",
-  kycStatusDate: "May 09, 2024",
-  nationality: "Tanzanian",
-  occupation: "Businessman",
+type ApplicantInformation = {
+  applicantNo: string
+  fullName: string
+  phone: string
+  email: string
+  addressLine1: string
+  addressLine2: string
+  kycStatus: string
+  kycStatusDate: string
+  nationality: string
+  occupation: string
 }
 
-const loanTerms = {
-  requestedAmount: "TZS 1,250,000",
-  interestMethod: "Reducing Balance",
-  interestRate: "18% p.a.",
-  tenure: "12 Months",
-  penaltyRate: "2%",
-  guarantorRequired: "Yes",
-  collateralRequired: "No",
-  applicationFee: "TZS 25,000",
+type LoanTerms = {
+  requestedAmount: string
+  interestMethod: string
+  interestRate: string
+  tenure: string
+  penaltyRate: string
+  guarantorRequired: string
+  collateralRequired: string
+  applicationFee: string
 }
 
-const financialSummary = {
-  requestedAmount: "TZS 1,250,000",
-  approvedAmount: "TZS 1,250,000",
-  disbursedAmount: "TZS 1,250,000",
-  interestAmount: "TZS 217,154.86",
-  totalRepayable: "TZS 1,467,154.86",
-  outstandingBalance: "TZS 1,250,000",
-  nextDueDate: "May 25, 2024",
-  nextRepaymentAmount: "TZS 178,525.81",
+type FinancialSummary = {
+  requestedAmount: string
+  approvedAmount: string
+  disbursedAmount: string
+  interestAmount: string
+  totalRepayable: string
+  outstandingBalance: string
+  nextDueDate: string
+  nextRepaymentAmount: string
 }
 
-const creditAssessment = {
-  decision: "APPROVE",
-  monthlyIncome: "TZS 2,500,000",
-  monthlyExpenses: "TZS 800,000",
-  cashFlow: "TZS 1,700,000",
-  hasPendingPayments: "No",
-  assessedBy: "Grace Kileo",
-  assessedOn: "May 12, 2024",
-  notes: "Stable income, consistent repayment history on existing loans.",
+type CreditAssessment = {
+  decision: string
+  monthlyIncome: string
+  monthlyExpenses: string
+  cashFlow: string
+  hasPendingPayments: string
+  assessedBy: string
+  assessedOn: string
+  notes: string
+}
+
+type LoanOverviewData = {
+  applicantInformation: ApplicantInformation
+  loanTerms: LoanTerms
+  financialSummary: FinancialSummary
+  creditAssessment: CreditAssessment
 }
 
 const decisionBadgeStyles: Record<string, string> = {
@@ -60,7 +70,103 @@ const InfoField = ({ label, value }: { label: string; value: string }) => (
   </div>
 )
 
+const InfoFieldSkeleton = () => (
+  <div className="flex items-center justify-between gap-4">
+    <Skeleton className="h-3.5 w-24" />
+    <Skeleton className="h-3.5 w-32" />
+  </div>
+)
+
 const LoanOverviewTab = () => {
+  const [isLoading, setIsLoading] = useState(true)
+  const [data, setData] = useState<LoanOverviewData | null>(null)
+
+  useEffect(() => {
+    setIsLoading(true)
+    // Replace with your real fetch, e.g. fetch(`/api/loan-origination/applications/${applicationId}/workflow`)
+    const timer = setTimeout(() => {
+      setData({
+        applicantInformation: {
+          applicantNo: "APP-1786436767272",
+          fullName: "Juma Ali Said",
+          phone: "+255 712 345 678",
+          email: "juma.said@example.com",
+          addressLine1: "Mikocheni, Biafra Road,",
+          addressLine2: "House No. 123, Dar es Salaam, Tanzania",
+          kycStatus: "Approved",
+          kycStatusDate: "May 09, 2024",
+          nationality: "Tanzanian",
+          occupation: "Businessman",
+        },
+        loanTerms: {
+          requestedAmount: "TZS 1,250,000",
+          interestMethod: "Reducing Balance",
+          interestRate: "18% p.a.",
+          tenure: "12 Months",
+          penaltyRate: "2%",
+          guarantorRequired: "Yes",
+          collateralRequired: "No",
+          applicationFee: "TZS 25,000",
+        },
+        financialSummary: {
+          requestedAmount: "TZS 1,250,000",
+          approvedAmount: "TZS 1,250,000",
+          disbursedAmount: "TZS 1,250,000",
+          interestAmount: "TZS 217,154.86",
+          totalRepayable: "TZS 1,467,154.86",
+          outstandingBalance: "TZS 1,250,000",
+          nextDueDate: "May 25, 2024",
+          nextRepaymentAmount: "TZS 178,525.81",
+        },
+        creditAssessment: {
+          decision: "APPROVE",
+          monthlyIncome: "TZS 2,500,000",
+          monthlyExpenses: "TZS 800,000",
+          cashFlow: "TZS 1,700,000",
+          hasPendingPayments: "No",
+          assessedBy: "Grace Kileo",
+          assessedOn: "May 12, 2024",
+          notes: "Stable income, consistent repayment history on existing loans.",
+        },
+      })
+      setIsLoading(false)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (isLoading || !data) {
+    return (
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <SectionCardSkeleton variant="custom" titleWidth="w-36">
+          <div className="flex flex-col gap-3">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <InfoFieldSkeleton key={i} />
+            ))}
+          </div>
+        </SectionCardSkeleton>
+
+        <SectionCardSkeleton variant="text" rows={8} titleWidth="w-24" />
+
+        <SectionCardSkeleton variant="custom" titleWidth="w-36">
+          <div className="flex flex-col gap-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <InfoFieldSkeleton key={i} />
+            ))}
+            <div className="flex flex-col gap-1.5">
+              <Skeleton className="h-3.5 w-16" />
+              <Skeleton className="h-3.5 w-full" />
+            </div>
+          </div>
+        </SectionCardSkeleton>
+
+        <SectionCardSkeleton variant="text" rows={8} titleWidth="w-32" />
+      </div>
+    )
+  }
+
+  const { applicantInformation, loanTerms, financialSummary, creditAssessment } = data
+
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
       <SectionCard icon={UserIcon} title="Applicant Information">

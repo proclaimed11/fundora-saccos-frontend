@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   MoreVerticalIcon,
   PencilIcon,
@@ -117,6 +117,12 @@ const ChartOfAccountsPage = () => {
   const [accountType, setAccountType] = useState("all")
   const [status, setStatus] = useState("Active")
   const [currentPage, setCurrentPage] = useState(1)
+  const [isLoadingWidget, setIsLoadingWidget] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoadingWidget(false), 1200)
+    return () => clearTimeout(timer)
+  }, [])
 
   const filteredAccounts = accounts.filter((account) => {
     const inTab = tabTypeMap[activeTab].includes(account.accountType)
@@ -221,7 +227,7 @@ const ChartOfAccountsPage = () => {
         </Button>
       </div>
 
-      <SummaryCards widgets={summaryWidgets} />
+      <SummaryCards widgets={summaryWidgets} isLoading={isLoadingWidget} />
 
       <Tabs
         value={activeTab}

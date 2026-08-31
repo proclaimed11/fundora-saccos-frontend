@@ -1,20 +1,51 @@
+import { useEffect, useState } from "react"
 import { CheckIcon, ListChecksIcon } from "lucide-react"
 import SectionCard from "../section-card"
 import { Button } from "../../components/ui/button"
+import { Skeleton } from "../../components/ui/skeleton"
+import SectionCardSkeleton from "../skeleton-loaders/skeleton-summary-loader"
 
 type TaskRow = {
   label: string
   count: number
 }
 
-const taskRows: TaskRow[] = [
-  { label: "Review pending applications", count: 14 },
-  { label: "Approve loans", count: 7 },
-  { label: "Upload disbursement proofs", count: 5 },
-  { label: "Verify guarantor documents", count: 9 },
-]
-
 const TasksCard = () => {
+  const [isLoading, setIsLoading] = useState(true)
+  const [taskRows, setTaskRows] = useState<TaskRow[] | null>(null)
+
+  useEffect(() => {
+    setIsLoading(true)
+    // Replace with your real fetch, e.g. fetch(`/api/tasks?assignedTo=me`)
+    const timer = setTimeout(() => {
+      setTaskRows([
+        { label: "Review pending applications", count: 14 },
+        { label: "Approve loans", count: 7 },
+        { label: "Upload disbursement proofs", count: 5 },
+        { label: "Verify guarantor documents", count: 9 },
+      ])
+      setIsLoading(false)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (isLoading || !taskRows) {
+    return (
+      <SectionCardSkeleton variant="custom" titleWidth="w-20" showHeaderAction>
+        <div className="flex flex-col gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <Skeleton className="size-5 shrink-0 rounded-sm" />
+              <Skeleton className="h-3.5 flex-1" />
+              <Skeleton className="h-3.5 w-6" />
+            </div>
+          ))}
+        </div>
+      </SectionCardSkeleton>
+    )
+  }
+
   return (
     <SectionCard
       icon={ListChecksIcon}
