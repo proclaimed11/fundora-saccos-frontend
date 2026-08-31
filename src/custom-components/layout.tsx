@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom"
+import { Outlet, useLocation } from "react-router-dom"
 import { SidebarProvider, useSidebar } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -20,6 +20,7 @@ const MenuTrigger = () => {
 
 const Layout = () => {
   const { theme, setTheme } = useTheme()
+  const location = useLocation()
 
   return (
     <SidebarProvider style={{ "--sidebar-width": "11.5rem" } as React.CSSProperties}>
@@ -46,8 +47,13 @@ const Layout = () => {
             </Card>
           </div>
         </div>
-        <div className="px-6 pt-4 pb-6">
-          <Outlet />
+        <div className="flex-1 px-6 pt-4 pb-6">
+          <Card
+            key={location.pathname}
+            className="min-h-full rounded-xl border-0! p-6 shadow-lg! animate-page-in"
+          >
+            <Outlet />
+          </Card>
         </div>
       </main>
     </SidebarProvider>
