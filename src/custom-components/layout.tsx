@@ -12,7 +12,7 @@ const MenuTrigger = () => {
   const { toggleSidebar } = useSidebar()
 
   return (
-    <Button variant="ghost" size="icon" aria-label="Toggle Sidebar" onClick={toggleSidebar}>
+    <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white" aria-label="Toggle Sidebar" onClick={toggleSidebar}>
       <MenuIcon />
     </Button>
   )
@@ -26,31 +26,29 @@ const Layout = () => {
     <SidebarProvider style={{ "--sidebar-width": "11.5rem" } as React.CSSProperties}>
       <AppSidebar className="border-none shadow-none" />
       <main className="flex h-svh w-full flex-col overflow-y-auto bg-background">
-        <div className="flex shrink-0 items-center justify-between gap-2 px-6 py-2">
+        <div className="relative z-0 flex w-full shrink-0 flex-row items-start justify-between gap-2 bg-gradient-to-br from-blue-900 to-blue-700 px-6 pt-5 pb-16 text-white shadow-sm">
           <div className="flex items-center gap-2">
             <MenuTrigger />
-            <PageBreadcrumb />
+            <PageBreadcrumb className="[&_a]:text-white/70 [&_a:hover]:text-white [&_svg]:text-white/50 [&_span]:text-white" />
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="icon"
-              className="bg-white"
+              className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white"
               aria-label="Toggle theme"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
               <SunIcon className="scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
               <MoonIcon className="absolute scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
             </Button>
-            <Card className="p-0">
-              <NavUser />
-            </Card>
+            <NavUser />
           </div>
         </div>
-        <div className="flex-1 px-6 pt-4 pb-6">
+        <div className="relative z-10 flex-1 px-6 pb-6 -mt-15">
           <Card
             key={location.pathname}
-            className="min-h-full rounded-xl border-0! p-6 shadow-lg! animate-page-in"
+            className="min-h-full w-full rounded-xl border-0! p-6 shadow-lg! animate-page-in"
           >
             <Outlet />
           </Card>

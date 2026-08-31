@@ -4,6 +4,7 @@ import { CalendarIcon } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Calendar } from "../../components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/popover"
+import { getStoredUser } from "@/lib/auth/auth"
 
 const DashboardDatePicker = () => {
   const [date, setDate] = useState<Date | undefined>(new Date(2025, 4, 14))
@@ -26,10 +27,15 @@ const DashboardDatePicker = () => {
 }
 
 const DashboardGreeting = () => {
+  const storedUser = getStoredUser()
+  const username = storedUser?.username ?? ""
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-col gap-1">
-        <h2 className="text-lg font-semibold">Good morning, Amina 👋</h2>
+        <h2 className="text-lg font-semibold">
+          Welcome back, <span className="font-bold text-primary">{username}</span>
+        </h2>
         <p className="text-sm text-muted-foreground">Here's what's happening with your loan portfolio today.</p>
       </div>
       <DashboardDatePicker />

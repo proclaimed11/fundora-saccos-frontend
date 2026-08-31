@@ -5,19 +5,17 @@ import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
 import { Spinner } from "../../components/ui/spinner";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { forgotPassword } from "@/api/auth/auth";
 
-interface ForgotPasswordPageProps {
-  onCodeSent?: (email: string) => void;
-}
-
-const ForgotPasswordPage = ({ onCodeSent }: ForgotPasswordPageProps) => {
+const ForgotPasswordPage = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!email) {
       setError("Enter your email to continue.");
@@ -25,11 +23,21 @@ const ForgotPasswordPage = ({ onCodeSent }: ForgotPasswordPageProps) => {
     }
     setError("");
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      const response = await forgotPassword(email);
+
+      if (!response.success) {
+        setError(response.message);
+        return;
+      }
+
       setSent(true);
-      onCodeSent?.(email);
-    }, 900);
+    } catch (err) {
+      setError("Unable to reach the server. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -53,9 +61,9 @@ const ForgotPasswordPage = ({ onCodeSent }: ForgotPasswordPageProps) => {
                     <p className="text-sm text-muted-foreground mb-4">
                     We've sent a reset code to <span className="text-foreground">{email}</span>
                     </p>
-                    <Link to="/reset-password">
-                    <Button className="w-full">Enter reset code</Button>
-                    </Link>
+                    <Button className="w-full" onClick={() => navigate("/reset-password", { state: { email } })}>
+                      Enter reset code
+                    </Button>
                 </div>
                 ) : (
               <form onSubmit={handleSubmit} noValidate>

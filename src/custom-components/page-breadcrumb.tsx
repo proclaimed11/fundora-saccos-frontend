@@ -20,7 +20,11 @@ function toLabel(segment: string) {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-const PageBreadcrumb = () => {
+type PageBreadcrumbProps = {
+  className?: string
+}
+
+const PageBreadcrumb = ({ className }: PageBreadcrumbProps) => {
   const location = useLocation()
   const segments = location.pathname.split("/").filter(Boolean)
 
@@ -33,7 +37,7 @@ const PageBreadcrumb = () => {
   }))
 
   return (
-    <Breadcrumb>
+    <Breadcrumb className={className}>
       <BreadcrumbList>
         {crumbs.map((crumb) => (
           <Fragment key={crumb.path}>

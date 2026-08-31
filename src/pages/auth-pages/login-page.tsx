@@ -8,31 +8,68 @@ import { Button } from "../../components/ui/button";
 import { Checkbox } from "../../components/ui/checkbox";
 import { Spinner } from "../../components/ui/spinner";
 import { Eye, EyeOff } from "lucide-react";
+import { login } from "@/api/auth/auth";
+import { saveSession } from "@/lib/auth/auth";
+import { toast } from "@/components/ui/toast";
 
 interface LoginPageProps {
   onLoginSuccess: () => void;
 }
 
 const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!email || !password) {
-      setError("Enter your email and password to continue.");
+    if (!username || !password) {
+      setError("Enter your username and password to continue.");
       return;
     }
     setError("");
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      const response = await login({ username, password });
+
+      if (!response.success) {
+        setError(response.message);
+        return;
+      }
+
+      if (!response.token) {
+        setError("This account requires additional verification, which isn't supported yet.");
+        return;
+      }
+
+      saveSession(response.token, {
+        userId: response.userId,
+        username: response.username,
+        role: response.role,
+      });
+
+      saveSession(response.token, {
+        userId: response.userId,
+        username: response.username,
+        role: response.role,
+      });
+
+      toast.add({
+        title: "Login successful",
+        description: `Welcome back, ${response.username}.`,
+        type: "success",
+      })
+
       onLoginSuccess();
-    }, 900);
+    } catch (err) {
+      setError("Unable to reach the server. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -52,15 +89,15 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} noValidate>
               <div className="mb-4">
-                <Label htmlFor="email" className="mb-1.5 block">
-                  Email
+                <Label htmlFor="username" className="mb-1.5 block">
+                  Username
                 </Label>
                 <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@company.com"
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="admin"
                 />
               </div>
 

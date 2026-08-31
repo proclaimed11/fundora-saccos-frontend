@@ -7,6 +7,8 @@ import OnboardingKycPage from "./pages/operations-pages/applicant-pages/applican
 import LoginPage from "./pages/auth-pages/login-page"
 import ForgotPasswordPage from "./pages/auth-pages/forgot-password-page"
 import ResetPasswordPage from "./pages/auth-pages/reset-password-page"
+import { isAuthenticated as checkIsAuthenticated } from "@/lib/auth/auth"
+import { Toaster } from "@/components/ui/toast"
 
 //Applicants pages
 import ApplicantAuditTrailTab from "./custom-components/applicant-components/applicant-audit-trail-tab"
@@ -36,11 +38,12 @@ import AccountProfilePage from "./pages/operations-pages/accounting-pages/chart-
 
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(checkIsAuthenticated())
 
   return (
     <>
       <TopLoadingBar />
+      <Toaster/>
       <Routes>
         <Route
           path="/login"

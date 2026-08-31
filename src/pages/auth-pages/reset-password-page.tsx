@@ -1,19 +1,18 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation} from "react-router-dom";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
 import { Spinner } from "../../components/ui/spinner";
 import { Eye, EyeOff } from "lucide-react";
+import { resetPassword } from "@/api/auth/auth";
 
-interface ResetPasswordPageProps {
-  email?: string;
-  onResetSuccess?: () => void;
-}
+const ResetPasswordPage = () => {
+  const location = useLocation();
+  const email = (location.state as { email?: string } | null)?.email ?? "";
 
-const ResetPasswordPage = ({ email, onResetSuccess }: ResetPasswordPageProps) => {
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -22,8 +21,12 @@ const ResetPasswordPage = ({ email, onResetSuccess }: ResetPasswordPageProps) =>
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!email) {
+      setError("Missing email — please restart the reset process from the beginning.");
+      return;
+    }
     if (!code || !newPassword || !confirmPassword) {
       setError("Fill in all fields to continue.");
       return;
@@ -38,11 +41,21 @@ const ResetPasswordPage = ({ email, onResetSuccess }: ResetPasswordPageProps) =>
     }
     setError("");
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      const response = await resetPassword({ email, code, newPassword });
+
+      if (!response.success) {
+        setError(response.message);
+        return;
+      }
+
       setSuccess(true);
-      onResetSuccess?.();
-    }, 900);
+    } catch (err) {
+      setError("Unable to reach the server. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
