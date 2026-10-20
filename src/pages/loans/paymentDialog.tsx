@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useState } from 'react'
 import dayjs from 'dayjs'
 import { Alert, Button, Modal, NumberInput, Select, SimpleGrid, Text, TextInput } from '@mantine/core'
@@ -160,7 +161,7 @@ export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubm
             <TextInput label="Received by" description="You, from your session" size="sm" readOnly value={CURRENT_USER} />
           </SimpleGrid>
 
-          <Alert color="blue" variant="light" icon={<i className="fa fa-info-circle" aria-hidden="true" />}>
+          <Alert color="blue" variant="light" icon={<AppIcon name="info" />}>
             <Text size="xs">
               The money goes to the oldest unpaid installment first. Inside each installment it pays the penalty, then
               the interest, then the principal. This only records the payment, no money is moved by this system.
@@ -238,7 +239,7 @@ export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubm
           )}
 
           {preview && remaining === 0 && (
-            <Alert color="green" variant="light" icon={<i className="fa fa-check-circle" aria-hidden="true" />}>
+            <Alert color="green" variant="light" icon={<AppIcon name="circle-check" />}>
               <Text size="xs">This clears every installment, so the loan will be closed.</Text>
             </Alert>
           )}
@@ -252,7 +253,7 @@ export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubm
         <Button
           size="xs"
           radius="xs"
-          leftSection={<i className="fa fa-check" aria-hidden="true" />}
+          leftSection={<AppIcon name="check" />}
           onClick={submit}
         >
           Record payment

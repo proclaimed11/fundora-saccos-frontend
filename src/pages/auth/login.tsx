@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useState, type FormEvent } from 'react'
 import { Button, PasswordInput, Text, TextInput } from '@mantine/core'
 import logo from '../../assets/logo.png'
@@ -48,7 +49,7 @@ export function Login({ onLogin }: LoginProps) {
             required
             value={email}
             onChange={(e) => setEmail(e.currentTarget.value)}
-            leftSection={<i className="fa fa-envelope-o" aria-hidden="true" />}
+            leftSection={<AppIcon name="mail" />}
           />
 
           <PasswordInput
@@ -58,7 +59,7 @@ export function Login({ onLogin }: LoginProps) {
             required
             value={password}
             onChange={(e) => setPassword(e.currentTarget.value)}
-            leftSection={<i className="fa fa-lock" aria-hidden="true" />}
+            leftSection={<AppIcon name="lock-keyhole" />}
           />
 
           {error && (

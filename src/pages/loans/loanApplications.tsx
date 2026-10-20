@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { Badge, Button } from '@mantine/core'
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from '../../components/layout/dashboardLayout'
@@ -18,11 +19,11 @@ const count = (test: (s: ApplicationStatus) => boolean) =>
 
 // here `color` is the icon color
 const stats = [
-  { label: 'Total Applications', value: applications.length, icon: 'fa-file-text-o', color: '#45bdfc' },
-  { label: 'Drafts', value: count((s) => s === 'DRAFT'), icon: 'fa-pencil-square-o', color: '#868e96' },
-  { label: 'In Review', value: count((s) => ['SUBMITTED', 'CREDIT_APPROVED', 'PENDING_APPROVAL'].includes(s)), icon: 'fa-hourglass-half', color: '#e08a1e' },
-  { label: 'Approved', value: count((s) => s !== 'REJECTED' && RANK[s] >= 3), icon: 'fa-check-circle-o', color: '#39d128' },
-  { label: 'Rejected', value: count((s) => s === 'REJECTED'), icon: 'fa-times-circle-o', color: '#ef4444' },
+  { label: 'Total Applications', value: applications.length, icon: 'file-text', color: '#45bdfc' },
+  { label: 'Drafts', value: count((s) => s === 'DRAFT'), icon: 'pen-line', color: '#868e96' },
+  { label: 'In Review', value: count((s) => ['SUBMITTED', 'CREDIT_APPROVED', 'PENDING_APPROVAL'].includes(s)), icon: 'hourglass', color: '#e08a1e' },
+  { label: 'Approved', value: count((s) => s !== 'REJECTED' && RANK[s] >= 3), icon: 'circle-check', color: '#39d128' },
+  { label: 'Rejected', value: count((s) => s === 'REJECTED'), icon: 'circle-x', color: '#ef4444' },
 ]
 
 const statusOptions = (Object.keys(STATUS) as ApplicationStatus[]).map((s) => ({
@@ -117,7 +118,7 @@ export function LoanApplications() {
         <Button
           size="xs"
           radius="xs"
-          leftSection={<i className="fa fa-plus" aria-hidden="true" />}
+          leftSection={<AppIcon name="plus" />}
           onClick={() => navigate('/loan-applications/new')}
         >
           New application

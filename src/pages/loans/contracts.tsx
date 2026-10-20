@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -29,11 +30,11 @@ type Stage = 'READY' | 'GENERATED' | 'SENT' | 'SIGNED' | 'LOAN'
 type DialogKind = 'generate' | 'review' | 'upload' | 'loan'
 
 const STAGES: { key: Stage; label: string; icon: string; color: string; badge: string }[] = [
-  { key: 'READY', label: 'Ready to generate', icon: 'fa-file-text-o', color: '#8e44ad', badge: 'green' },
-  { key: 'GENERATED', label: 'To be sent', icon: 'fa-envelope-o', color: '#45bdfc', badge: 'violet' },
-  { key: 'SENT', label: 'Awaiting signature', icon: 'fa-hourglass-half', color: '#e08a1e', badge: 'blue' },
-  { key: 'SIGNED', label: 'Signed', icon: 'fa-pencil-square-o', color: '#39d128', badge: 'teal' },
-  { key: 'LOAN', label: 'Loan created', icon: 'fa-briefcase', color: '#0077b5', badge: 'brand' },
+  { key: 'READY', label: 'Ready to generate', icon: 'file-text', color: '#8e44ad', badge: 'green' },
+  { key: 'GENERATED', label: 'To be sent', icon: 'mail', color: '#45bdfc', badge: 'violet' },
+  { key: 'SENT', label: 'Awaiting signature', icon: 'hourglass', color: '#e08a1e', badge: 'blue' },
+  { key: 'SIGNED', label: 'Signed', icon: 'pen-line', color: '#39d128', badge: 'teal' },
+  { key: 'LOAN', label: 'Loan created', icon: 'hand-coins', color: '#0077b5', badge: 'brand' },
 ]
 
 const STAGE_ORDER = STAGES.map((s) => s.key)
@@ -41,11 +42,11 @@ const STAGE = Object.fromEntries(STAGES.map((s) => [s.key, s])) as Record<Stage,
 
 // the single main action for each stage
 const NEXT: Record<Stage, { kind: DialogKind | null; label: string; icon: string; hint: string }> = {
-  READY: { kind: 'generate', label: 'Generate contract', icon: 'fa-file-text-o', hint: 'The application is approved. Generate the contract to continue.' },
-  GENERATED: { kind: 'review', label: 'Review and send', icon: 'fa-eye', hint: 'Review the generated contract, then send it to the borrower by email.' },
-  SENT: { kind: 'upload', label: 'Upload signed copy', icon: 'fa-upload', hint: 'Waiting for the borrower to sign and return the hard copy. Upload the scan when it arrives.' },
-  SIGNED: { kind: 'loan', label: 'Create loan', icon: 'fa-briefcase', hint: 'The signed copy is on file. Create the loan to move on to disbursement.' },
-  LOAN: { kind: null, label: 'View application', icon: 'fa-external-link', hint: 'The loan has been created and is waiting for disbursement. Disburse it to release the money.' },
+  READY: { kind: 'generate', label: 'Generate contract', icon: 'file-text', hint: 'The application is approved. Generate the contract to continue.' },
+  GENERATED: { kind: 'review', label: 'Review and send', icon: 'eye', hint: 'Review the generated contract, then send it to the borrower by email.' },
+  SENT: { kind: 'upload', label: 'Upload signed copy', icon: 'upload', hint: 'Waiting for the borrower to sign and return the hard copy. Upload the scan when it arrives.' },
+  SIGNED: { kind: 'loan', label: 'Create loan', icon: 'hand-coins', hint: 'The signed copy is on file. Create the loan to move on to disbursement.' },
+  LOAN: { kind: null, label: 'View application', icon: 'external-link', hint: 'The loan has been created and is waiting for disbursement. Disburse it to release the money.' },
 }
 
 function stageOf(a: LoanApplication): Stage | null {
@@ -209,7 +210,7 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
             size="xs"
             radius="xs"
             variant={next.kind ? 'filled' : 'default'}
-            leftSection={<i className={`fa ${next.icon}`} aria-hidden="true" />}
+            leftSection={<AppIcon name={next.icon} />}
             onClick={() => onAct(a)}
           >
             {next.label}
@@ -218,7 +219,7 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
             <Button
               size="xs"
               radius="xs"
-              leftSection={<i className="fa fa-money" aria-hidden="true" />}
+              leftSection={<AppIcon name="banknote" />}
               onClick={() => onDisburse(a)}
             >
               Disburse
@@ -255,7 +256,7 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
                           : 'bg-gray-100 text-gray-400'
                     }`}
                   >
-                    {done ? <i className="fa fa-check" aria-hidden="true" /> : i + 1}
+                    {done ? <AppIcon name="check" /> : i + 1}
                   </span>
                   {i < steps.length - 1 && (
                     <span className={`my-1 w-px flex-1 ${i < doneCount - 1 ? 'bg-brand' : 'bg-gray-200'}`} />
@@ -289,7 +290,7 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
           <SectionTitle>Documents</SectionTitle>
           <ul className="mt-2 space-y-2">
             <li className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
-              <i className="fa fa-file-pdf-o text-xl text-gray-400" aria-hidden="true" />
+              <AppIcon name="file-text" className="text-xl text-gray-400"  size={20} />
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium text-gray-800">Loan contract</div>
                 <div className="truncate text-xs text-gray-500">{contract.contractNo}.pdf</div>
@@ -298,18 +299,18 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
                 size="compact-xs"
                 variant="subtle"
                 color="brand"
-                leftSection={<i className="fa fa-eye" aria-hidden="true" />}
+                leftSection={<AppIcon name="eye" />}
                 onClick={() => onPreview(a)}
               >
                 Preview
               </Button>
-              <Button size="compact-xs" variant="subtle" color="brand" leftSection={<i className="fa fa-print" aria-hidden="true" />}>
+              <Button size="compact-xs" variant="subtle" color="brand" leftSection={<AppIcon name="printer" />}>
                 Print
               </Button>
             </li>
             {contract.signed ? (
               <li className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
-                <i className="fa fa-file-image-o text-xl text-gray-400" aria-hidden="true" />
+                <AppIcon name="file-image" className="text-xl text-gray-400"  size={20} />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium text-gray-800">Signed copy</div>
                   <div className="truncate text-xs text-gray-500">{contract.contractNo}-signed.pdf</div>
@@ -320,7 +321,7 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
               </li>
             ) : (
               <li className="flex items-center gap-3 rounded-md border border-dashed border-gray-200 px-3 py-2.5">
-                <i className="fa fa-file-image-o text-xl text-gray-300" aria-hidden="true" />
+                <AppIcon name="file-image" className="text-xl text-gray-300"  size={20} />
                 <div className="min-w-0 flex-1 text-xs text-gray-500">Signed copy not uploaded yet</div>
               </li>
             )}
@@ -334,7 +335,7 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
                 size="compact-xs"
                 variant={copied ? 'light' : 'default'}
                 color={copied ? 'green' : undefined}
-                leftSection={<i className={`fa ${copied ? 'fa-check' : 'fa-clipboard'}`} aria-hidden="true" />}
+                leftSection={<AppIcon name={copied ? 'check' : 'clipboard'} />}
                 onClick={copy}
               >
                 {copied ? 'Copied' : 'Copy'}
@@ -349,7 +350,7 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
         size="xs"
         radius="xs"
         variant="default"
-        leftSection={<i className="fa fa-external-link" aria-hidden="true" />}
+        leftSection={<AppIcon name="external-link" />}
         onClick={() => onOpenApplication(a)}
       >
         View full application
@@ -542,7 +543,7 @@ const disburse = (a: LoanApplication) =>
         return (
           <div>
             <div className={`whitespace-nowrap text-sm ${n.late ? 'font-medium text-amber-600' : 'text-gray-800'}`}>
-              {n.late && <i className="fa fa-exclamation-triangle mr-1" aria-hidden="true" />}
+              {n.late && <AppIcon name="triangle-alert" className="mr-1" />}
               {n.text}
             </div>
             <div className="whitespace-nowrap text-xs text-gray-500">{n.sub}</div>
@@ -572,7 +573,7 @@ const disburse = (a: LoanApplication) =>
                   size="sm"
                   aria-label={`Actions for ${a.applicationNo}`}
                 >
-                  <i className="fa fa-ellipsis-v" aria-hidden="true" />
+                  <AppIcon name="ellipsis-vertical" />
                 </ActionIcon>
               </Menu.Target>
 
@@ -580,7 +581,7 @@ const disburse = (a: LoanApplication) =>
                 {/* the main action for this stage */}
                 <Menu.Item
                   fw={500}
-                  leftSection={<i className={`fa ${next.icon}`} aria-hidden="true" />}
+                  leftSection={<AppIcon name={next.icon} />}
                   onClick={() => act(a)}
                 >
                   {next.label}
@@ -590,7 +591,7 @@ const disburse = (a: LoanApplication) =>
                 {stage === 'LOAN' && (
                   <Menu.Item
                     fw={500}
-                    leftSection={<i className="fa fa-money" aria-hidden="true" />}
+                    leftSection={<AppIcon name="banknote" />}
                     onClick={() => disburse(a)}
                   >
                     Disburse
@@ -600,7 +601,7 @@ const disburse = (a: LoanApplication) =>
                 <Menu.Divider />
 
                 <Menu.Item
-                  leftSection={<i className="fa fa-eye" aria-hidden="true" />}
+                  leftSection={<AppIcon name="eye" />}
                   onClick={() => open(a)}
                 >
                   View details
@@ -609,7 +610,7 @@ const disburse = (a: LoanApplication) =>
                 {/* a contract exists from the "To be sent" stage onward */}
                 {stage !== 'READY' && (
                   <Menu.Item
-                    leftSection={<i className="fa fa-file-pdf-o" aria-hidden="true" />}
+                    leftSection={<AppIcon name="file-text" />}
                     onClick={() => setDialog({ kind: 'review', id: a.id })}
                   >
                     Preview contract
@@ -619,7 +620,7 @@ const disburse = (a: LoanApplication) =>
                 {/* at the Loan created stage the main action already opens the application */}
                 {next.kind && (
                   <Menu.Item
-                    leftSection={<i className="fa fa-external-link" aria-hidden="true" />}
+                    leftSection={<AppIcon name="external-link" />}
                     onClick={() => navigate(`/loan-applications/${a.id}`)}
                   >
                     View application
@@ -647,7 +648,7 @@ const disburse = (a: LoanApplication) =>
             variant="light"
             withCloseButton
             onClose={() => setNotice(null)}
-            icon={<i className="fa fa-check-circle" aria-hidden="true" />}
+            icon={<AppIcon name="circle-check" />}
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Text size="sm">{notice.text}</Text>
@@ -669,7 +670,7 @@ const disburse = (a: LoanApplication) =>
 
         {/* contracts waiting too long for a signature */}
         {lateSent.length > 0 && (
-          <Alert color="yellow" variant="light" icon={<i className="fa fa-exclamation-triangle" aria-hidden="true" />}>
+          <Alert color="yellow" variant="light" icon={<AppIcon name="triangle-alert" />}>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Text size="sm">
                 {lateSent.length} {lateSent.length === 1 ? 'contract has' : 'contracts have'} been waiting for a

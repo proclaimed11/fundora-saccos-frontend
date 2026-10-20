@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -56,11 +57,11 @@ export function LoansPage() {
 
   // here `color` is the icon color
   const stats = [
-    { label: 'Active Loans', value: active.length, icon: 'fa-briefcase', color: '#45bdfc' },
-    { label: 'Overdue', value: overdue.length, icon: 'fa-clock-o', color: '#e08a1e' },
-    { label: 'Non-performing', value: npl.length, icon: 'fa-exclamation-triangle', color: '#ef4444' },
-    { label: 'Total Outstanding', value: formatTzs(outstanding), miniLabel: 'TZS', icon: 'fa-money', color: '#8e44ad' },
-    { label: 'Collected This Month', value: formatTzs(collected), miniLabel: 'TZS', icon: 'fa-check-circle-o', color: '#39d128' },
+    { label: 'Active Loans', value: active.length, icon: 'hand-coins', color: '#45bdfc' },
+    { label: 'Overdue', value: overdue.length, icon: 'clock', color: '#e08a1e' },
+    { label: 'Non-performing', value: npl.length, icon: 'triangle-alert', color: '#ef4444' },
+    { label: 'Total Outstanding', value: formatTzs(outstanding), miniLabel: 'TZS', icon: 'banknote', color: '#8e44ad' },
+    { label: 'Collected This Month', value: formatTzs(collected), miniLabel: 'TZS', icon: 'circle-check', color: '#39d128' },
   ]
 
   const columns: CustomTableColumn<LoanView>[] = [
@@ -111,7 +112,7 @@ export function LoansPage() {
           return (
             <div>
               <div className="whitespace-nowrap text-sm font-medium text-red-600">
-                <i className="fa fa-exclamation-triangle mr-1" aria-hidden="true" />
+                <AppIcon name="triangle-alert" className="mr-1" />
                 {r.overdueDays} days overdue
               </div>
               <div className="whitespace-nowrap text-xs text-gray-500">{formatTzs(r.overdueAmount)} past due</div>
@@ -170,7 +171,7 @@ export function LoansPage() {
           <Menu position="bottom-end" shadow="md" width={220}>
             <Menu.Target>
               <ActionIcon variant="subtle" color="gray" size="sm" aria-label={`Actions for ${r.loanNo}`}>
-                <i className="fa fa-ellipsis-v" aria-hidden="true" />
+                <AppIcon name="ellipsis-vertical" />
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
@@ -178,7 +179,7 @@ export function LoansPage() {
                 <>
                   <Menu.Item
                     fw={500}
-                    leftSection={<i className="fa fa-money" aria-hidden="true" />}
+                    leftSection={<AppIcon name="banknote" />}
                     onClick={() => navigate(`/loans/${r.id}?pay=1`)}
                   >
                     Record payment
@@ -186,18 +187,18 @@ export function LoansPage() {
                   <Menu.Divider />
                 </>
               )}
-              <Menu.Item leftSection={<i className="fa fa-eye" aria-hidden="true" />} onClick={() => navigate(`/loans/${r.id}`)}>
+              <Menu.Item leftSection={<AppIcon name="eye" />} onClick={() => navigate(`/loans/${r.id}`)}>
                 View loan
               </Menu.Item>
               <Menu.Item
-                leftSection={<i className="fa fa-user-o" aria-hidden="true" />}
+                leftSection={<AppIcon name="user-round" />}
                 onClick={() => navigate(`/applicants/${r.applicantId}`)}
               >
                 View borrower
               </Menu.Item>
               {r.applicationId && (
                 <Menu.Item
-                  leftSection={<i className="fa fa-file-text-o" aria-hidden="true" />}
+                  leftSection={<AppIcon name="file-text" />}
                   onClick={() => navigate(`/loan-applications/${r.applicationId}`)}
                 >
                   View application

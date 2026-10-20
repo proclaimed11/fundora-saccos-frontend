@@ -1,9 +1,10 @@
+import { AppIcon } from './appIcon'
 import { Skeleton } from '@mantine/core'
 
 type StatWidgetProps = {
   value: string | number
   label: string
-  /** Font Awesome 4.7 class, e.g. 'fa-users' */
+  /** Lucide icon name, e.g. 'users' */
   icon: string
   /** icon color, any CSS color */
   color: string
@@ -57,7 +58,7 @@ export function StatWidget({
               {formattedLabel}
             </div>
             <div
-              className="truncate text-xl font-semibold leading-tight text-gray-800"
+              className="truncate text-lg font-semibold leading-tight text-gray-800"
               style={valueColor ? { color: valueColor } : undefined}
             >
               {hasCustomCurrencyLabel ? (
@@ -74,15 +75,10 @@ export function StatWidget({
 
           <span
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-            style={{
-              backgroundImage: `linear-gradient(135deg, color-mix(in srgb, ${color} 55%, white), color-mix(in srgb, ${color} 65%, black))`,
-            }}
+            style={{ backgroundColor: color }}
             aria-hidden="true"
           >
-            <i
-              className={`fa ${icon} text-center leading-none text-white`}
-              style={{ fontSize: 18 }}
-            />
+            <AppIcon name={icon} className="text-center leading-none text-white" size={26} strokeWidth={1.25} />
           </span>
         </>
       )}

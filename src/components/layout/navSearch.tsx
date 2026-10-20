@@ -1,3 +1,4 @@
+import { AppIcon } from '../appIcon'
 import { ActionIcon, Kbd, Text, UnstyledButton } from '@mantine/core'
 import {
   Spotlight,
@@ -35,7 +36,7 @@ export function NavSearch({ onNavigate }: { onNavigate: (key: string) => void })
       id: item.key,
       label: item.label,
       description: section.label, // also makes typing "finance" find the finance pages
-      leftSection: <i className={`fa ${item.icon} w-4 text-center`} aria-hidden="true" />,
+      leftSection: <AppIcon name={item.icon} className="w-4 text-center" />,
       onClick: () => onNavigate(item.key),
     })),
   }))

@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -30,9 +31,9 @@ export function KycReview() {
     }))
 
   const stats = [
-    { label: 'Awaiting review', value: rows.length, icon: 'fa-id-card-o', color: '#e08a1e' },
-    { label: 'Returning applicants', value: rows.filter((r) => r.isReturning).length, icon: 'fa-refresh', color: '#45bdfc' },
-    { label: 'Waiting over 7 days', value: rows.filter((r) => r.waiting > 7).length, icon: 'fa-clock-o', color: '#ef4444' },
+    { label: 'Awaiting review', value: rows.length, icon: 'contact-round', color: '#e08a1e' },
+    { label: 'Returning applicants', value: rows.filter((r) => r.isReturning).length, icon: 'refresh-cw', color: '#45bdfc' },
+    { label: 'Waiting over 7 days', value: rows.filter((r) => r.waiting > 7).length, icon: 'clock', color: '#ef4444' },
   ]
 
   const columns: CustomTableColumn<Row>[] = [
@@ -54,11 +55,11 @@ export function KycReview() {
       render: () => (
         <div className="flex items-center gap-3 text-xs text-gray-600">
           <span className="whitespace-nowrap">
-            <i className="fa fa-file-pdf-o mr-1 text-gray-400" aria-hidden="true" />
+            <AppIcon name="file-text" className="mr-1 text-gray-400" />
             NIDA
           </span>
           <span className="whitespace-nowrap">
-            <i className="fa fa-file-image-o mr-1 text-gray-400" aria-hidden="true" />
+            <AppIcon name="file-image" className="mr-1 text-gray-400" />
             ID scan
           </span>
         </div>
@@ -95,7 +96,7 @@ export function KycReview() {
         <Button
           size="compact-xs"
           radius="xs"
-          leftSection={<i className="fa fa-id-card-o" aria-hidden="true" />}
+          leftSection={<AppIcon name="contact-round" />}
           onClick={(e) => {
             e.stopPropagation() // don't also open the profile
             setReviewing(a)

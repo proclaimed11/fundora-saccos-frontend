@@ -1,3 +1,4 @@
+import { AppIcon } from '../appIcon'
 import { useState } from 'react'
 import { Button } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
@@ -39,7 +40,7 @@ export function DateRangeFilter({ onApply }: DateRangeFilterProps) {
       />
       <Button
         size="xs"
-        leftSection={<i className="fa fa-filter" aria-hidden="true" />}
+        leftSection={<AppIcon name="filter" />}
         onClick={() => onApply({ from, to })}
       >
         Filter

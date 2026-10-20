@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -345,7 +346,7 @@ function CardShell({ title, verified, onRemove, children }: CardShellProps) {
             size="compact-xs"
             variant="subtle"
             color="red"
-            leftSection={<i className="fa fa-trash-o" aria-hidden="true" />}
+            leftSection={<AppIcon name="trash" />}
             onClick={onRemove}
           >
             Remove
@@ -489,7 +490,7 @@ function CollateralCard({ item, index, errors, onChange, onRemove }: CollateralC
           size="sm"
           accept="application/pdf,image/*"
           clearable
-          leftSection={<i className="fa fa-upload" aria-hidden="true" />}
+          leftSection={<AppIcon name="upload" />}
           value={item.document}
           onChange={(f) => onChange({ document: f })}
           error={errors?.document}
@@ -792,7 +793,7 @@ export function NewLoanApplicationPage() {
           size="xs"
           radius="xs"
           color="red"
-          leftSection={<i className="fa fa-times" aria-hidden="true" />}
+          leftSection={<AppIcon name="x" />}
           onClick={goBack}
         >
           Cancel Application
@@ -1000,7 +1001,7 @@ export function NewLoanApplicationPage() {
                   type="button"
                   variant="default"
                   disabled={values.guarantors.length >= MAX_GUARANTORS}
-                  leftSection={<i className="fa fa-plus" aria-hidden="true" />}
+                  leftSection={<AppIcon name="plus" />}
                   onClick={addGuarantor}
                 >
                   Add guarantor
@@ -1035,7 +1036,7 @@ export function NewLoanApplicationPage() {
                 <Button
                   type="button"
                   variant="default"
-                  leftSection={<i className="fa fa-plus" aria-hidden="true" />}
+                  leftSection={<AppIcon name="plus" />}
                   onClick={addCollateral}
                 >
                   Add asset
@@ -1054,7 +1055,7 @@ export function NewLoanApplicationPage() {
                 <Alert
                   color="yellow"
                   variant="light"
-                  icon={<i className="fa fa-exclamation-triangle" aria-hidden="true" />}
+                  icon={<AppIcon name="triangle-alert" />}
                 >
                   <Text size="sm">
                     Verify every one of the {blockers.join(' and ')} first. The credit assessment can only run
@@ -1133,7 +1134,7 @@ export function NewLoanApplicationPage() {
                   color="green"
                   variant={result ? 'default' : 'filled'}
                   disabled={!canRun}
-                  leftSection={<i className="fa fa-calculator" aria-hidden="true" />}
+                  leftSection={<AppIcon name="calculator" />}
                   onClick={runAssessment}
                 >
                   {result ? 'Run again' : 'Run assessment'}
@@ -1151,10 +1152,7 @@ export function NewLoanApplicationPage() {
                   variant="light"
                   title={result.decision === 'APPROVE' ? 'Approved' : 'Denied'}
                   icon={
-                    <i
-                      className={`fa ${result.decision === 'APPROVE' ? 'fa-check-circle' : 'fa-times-circle'}`}
-                      aria-hidden="true"
-                    />
+                    <AppIcon name={result.decision === 'APPROVE' ? 'circle-check' : 'circle-x'} />
                   }
                 >
                   <Text size="sm">{result.reason}</Text>
@@ -1270,7 +1268,7 @@ export function NewLoanApplicationPage() {
                 <FlowList steps={afterSubmit()} />
               </div>
 
-              <Alert color="blue" variant="light" icon={<i className="fa fa-info-circle" aria-hidden="true" />}>
+              <Alert color="blue" variant="light" icon={<AppIcon name="info" />}>
                 <Text size="sm">
                   Once submitted, the application is locked and cannot be edited. The estimate above is based on the
                   requested terms. The real repayment schedule is created when the loan is disbursed.
@@ -1287,10 +1285,7 @@ export function NewLoanApplicationPage() {
                 variant="light"
                 title={outcome === 'REJECTED' ? 'Application rejected' : 'Application submitted'}
                 icon={
-                  <i
-                    className={`fa ${outcome === 'REJECTED' ? 'fa-times-circle' : 'fa-check-circle'}`}
-                    aria-hidden="true"
-                  />
+                  <AppIcon name={outcome === 'REJECTED' ? 'circle-x' : 'circle-check'} />
                 }
               >
                 <Group gap="xs">
@@ -1327,7 +1322,7 @@ export function NewLoanApplicationPage() {
                 <Button
                   type="button"
                   variant="default"
-                  leftSection={<i className="fa fa-arrow-left" aria-hidden="true" />}
+                  leftSection={<AppIcon name="arrow-left" />}
                   onClick={() => setActive(active - 1)}
                 >
                   Back

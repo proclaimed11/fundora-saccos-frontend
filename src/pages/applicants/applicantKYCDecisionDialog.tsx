@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useState } from 'react'
 import { Alert, Badge, Button, Modal, Text, Textarea } from '@mantine/core'
 import { STATUS, nidaFor, type Applicant } from './applicantsData'
@@ -14,8 +15,8 @@ type KycDecisionDialogProps = {
 
 // SAMPLE ONLY: real files come from the applicant's KYC documents
 const DOCUMENTS = [
-  { name: 'NIDA document', file: 'nida-document.pdf', icon: 'fa-file-pdf-o' },
-  { name: 'ID scan', file: 'id-scan.jpg', icon: 'fa-file-image-o' },
+  { name: 'NIDA document', file: 'nida-document.pdf', icon: 'file-text' },
+  { name: 'ID scan', file: 'id-scan.jpg', icon: 'file-image' },
 ]
 
 export function KycDecisionDialog({ applicant, onClose, onDecided }: KycDecisionDialogProps) {
@@ -108,7 +109,7 @@ export function KycDecisionDialog({ applicant, onClose, onDecided }: KycDecision
               /* step 1: review */
               <>
                 {applicant.isReturning && (
-                  <Alert color="blue" variant="light" icon={<i className="fa fa-refresh" aria-hidden="true" />}>
+                  <Alert color="blue" variant="light" icon={<AppIcon name="refresh-cw" />}>
                     <Text size="sm">
                       Returning applicant. A valid KYC from the last 12 months can let them skip full review.
                     </Text>
@@ -125,7 +126,7 @@ export function KycDecisionDialog({ applicant, onClose, onDecided }: KycDecision
                         key={d.name}
                         className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2"
                       >
-                        <i className={`fa ${d.icon} text-xl text-gray-400`} aria-hidden="true" />
+                        <AppIcon name={d.icon} className="text-xl text-gray-400"  size={20} />
                         <div className="min-w-0 flex-1">
                           <div className="text-sm font-medium text-gray-800">{d.name}</div>
                           <div className="truncate text-xs text-gray-500">{d.file}</div>
@@ -188,7 +189,7 @@ export function KycDecisionDialog({ applicant, onClose, onDecided }: KycDecision
       {/* document preview, a placeholder until real files are connected */}
       <Modal opened={preview !== null} onClose={() => setPreview(null)} title={preview ?? ''} size="lg" centered>
         <div className="flex h-72 flex-col items-center justify-center gap-2 rounded-md bg-gray-50 text-center">
-          <i className="fa fa-file-o text-4xl text-gray-300" aria-hidden="true" />
+          <AppIcon name="file" className="text-4xl text-gray-300"  size={36} />
           <Text size="sm" c="dimmed">
             The document preview appears here once files are connected.
           </Text>

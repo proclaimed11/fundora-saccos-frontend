@@ -1,3 +1,4 @@
+import { AppIcon } from '../appIcon'
 import { ActionIcon } from '@mantine/core'
 import logo from '../../assets/logo.png'
 import { NavSearch } from './navSearch'
@@ -9,7 +10,7 @@ type HeaderProps = {
   onNavigate: (key: string) => void
 }
 
-// white icon buttons on the green bar
+// white icon buttons contrast clearly against the green bar
 const ICON_BTN = 'text-white hover:bg-white/15'
 
 export function Header({ collapsed, onMenuClick, onNavigate }: HeaderProps) {
@@ -21,7 +22,6 @@ export function Header({ collapsed, onMenuClick, onNavigate }: HeaderProps) {
           collapsed ? 'lg:w-14 lg:justify-center lg:px-0' : 'lg:w-56'
         }`}
       >
-        {/* brightness-0 invert turns the logo into a plain white version, remove both if yours is already white */}
         <img
           src={logo}
           alt="Company logo"
@@ -38,7 +38,7 @@ export function Header({ collapsed, onMenuClick, onNavigate }: HeaderProps) {
         aria-label="Toggle sidebar"
         onClick={onMenuClick}
       >
-        <i className="fa fa-bars" aria-hidden="true" />
+        <AppIcon name="menu" />
       </ActionIcon>
 
       {/* search: left-aligned box on wide screens, an icon at the right on small ones */}
@@ -49,11 +49,11 @@ export function Header({ collapsed, onMenuClick, onNavigate }: HeaderProps) {
       {/* right side */}
       <div className="flex shrink-0 items-center gap-1 px-3">
         <ActionIcon variant="subtle" size="lg" className={ICON_BTN} aria-label="Messages">
-          <i className="fa fa-envelope-o" aria-hidden="true" />
+          <AppIcon name="mail" />
         </ActionIcon>
 
         <ActionIcon variant="subtle" size="lg" className={`relative ${ICON_BTN}`} aria-label="Notifications">
-          <i className="fa fa-bell-o" aria-hidden="true" />
+          <AppIcon name="bell" />
           {/* SAMPLE ONLY: show this dot when there are unread notifications */}
           <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-orange-400 ring-2 ring-brand" />
         </ActionIcon>

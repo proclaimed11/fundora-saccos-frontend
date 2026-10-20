@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useState, type ReactNode } from 'react'
 import { Alert, Button, Checkbox, Modal, Text } from '@mantine/core'
 import dayjs from 'dayjs'
@@ -140,7 +141,7 @@ export function ContractReviewDialog({ opened, application: a, canSend, onClose,
 
           {canSend ? (
             <>
-              <Alert color="blue" variant="light" icon={<i className="fa fa-info-circle" aria-hidden="true" />}>
+              <Alert color="blue" variant="light" icon={<AppIcon name="info" />}>
                 <Text size="xs">
                   The borrower gets an email with a link to print the contract. They sign it and return the hard copy,
                   then you upload the signed scan.
@@ -154,7 +155,7 @@ export function ContractReviewDialog({ opened, application: a, canSend, onClose,
             </>
           ) : (
             contract && (
-              <Alert color="gray" variant="light" icon={<i className="fa fa-lock" aria-hidden="true" />}>
+              <Alert color="gray" variant="light" icon={<AppIcon name="lock-keyhole" />}>
                 <Text size="xs">
                   {contract.status === 'SIGNED'
                     ? `Signed${contract.signed ? ` on ${dayjs(contract.signed).format('MMM D, YYYY')}` : ''}. This copy is read-only.`
@@ -171,7 +172,7 @@ export function ContractReviewDialog({ opened, application: a, canSend, onClose,
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 pt-4">
-        <Button size="xs" radius="xs" variant="default" leftSection={<i className="fa fa-print" aria-hidden="true" />}>
+        <Button size="xs" radius="xs" variant="default" leftSection={<AppIcon name="printer" />}>
           Print
         </Button>
         <div className="flex gap-2">
@@ -183,7 +184,7 @@ export function ContractReviewDialog({ opened, application: a, canSend, onClose,
               size="xs"
               radius="xs"
               disabled={!reviewed}
-              leftSection={<i className="fa fa-paper-plane-o" aria-hidden="true" />}
+              leftSection={<AppIcon name="send" />}
               onClick={send}
             >
               Send to borrower

@@ -1,3 +1,4 @@
+import { AppIcon } from '../appIcon'
 import type { CSSProperties, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Text } from '@mantine/core'
@@ -37,13 +38,13 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions }: PageHeader
                 const isLast = i === breadcrumbs.length - 1
                 return (
                   <li key={`${crumb.label}-${i}`} className="flex items-center gap-1.5">
-                    {i > 0 && <i className="fa fa-angle-right text-white/50" aria-hidden="true" />}
+                    {i > 0 && <AppIcon name="chevron-right" className="text-white/50" />}
                     {crumb.to && !isLast ? (
                       <Link
                         to={crumb.to}
-                        className="text-white/80 no-underline transition-colors hover:text-white"
+                        className="inline-flex items-center text-white/80 no-underline transition-colors hover:text-white"
                       >
-                        {i === 0 && <i className="fa fa-home mr-1" aria-hidden="true" />}
+                        {i === 0 && <AppIcon name="home" className="mr-1 block shrink-0" size={14} />}
                         {crumb.label}
                       </Link>
                     ) : (

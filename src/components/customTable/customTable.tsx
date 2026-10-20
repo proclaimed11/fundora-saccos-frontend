@@ -1,3 +1,4 @@
+import { AppIcon } from '../appIcon'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   ActionIcon,
@@ -303,7 +304,7 @@ function FolderOpenIcon() {
   )
 }
 
-// header title with a Font Awesome filter button that opens a popover
+// header title with a Lucide filter button that opens a popover
 function FilterTitle({
   label,
   active,
@@ -330,7 +331,7 @@ function FilterTitle({
               setOpened((o) => !o)
             }}
           >
-            <i className="fa fa-filter" aria-hidden="true" style={{ fontSize: 10 }} />
+            <AppIcon name="filter" size={10} />
           </ActionIcon>
         </Popover.Target>
         <Popover.Dropdown p="sm" onClick={(e) => e.stopPropagation()}>
@@ -803,8 +804,8 @@ export function CustomTable<T extends object>({
                     size="xs"
                     variant="default"
                     disabled={records.length === 0}
-                    leftSection={<i className="fa fa-download" aria-hidden="true" />}
-                    rightSection={<i className="fa fa-caret-down" aria-hidden="true" />}
+                    leftSection={<AppIcon name="download" />}
+                    rightSection={<AppIcon name="chevron-down" />}
                   >
                     Export
                   </Button>
@@ -813,7 +814,7 @@ export function CustomTable<T extends object>({
                   <Menu.Label>Export as CSV</Menu.Label>
                   {selectCheckbox && selectedRecords.length > 0 && (
                     <Menu.Item
-                      leftSection={<i className="fa fa-check-square-o" aria-hidden="true" />}
+                      leftSection={<AppIcon name="square-check" />}
                       onClick={() =>
                         downloadCsv(selectedRecords, columns, `${exportFileName}-selected-${stamp}.csv`)
                       }
@@ -822,14 +823,14 @@ export function CustomTable<T extends object>({
                     </Menu.Item>
                   )}
                   <Menu.Item
-                    leftSection={<i className="fa fa-table" aria-hidden="true" />}
+                    leftSection={<AppIcon name="table" />}
                     onClick={() => downloadCsv(records, columns, `${exportFileName}-${stamp}.csv`)}
                   >
                     All matching rows ({records.length})
                   </Menu.Item>
                   {pagination && (
                     <Menu.Item
-                      leftSection={<i className="fa fa-file-o" aria-hidden="true" />}
+                      leftSection={<AppIcon name="file" />}
                       onClick={() =>
                         downloadCsv(pageRecords, columns, `${exportFileName}-page-${page}-${stamp}.csv`)
                       }
@@ -850,7 +851,7 @@ export function CustomTable<T extends object>({
                   disabled={printTargets.length === 0}
                   onClick={() => printTable(printTargets, columns, printTitle, dateFormat)}
                 >
-                  <i className="fa fa-print" aria-hidden="true" />
+                  <AppIcon name="printer" />
                 </ActionIcon>
               </Tooltip>
             )}
@@ -887,7 +888,7 @@ export function CustomTable<T extends object>({
               <Button
                 size="compact-xs"
                 color="red"
-                leftSection={<i className="fa fa-trash" aria-hidden="true" />}
+                leftSection={<AppIcon name="trash-2" />}
                 onClick={() => (confirmDelete ? setConfirmOpen(true) : runDelete())}
               >
                 Delete selected ({selectedRecords.length})

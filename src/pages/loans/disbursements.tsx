@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -126,7 +127,7 @@ function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication 
             <Button
               size="xs"
               radius="xs"
-              leftSection={<i className="fa fa-money" aria-hidden="true" />}
+              leftSection={<AppIcon name="banknote" />}
               onClick={() => onDisburse(r)}
             >
               Record disbursement
@@ -135,7 +136,7 @@ function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication 
         </div>
       ) : (
         record?.glStatus === 'PENDING' && (
-          <Alert color="orange" variant="light" icon={<i className="fa fa-exclamation-triangle" aria-hidden="true" />}>
+          <Alert color="orange" variant="light" icon={<AppIcon name="triangle-alert" />}>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Text size="sm">The loan is disbursed, but the ledger entry has not been posted yet.</Text>
               <Button size="compact-xs" radius="xs" onClick={() => onPostGl(r)}>
@@ -183,7 +184,7 @@ function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication 
             <ul className="mt-2 space-y-2">
               {record.proofName ? (
                 <li className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
-                  <i className="fa fa-file-pdf-o text-xl text-gray-400" aria-hidden="true" />
+                  <AppIcon name="file-text" className="text-xl text-gray-400"  size={20} />
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-gray-800">Proof of payment</div>
                     <div className="truncate text-xs text-gray-500">{record.proofName}</div>
@@ -198,13 +199,13 @@ function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication 
                 </li>
               )}
               <li className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
-                <i className="fa fa-file-text-o text-xl text-gray-400" aria-hidden="true" />
+                <AppIcon name="file-text" className="text-xl text-gray-400"  size={20} />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium text-gray-800">Disbursement voucher</div>
                   <div className="truncate text-xs text-gray-500">{record.reference || r.applicationNo}-voucher.pdf</div>
                 </div>
                 {/* inactive for now: no click handler until the voucher is built */}
-                <Button size="compact-xs" variant="subtle" color="brand" leftSection={<i className="fa fa-print" aria-hidden="true" />}>
+                <Button size="compact-xs" variant="subtle" color="brand" leftSection={<AppIcon name="printer" />}>
                   Print
                 </Button>
               </li>
@@ -225,7 +226,7 @@ function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication 
         size="xs"
         radius="xs"
         variant="default"
-        leftSection={<i className="fa fa-external-link" aria-hidden="true" />}
+        leftSection={<AppIcon name="external-link" />}
         onClick={() => onOpenApplication(r)}
       >
         View full application
@@ -295,11 +296,11 @@ export function DisbursementsPage() {
 
   // here `color` is the icon color
   const stats = [
-    { label: 'Pending Disbursement', value: pending.length, icon: 'fa-hourglass-half', color: '#e08a1e' },
-    { label: 'Disbursed', value: disbursed.length, icon: 'fa-money', color: '#39d128' },
-    { label: 'Recorded Today', value: todayRows.length, icon: 'fa-calendar-check-o', color: '#0077b5' },
-    { label: 'Ledger Posting Pending', value: glPending.length, icon: 'fa-exchange', color: '#8e44ad' },
-    { label: `Waiting Over ${LATE_AFTER_DAYS} Days`, value: late.length, icon: 'fa-clock-o', color: '#ef4444' },
+    { label: 'Pending Disbursement', value: pending.length, icon: 'hourglass', color: '#e08a1e' },
+    { label: 'Disbursed', value: disbursed.length, icon: 'banknote', color: '#39d128' },
+    { label: 'Recorded Today', value: todayRows.length, icon: 'calendar-check', color: '#0077b5' },
+    { label: 'Ledger Posting Pending', value: glPending.length, icon: 'arrow-left-right', color: '#8e44ad' },
+    { label: `Waiting Over ${LATE_AFTER_DAYS} Days`, value: late.length, icon: 'clock', color: '#ef4444' },
   ]
 
   // /loan-disbursements?view=1 opens the details drawer for application 1
@@ -436,7 +437,7 @@ export function DisbursementsPage() {
         return (
           <div>
             <div className={`whitespace-nowrap text-sm ${isLate ? 'font-medium text-amber-600' : 'text-gray-800'}`}>
-              {isLate && <i className="fa fa-exclamation-triangle mr-1" aria-hidden="true" />}
+              {isLate && <AppIcon name="triangle-alert" className="mr-1" />}
               {r.waiting <= 0 ? 'Created today' : `Waiting ${r.waiting} days`}
             </div>
             <div className="whitespace-nowrap text-xs text-gray-500">Loan created</div>
@@ -463,7 +464,7 @@ export function DisbursementsPage() {
                 size="sm"
                 aria-label={`Actions for ${r.applicationNo}`}
             >
-                <i className="fa fa-ellipsis-v" aria-hidden="true" />
+                <AppIcon name="ellipsis-vertical" />
             </ActionIcon>
             </Menu.Target>
 
@@ -472,7 +473,7 @@ export function DisbursementsPage() {
             {r.stage === 'PENDING' && (
                 <Menu.Item
                 fw={500}
-                leftSection={<i className="fa fa-money" aria-hidden="true" />}
+                leftSection={<AppIcon name="banknote" />}
                 onClick={() => openDialog(r)}
                 >
                 Disburse
@@ -483,7 +484,7 @@ export function DisbursementsPage() {
             {r.stage === 'DISBURSED' && r.record?.glStatus === 'PENDING' && (
                 <Menu.Item
                 fw={500}
-                leftSection={<i className="fa fa-exchange" aria-hidden="true" />}
+                leftSection={<AppIcon name="arrow-left-right" />}
                 onClick={() => postGl(r)}
                 >
                 Post to ledger
@@ -494,13 +495,13 @@ export function DisbursementsPage() {
             {(r.stage === 'PENDING' || r.record?.glStatus === 'PENDING') && <Menu.Divider />}
 
             <Menu.Item
-                leftSection={<i className="fa fa-eye" aria-hidden="true" />}
+                leftSection={<AppIcon name="eye" />}
                 onClick={() => openView(r.id)}
             >
                 View details
             </Menu.Item>
             <Menu.Item
-                leftSection={<i className="fa fa-file-text-o" aria-hidden="true" />}
+                leftSection={<AppIcon name="file-text" />}
                 onClick={() => navigate(`/loan-applications/${r.id}`)}
             >
                 Open application
@@ -525,7 +526,7 @@ export function DisbursementsPage() {
             variant="light"
             withCloseButton
             onClose={() => setNotice(null)}
-            icon={<i className="fa fa-check-circle" aria-hidden="true" />}
+            icon={<AppIcon name="circle-check" />}
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Text size="sm">{notice.text}</Text>

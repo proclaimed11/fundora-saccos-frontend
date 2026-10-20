@@ -10,11 +10,11 @@ import { StatWidget } from '../components/statsWidgets'
 // sample numbers, replaced by GET /api/dashboard in a later step
 // here `color` is the icon color
 const stats = [
-  { label: 'Active Loans', value: 64, icon: 'fa-briefcase', color: '#45bdfc' },
-  { label: 'Total Outstanding', value: formatTzs(1625000), miniLabel: 'TZS', icon: 'fa-balance-scale', color: '#8e44ad' },
-  { label: 'Collected This Month', value: formatTzs(178525), miniLabel: 'TZS', icon: 'fa-calendar', color: '#39d128' },
-  { label: 'Pending Approvals', value: 9, icon: 'fa-check-square-o', color: '#0077b5' },
-  { label: 'Overdue Loans', value: 7, icon: 'fa-clock-o', color: '#e08a1e' },
+  { label: 'Active Loans', value: 64, icon: 'hand-coins', color: '#45bdfc' },
+  { label: 'Total Outstanding', value: formatTzs(1625000), miniLabel: 'TZS', icon: 'scale', color: '#8e44ad' },
+  { label: 'Collected This Month', value: formatTzs(178525), miniLabel: 'TZS', icon: 'calendar', color: '#39d128' },
+  { label: 'Pending Approvals', value: 9, icon: 'square-check', color: '#0077b5' },
+  { label: 'Overdue Loans', value: 7, icon: 'clock', color: '#e08a1e' },
 ]
 
 // SAMPLE ONLY: no endpoint in the API doc returns this yet

@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -335,14 +336,14 @@ function ReviewDrawer({ row, onClose, onApprove }: DrawerProps) {
                     radius="xs"
                     color="red"
                     variant="light"
-                    leftSection={<i className="fa fa-times" aria-hidden="true" />}
+                    leftSection={<AppIcon name="x" />}
                   >
                     Reject
                   </Button>
                   <Button
                     size="xs"
                     radius="xs"
-                    leftSection={<i className="fa fa-check" aria-hidden="true" />}
+                    leftSection={<AppIcon name="check" />}
                     onClick={() => onApprove(r)}
                   >
                     Approve
@@ -350,7 +351,7 @@ function ReviewDrawer({ row, onClose, onApprove }: DrawerProps) {
                 </div>
               </>
             ) : (
-              <Alert color="yellow" variant="light" icon={<i className="fa fa-lock" aria-hidden="true" />}>
+              <Alert color="yellow" variant="light" icon={<AppIcon name="lock-keyhole" />}>
                 <Text size="sm">
                   This application is waiting for the {r.current.levelName} level. Only a user with the{' '}
                   {r.current.role} role can decide it.
@@ -364,7 +365,7 @@ function ReviewDrawer({ row, onClose, onApprove }: DrawerProps) {
           size="xs"
           radius="xs"
           variant="default"
-          leftSection={<i className="fa fa-external-link" aria-hidden="true" />}
+          leftSection={<AppIcon name="external-link" />}
           onClick={() => navigate(`/loan-applications/${r.id}`)}
         >
           View full application
@@ -393,11 +394,11 @@ export function ApprovalsPage() {
 
   // here `color` is the icon color
   const stats = [
-    { label: 'Awaiting Approval', value: awaiting.length, icon: 'fa-hourglass-half', color: '#e08a1e' },
-    { label: 'Needs My Decision', value: mine.length, icon: 'fa-gavel', color: '#8e44ad' },
-    { label: `Waiting Over ${LATE_AFTER_DAYS} Days`, value: awaiting.filter((r) => waitingDays(r) > LATE_AFTER_DAYS).length, icon: 'fa-clock-o', color: '#0077b5' },
-    { label: 'Approved', value: rows.filter((r) => r.approved).length, icon: 'fa-check-circle-o', color: '#39d128' },
-    { label: 'Rejected', value: rows.filter((r) => r.rejected).length, icon: 'fa-times-circle-o', color: '#ef4444' },
+    { label: 'Awaiting Approval', value: awaiting.length, icon: 'hourglass', color: '#e08a1e' },
+    { label: 'Needs My Decision', value: mine.length, icon: 'gavel', color: '#8e44ad' },
+    { label: `Waiting Over ${LATE_AFTER_DAYS} Days`, value: awaiting.filter((r) => waitingDays(r) > LATE_AFTER_DAYS).length, icon: 'clock', color: '#0077b5' },
+    { label: 'Approved', value: rows.filter((r) => r.approved).length, icon: 'circle-check', color: '#39d128' },
+    { label: 'Rejected', value: rows.filter((r) => r.rejected).length, icon: 'circle-x', color: '#ef4444' },
   ]
 
   // /loan-approvals?review=3 opens the review drawer for application 3
@@ -523,18 +524,18 @@ export function ApprovalsPage() {
           <Menu position="bottom-end" shadow="md" width={220}>
             <Menu.Target>
               <ActionIcon variant="subtle" color="gray" size="sm" aria-label={`Actions for ${r.applicationNo}`}>
-                <i className="fa fa-ellipsis-v" aria-hidden="true" />
+                <AppIcon name="ellipsis-vertical" />
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Item
-                leftSection={<i className={`fa ${r.mine ? 'fa-gavel' : 'fa-eye'}`} aria-hidden="true" />}
+                leftSection={<AppIcon name={r.mine ? 'gavel' : 'eye'} />}
                 onClick={() => open(r)}
               >
                 {r.mine ? 'Review and decide' : 'View details'}
               </Menu.Item>
               <Menu.Item
-                leftSection={<i className="fa fa-file-text-o" aria-hidden="true" />}
+                leftSection={<AppIcon name="file-text" />}
                 onClick={() => navigate(`/loan-applications/${r.id}`)}
               >
                 Open application
@@ -559,7 +560,7 @@ export function ApprovalsPage() {
             variant="light"
             withCloseButton
             onClose={() => setNotice(null)}
-            icon={<i className="fa fa-check-circle" aria-hidden="true" />}
+            icon={<AppIcon name="circle-check" />}
           >
             <Text size="sm">{notice}</Text>
           </Alert>

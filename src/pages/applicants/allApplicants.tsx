@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useState } from 'react'
 import { Badge, Button, Drawer, Modal, Stepper, Text, Textarea } from '@mantine/core'
 import dayjs from 'dayjs'
@@ -34,11 +35,11 @@ const applicants: Applicant[] = [
 
 // here `color` is the icon color
 const stats = [
-  { label: 'Total Applicants', value: 6, icon: 'fa-users', color: '#45bdfc' },
-  { label: 'Pending OTP', value: 1, icon: 'fa-hourglass-half', color: '#8e44ad' },
-  { label: 'Pending KYC', value: 2, icon: 'fa-id-card-o', color: '#e08a1e' },
-  { label: 'KYC Approved', value: 2, icon: 'fa-check-circle-o', color: '#39d128' },
-  { label: 'Rejected', value: 1, icon: 'fa-times-circle-o', color: '#ef4444' },
+  { label: 'Total Applicants', value: 6, icon: 'users', color: '#45bdfc' },
+  { label: 'Pending OTP', value: 1, icon: 'hourglass', color: '#8e44ad' },
+  { label: 'Pending KYC', value: 2, icon: 'contact-round', color: '#e08a1e' },
+  { label: 'KYC Approved', value: 2, icon: 'circle-check', color: '#39d128' },
+  { label: 'Rejected', value: 1, icon: 'circle-x', color: '#ef4444' },
 ]
 
 const STATUS: Record<ApplicantStatus, { label: string; color: string; step: number }> = {
@@ -63,10 +64,10 @@ const typeOptions = [
 // which buttons show for each stage (display only)
 function stageActions(a: Applicant): { label: string; icon: string }[] {
   const list: { label: string; icon: string }[] = []
-  if (a.status === 'PENDING_OTP') list.push({ label: 'Send OTP', icon: 'fa-envelope-o' })
-  if (a.status === 'PENDING_KYC') list.push({ label: 'Review KYC', icon: 'fa-id-card-o' })
-  if (a.isReturning && a.status !== 'REJECTED') list.push({ label: 'Re-check KYC', icon: 'fa-refresh' })
-  if (a.status === 'KYC_APPROVED') list.push({ label: 'Start loan application', icon: 'fa-file-text-o' })
+  if (a.status === 'PENDING_OTP') list.push({ label: 'Send OTP', icon: 'mail' })
+  if (a.status === 'PENDING_KYC') list.push({ label: 'Review KYC', icon: 'contact-round' })
+  if (a.isReturning && a.status !== 'REJECTED') list.push({ label: 'Re-check KYC', icon: 'refresh-cw' })
+  if (a.status === 'KYC_APPROVED') list.push({ label: 'Start loan application', icon: 'file-text' })
   return list
 }
 
@@ -156,7 +157,7 @@ export function Applicants() {
       <Button
         size="xs"
         radius="xs"
-        leftSection={<i className="fa fa-user-plus" aria-hidden="true" />}
+        leftSection={<AppIcon name="user-round-plus" />}
         onClick={() => navigate('/applicants/new')}
       >
         New applicant
@@ -235,7 +236,7 @@ export function Applicants() {
                   size="xs"
                   radius="xs"
                   variant={x.label === 'Start loan application' ? 'filled' : 'default'}
-                  leftSection={<i className={`fa ${x.icon}`} aria-hidden="true" />}
+                  leftSection={<AppIcon name={x.icon} />}
                   onClick={x.label === 'Review KYC' ? () => setKycFor(selected) : undefined}
                 >
                   {x.label}

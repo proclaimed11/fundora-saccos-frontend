@@ -1,12 +1,13 @@
+import { AppIcon } from './appIcon'
 import { useState, type ReactNode } from 'react'
 import { ActionIcon, Button, Menu, Modal } from '@mantine/core'
 import { ContentCard } from './contentCard'
 import { DateRangeFilter } from './dashboard/dateRangeFilter'
 
 const DOWNLOADS = [
-  { label: 'CSV', icon: 'fa-file-text-o' },
-  { label: 'PDF', icon: 'fa-file-pdf-o' },
-  { label: 'Image', icon: 'fa-file-image-o' },
+  { label: 'CSV', icon: 'file-text' },
+  { label: 'PDF', icon: 'file-text' },
+  { label: 'Image', icon: 'file-image' },
 ]
 
 // dark text/icons for the card header
@@ -48,13 +49,13 @@ export function ChartCard({
             className={iconBtn}
             aria-label={`Download ${title}`}
           >
-            <i className="fa fa-download" aria-hidden="true" />
+            <AppIcon name="download" />
           </ActionIcon>
         </Menu.Target>
         <Menu.Dropdown>
           <Menu.Label>Download as</Menu.Label>
           {DOWNLOADS.map((d) => (
-            <Menu.Item key={d.label} leftSection={<i className={`fa ${d.icon}`} aria-hidden="true" />}>
+            <Menu.Item key={d.label} leftSection={<AppIcon name={d.icon} />}>
               {d.label}
             </Menu.Item>
           ))}
@@ -68,7 +69,7 @@ export function ChartCard({
         aria-label={`View ${title} larger`}
         onClick={() => setOpen(true)}
       >
-        <i className="fa fa-expand" aria-hidden="true" />
+        <AppIcon name="maximize" />
       </ActionIcon>
     </div>
   )
@@ -101,7 +102,7 @@ export function ChartCard({
                   key={d.label}
                   size="xs"
                   variant="default"
-                  leftSection={<i className={`fa ${d.icon}`} aria-hidden="true" />}
+                  leftSection={<AppIcon name={d.icon} />}
                 >
                   {d.label}
                 </Button>

@@ -139,37 +139,37 @@ export function stageActions(a: LoanApplication): StageAction[] {
   const list: StageAction[] = []
   switch (a.status) {
     case 'DRAFT':
-      list.push({ id: 'continue', label: 'Continue application', icon: 'fa-pencil' })
+      list.push({ id: 'continue', label: 'Continue application', icon: 'pencil' })
       break
     case 'SUBMITTED':
-      if (a.guarantorRequired) list.push({ id: 'verify-guarantor', label: 'Verify guarantor', icon: 'fa-user-o' })
-      if (a.collateralRequired) list.push({ id: 'verify-collateral', label: 'Verify collateral', icon: 'fa-shield' })
+      if (a.guarantorRequired) list.push({ id: 'verify-guarantor', label: 'Verify guarantor', icon: 'user-round' })
+      if (a.collateralRequired) list.push({ id: 'verify-collateral', label: 'Verify collateral', icon: 'shield' })
       list.push({
         id: 'credit',
         label: a.creditAssessmentRequired ? 'Run credit assessment' : 'Continue to approval',
-        icon: 'fa-calculator',
+        icon: 'calculator',
       })
       break
     case 'CREDIT_APPROVED':
     case 'PENDING_APPROVAL':
-      list.push({ id: 'approve', label: 'Approve', icon: 'fa-check' })
-      list.push({ id: 'reject', label: 'Reject', icon: 'fa-times' })
+      list.push({ id: 'approve', label: 'Approve', icon: 'check' })
+      list.push({ id: 'reject', label: 'Reject', icon: 'x' })
       break
     case 'APPROVED':
-      list.push({ id: 'generate-contract', label: 'Generate contract', icon: 'fa-file-text-o' })
+      list.push({ id: 'generate-contract', label: 'Generate contract', icon: 'file-text' })
       break
     case 'CONTRACT_GENERATED':
     // the application status stays the same after sending, so check the contract itself
     if (contractFor(a)?.status === 'SENT') {
         // the signed upload now lives in the Contract tab
-        list.push({ id: 'complete-application', label: 'Complete application', icon: 'fa-check' })
-        list.push({ id: 'cancel-application', label: 'Cancel application', icon: 'fa-times' })
+        list.push({ id: 'complete-application', label: 'Complete application', icon: 'check' })
+        list.push({ id: 'cancel-application', label: 'Cancel application', icon: 'x' })
     } else {
-        list.push({ id: 'send-contract', label: 'Send contract', icon: 'fa-envelope-o' })
+        list.push({ id: 'send-contract', label: 'Send contract', icon: 'mail' })
     }
     break
     case 'CONTRACT_SIGNED':
-      list.push({ id: 'create-loan', label: 'Create loan', icon: 'fa-briefcase' })
+      list.push({ id: 'create-loan', label: 'Create loan', icon: 'hand-coins' })
       break
   }
   return list
@@ -324,21 +324,21 @@ type Milestone = {
 }
 
 const MILESTONES: Milestone[] = [
-  { rank: 0, title: 'Draft started', detail: (a) => `Created by ${a.loanOfficer}`, icon: 'fa-pencil', offset: 0 },
-  { rank: 1, title: 'Application submitted', detail: (a) => `Application number ${a.applicationNo}`, icon: 'fa-paper-plane-o', offset: 0 },
-  { rank: 2, title: 'Credit stage passed', detail: () => 'Guarantor, collateral and credit checks completed', icon: 'fa-calculator', offset: 1 },
-  { rank: 3, title: 'Application approved', detail: () => 'All approval levels signed off', icon: 'fa-check-circle-o', offset: 2 },
-  { rank: 4, title: 'Contract generated', detail: () => 'Contract ready to send to the borrower', icon: 'fa-file-text-o', offset: 3 },
+  { rank: 0, title: 'Draft started', detail: (a) => `Created by ${a.loanOfficer}`, icon: 'pencil', offset: 0 },
+  { rank: 1, title: 'Application submitted', detail: (a) => `Application number ${a.applicationNo}`, icon: 'send', offset: 0 },
+  { rank: 2, title: 'Credit stage passed', detail: () => 'Guarantor, collateral and credit checks completed', icon: 'calculator', offset: 1 },
+  { rank: 3, title: 'Application approved', detail: () => 'All approval levels signed off', icon: 'circle-check', offset: 2 },
+  { rank: 4, title: 'Contract generated', detail: () => 'Contract ready to send to the borrower', icon: 'file-text', offset: 3 },
   {
     rank: 4,
     title: 'Contract sent',
     detail: () => 'Emailed to the borrower with a link to print it',
-    icon: 'fa-envelope-o',
+    icon: 'mail',
     offset: 4,
     show: (a) => RANK[a.status] >= 5 || !!a.contractSentAt,
   },
-  { rank: 5, title: 'Contract signed', detail: () => 'Signed copy uploaded', icon: 'fa-pencil-square-o', offset: 6 },
-  { rank: 6, title: 'Loan created', detail: () => 'Waiting for disbursement', icon: 'fa-briefcase', offset: 7 },
+  { rank: 5, title: 'Contract signed', detail: () => 'Signed copy uploaded', icon: 'pen-line', offset: 6 },
+  { rank: 6, title: 'Loan created', detail: () => 'Waiting for disbursement', icon: 'hand-coins', offset: 7 },
 ]
 
 // newest first, built from the application's stage so it always matches the status
@@ -353,7 +353,7 @@ export function activityFor(a: LoanApplication): ActivityEvent[] {
     icon: m.icon,
   }))
   if (a.status === 'REJECTED') {
-    events.push({ title: 'Application rejected', detail: a.creditAssessmentRequired ? 'Credit assessment failed' : 'Application halted', date: day(1), icon: 'fa-times-circle-o' })
+    events.push({ title: 'Application rejected', detail: a.creditAssessmentRequired ? 'Credit assessment failed' : 'Application halted', date: day(1), icon: 'circle-x' })
   }
   return events.reverse()
 }
@@ -758,19 +758,19 @@ export function loanActivity(v: LoanView): ActivityEvent[] {
       title: 'Loan disbursed',
       detail: `${formatTzs(v.principal)} paid out and the repayment schedule created`,
       date: v.disbursed,
-      icon: 'fa-money',
+      icon: 'banknote',
     },
     ...v.payments.map((p) => ({
       title: 'Payment received',
       detail: `${formatTzs(p.amount)} by ${METHOD_LABEL[p.method]}${p.reference ? ` · ${p.reference}` : ''}`,
       date: p.date,
-      icon: 'fa-check-circle-o',
+      icon: 'circle-check',
     })),
     ...v.penalties.map((p) => ({
       title: 'Late penalty charged',
       detail: `Installment #${p.installmentNo} · ${formatTzs(p.amount)} (${p.rate}%)`,
       date: p.date,
-      icon: 'fa-exclamation-triangle',
+      icon: 'triangle-alert',
     })),
   ]
 
@@ -779,7 +779,7 @@ export function loanActivity(v: LoanView): ActivityEvent[] {
       title: 'Loan fully repaid',
       detail: 'Every installment is paid, so the loan is closed',
       date: v.payments[v.payments.length - 1].date,
-      icon: 'fa-flag-checkered',
+      icon: 'flag',
     })
   }
 

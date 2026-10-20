@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useState } from 'react'
 import { Alert, Button, FileInput, Modal, Text } from '@mantine/core'
 
@@ -80,7 +81,7 @@ export function SignedContractDialog({ opened, contractNo, onClose, onUploaded }
           size="sm"
           accept="application/pdf,image/*"
           clearable
-          leftSection={<i className="fa fa-upload" aria-hidden="true" />}
+          leftSection={<AppIcon name="upload" />}
           value={file}
           onChange={(f) => {
             setFile(f)
@@ -89,7 +90,7 @@ export function SignedContractDialog({ opened, contractNo, onClose, onUploaded }
           error={error}
         />
 
-        <Alert color="blue" variant="light" icon={<i className="fa fa-info-circle" aria-hidden="true" />}>
+        <Alert color="blue" variant="light" icon={<AppIcon name="info" />}>
           <Text size="sm">
             The contract will be marked as signed and the application moves to the next step, where the
             loan can be created.
@@ -103,7 +104,7 @@ export function SignedContractDialog({ opened, contractNo, onClose, onUploaded }
           <Button
             size="xs"
             radius="xs"
-            leftSection={<i className="fa fa-upload" aria-hidden="true" />}
+            leftSection={<AppIcon name="upload" />}
             onClick={upload}
           >
             Upload

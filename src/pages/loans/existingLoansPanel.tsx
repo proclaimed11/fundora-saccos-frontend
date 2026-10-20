@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { Alert, Badge, Progress, Text } from '@mantine/core'
 import dayjs from 'dayjs'
 import { formatTzs } from '../../utils/format'
@@ -20,7 +21,7 @@ export function ExistingLoansPanel({ applicantName, loans, overridden = false }:
         color="green"
         variant="light"
         title="No unpaid loans"
-        icon={<i className="fa fa-check-circle" aria-hidden="true" />}
+        icon={<AppIcon name="circle-check" />}
       >
         <Text size="sm">
           {applicantName} has no loan still being repaid
@@ -39,7 +40,7 @@ export function ExistingLoansPanel({ applicantName, loans, overridden = false }:
           color="yellow"
           variant="light"
           title="Unpaid loan restriction overridden"
-          icon={<i className="fa fa-exclamation-triangle" aria-hidden="true" />}
+          icon={<AppIcon name="triangle-alert" />}
         >
           <Text size="sm">
             {applicantName} still owes on {unpaid.length} {unpaid.length === 1 ? 'loan' : 'loans'}, but this
@@ -51,7 +52,7 @@ export function ExistingLoansPanel({ applicantName, loans, overridden = false }:
           color="red"
           variant="light"
           title="Unpaid loans found"
-          icon={<i className="fa fa-times-circle" aria-hidden="true" />}
+          icon={<AppIcon name="circle-x" />}
         >
           <Text size="sm">
             {applicantName} still owes on {unpaid.length} {unpaid.length === 1 ? 'loan' : 'loans'}. A new

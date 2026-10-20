@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -63,11 +64,11 @@ export function ApplicantProfile() {
 
   const status = STATUS[applicant.status]
   const details = [
-    { icon: 'fa-phone', value: applicant.phone },
-    { icon: 'fa-envelope-o', value: applicant.email },
-    { icon: 'fa-map-marker', value: applicant.location },
-    { icon: 'fa-flag-o', value: applicant.nationality },
-    { icon: 'fa-calendar-o', value: `Registered ${dayjs(applicant.registered).format('MMM D, YYYY')}` },
+    { icon: 'phone', value: applicant.phone },
+    { icon: 'mail', value: applicant.email },
+    { icon: 'map-pin', value: applicant.location },
+    { icon: 'flag', value: applicant.nationality },
+    { icon: 'calendar-days', value: `Registered ${dayjs(applicant.registered).format('MMM D, YYYY')}` },
   ]
 
   return (
@@ -86,7 +87,7 @@ export function ApplicantProfile() {
             size="xs"
             radius="xs"
             variant="default"
-            leftSection={<i className="fa fa-pencil-square-o" aria-hidden="true" />}
+            leftSection={<AppIcon name="pen-line" />}
           >
             Edit
           </Button>
@@ -95,7 +96,7 @@ export function ApplicantProfile() {
               key={x.label}
               size="xs"
               radius="xs"
-              leftSection={<i className={`fa ${x.icon}`} aria-hidden="true" />}
+              leftSection={<AppIcon name={x.icon} />}
               onClick={x.label === 'Review KYC' ? () => setReviewOpen(true) : undefined}
             >
               {x.label}
@@ -105,7 +106,7 @@ export function ApplicantProfile() {
             size="xs"
             radius="xs"
             color="red"
-            leftSection={<i className="fa fa-trash-o" aria-hidden="true" />}
+            leftSection={<AppIcon name="trash" />}
           >
             Delete profile
           </Button>
@@ -134,7 +135,7 @@ export function ApplicantProfile() {
           <ul className="space-y-3 pt-4">
             {details.map((d) => (
               <li key={d.icon} className="flex items-start gap-3 text-sm text-gray-700">
-                <i className={`fa ${d.icon} mt-0.5 w-4 text-center text-gray-400`} aria-hidden="true" />
+                <AppIcon name={d.icon} className="mt-0.5 w-4 text-center text-gray-400" />
                 <span className="min-w-0 break-words">{d.value}</span>
               </li>
             ))}

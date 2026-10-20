@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -56,7 +57,7 @@ function Timeline({ v }: { v: LoanView }) {
       {loanActivity(v).map((e, i) => (
         <li key={`${e.title}-${i}`} className="flex gap-3">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500">
-            <i className={`fa ${e.icon}`} aria-hidden="true" />
+            <AppIcon name={e.icon} />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex justify-between gap-3">
@@ -194,7 +195,7 @@ function OverviewTab({ v }: { v: LoanView }) {
           color={v.isNpl ? 'red' : 'yellow'}
           variant="light"
           title={`${v.overdueDays} days overdue · ${NPL_STYLE[v.classification].label}`}
-          icon={<i className="fa fa-exclamation-triangle" aria-hidden="true" />}
+          icon={<AppIcon name="triangle-alert" />}
         >
           <Text size="sm">
             {formatTzs(v.overdueAmount)} is past due.
@@ -206,7 +207,7 @@ function OverviewTab({ v }: { v: LoanView }) {
       )}
 
       {v.state === 'CLOSED' && (
-        <Alert color="green" variant="light" icon={<i className="fa fa-check-circle" aria-hidden="true" />}>
+        <Alert color="green" variant="light" icon={<AppIcon name="circle-check" />}>
           <Text size="sm">Every installment is paid. This loan is closed.</Text>
         </Alert>
       )}
@@ -356,12 +357,12 @@ export function LoanProfile() {
   })
 
   const details = [
-    { icon: 'fa-calendar-o', label: 'Disbursed', value: dayjs(view.disbursed).format('MMM D, YYYY') },
-    { icon: 'fa-percent', label: 'Interest', value: `${view.interestRate}% p.a. · ${methodLabel(view.interestMethod)}` },
-    { icon: 'fa-calendar', label: 'Tenure', value: `${view.tenure} months` },
-    { icon: 'fa-flag-o', label: 'Matures', value: dayjs(view.maturity).format('MMM D, YYYY') },
-    { icon: 'fa-exclamation-triangle', label: 'Penalty rate', value: `${view.penaltyRate}%` },
-    { icon: 'fa-briefcase', label: 'Loan officer', value: view.loanOfficer },
+    { icon: 'calendar-days', label: 'Disbursed', value: dayjs(view.disbursed).format('MMM D, YYYY') },
+    { icon: 'percent', label: 'Interest', value: `${view.interestRate}% p.a. · ${methodLabel(view.interestMethod)}` },
+    { icon: 'calendar', label: 'Tenure', value: `${view.tenure} months` },
+    { icon: 'flag', label: 'Matures', value: dayjs(view.maturity).format('MMM D, YYYY') },
+    { icon: 'triangle-alert', label: 'Penalty rate', value: `${view.penaltyRate}%` },
+    { icon: 'hand-coins', label: 'Loan officer', value: view.loanOfficer },
   ]
 
   const TABS = [
@@ -383,7 +384,7 @@ export function LoanProfile() {
             size="xs"
             radius="xs"
             variant="default"
-            leftSection={<i className="fa fa-user-o" aria-hidden="true" />}
+            leftSection={<AppIcon name="user-round" />}
             onClick={() => navigate(`/applicants/${view.applicantId}`)}
           >
             View borrower
@@ -393,7 +394,7 @@ export function LoanProfile() {
               size="xs"
               radius="xs"
               variant="default"
-              leftSection={<i className="fa fa-file-text-o" aria-hidden="true" />}
+              leftSection={<AppIcon name="file-text" />}
               onClick={() => navigate(`/loan-applications/${view.applicationId}`)}
             >
               View application
@@ -405,7 +406,7 @@ export function LoanProfile() {
                 size="xs"
                 radius="xs"
                 variant="default"
-                leftSection={<i className="fa fa-exclamation-triangle" aria-hidden="true" />}
+                leftSection={<AppIcon name="triangle-alert" />}
                 onClick={accrue}
               >
                 Accrue penalties
@@ -413,7 +414,7 @@ export function LoanProfile() {
               <Button
                 size="xs"
                 radius="xs"
-                leftSection={<i className="fa fa-money" aria-hidden="true" />}
+                leftSection={<AppIcon name="banknote" />}
                 onClick={() => setPayOpen(true)}
               >
                 Record payment
@@ -430,7 +431,7 @@ export function LoanProfile() {
             variant="light"
             withCloseButton
             onClose={() => setNotice(null)}
-            icon={<i className={`fa ${notice.color === 'green' ? 'fa-check-circle' : 'fa-info-circle'}`} aria-hidden="true" />}
+            icon={<AppIcon name={notice.color === 'green' ? 'circle-check' : 'info'} />}
           >
             <Text size="sm">{notice.text}</Text>
           </Alert>
@@ -441,7 +442,7 @@ export function LoanProfile() {
           <div className={`${CARD} p-5`}>
             <div className="flex flex-col items-center border-b border-gray-100 pb-4 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-2xl text-green-700">
-                <i className="fa fa-money" aria-hidden="true" />
+                <AppIcon name="hand-coins" size={28} strokeWidth={1.25} />
               </div>
               <div className="mt-3 text-lg font-medium text-gray-800">{formatTzs(view.outstanding)}</div>
               <div className="text-[11px] text-gray-500">outstanding</div>
@@ -474,7 +475,7 @@ export function LoanProfile() {
             <ul className="space-y-3 pt-4">
               {details.map((d) => (
                 <li key={d.label} className="flex items-start gap-3 text-sm text-gray-700">
-                  <i className={`fa ${d.icon} mt-0.5 w-4 text-center text-gray-400`} aria-hidden="true" />
+                  <AppIcon name={d.icon} className="mt-0.5 w-4 text-center text-gray-400" />
                   <div className="min-w-0">
                     <div className="text-[11px] text-gray-400">{d.label}</div>
                     <div className="break-words">{d.value}</div>
@@ -543,7 +544,7 @@ export function LoanProfile() {
                       <Alert
                         color="yellow"
                         variant="light"
-                        icon={<i className="fa fa-exclamation-triangle" aria-hidden="true" />}
+                        icon={<AppIcon name="triangle-alert" />}
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <Text size="sm">

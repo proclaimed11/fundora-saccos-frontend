@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import {
   Alert,
@@ -209,7 +210,7 @@ export function NewApplicantPage() {
                 size="xs"
                 radius="xs"
                 color="red"
-                leftSection={<i className="fa fa-user-times" aria-hidden="true" />}
+                leftSection={<AppIcon name="user-round-x" />}
                 >
                 Cancel registration
             </Button>
@@ -304,7 +305,7 @@ export function NewApplicantPage() {
                 size="sm"
                 accept="application/pdf,image/*"
                 clearable
-                leftSection={<i className="fa fa-upload" aria-hidden="true" />}
+                leftSection={<AppIcon name="upload" />}
                 value={values.nidaDocument}
                 onChange={(f) => set('nidaDocument', f)}
                 error={errors.nidaDocument}
@@ -315,7 +316,7 @@ export function NewApplicantPage() {
                 size="sm"
                 accept="image/*"
                 clearable
-                leftSection={<i className="fa fa-upload" aria-hidden="true" />}
+                leftSection={<AppIcon name="upload" />}
                 value={values.idScan}
                 onChange={(f) => set('idScan', f)}
                 error={errors.idScan}
@@ -329,7 +330,7 @@ export function NewApplicantPage() {
                 color="green"
                 variant="light"
                 title="Applicant registered"
-                icon={<i className="fa fa-check-circle" aria-hidden="true" />}
+                icon={<AppIcon name="circle-check" />}
               >
                 <Group gap="xs">
                   <Text size="sm" fw={500}>
@@ -375,7 +376,7 @@ export function NewApplicantPage() {
                       <Button
                         type="submit"
                         color="green"
-                        leftSection={<i className="fa fa-envelope-o" aria-hidden="true" />}
+                        leftSection={<AppIcon name="mail" />}
                       >
                         Send code
                       </Button>
@@ -419,7 +420,7 @@ export function NewApplicantPage() {
                     color="green"
                     variant="light"
                     title="Code verified"
-                    icon={<i className="fa fa-shield" aria-hidden="true" />}
+                    icon={<AppIcon name="shield" />}
                   >
                     <Text size="sm">
                       The applicant is now pending KYC and will appear in KYC review.
@@ -444,7 +445,7 @@ export function NewApplicantPage() {
                 <Button
                   type="button"
                   variant="default"
-                  leftSection={<i className="fa fa-arrow-left" aria-hidden="true" />}
+                  leftSection={<AppIcon name="arrow-left" />}
                   onClick={() => setActive(active - 1)}
                 >
                   Back

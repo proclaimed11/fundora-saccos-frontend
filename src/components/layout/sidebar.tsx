@@ -1,3 +1,4 @@
+import { AppIcon } from '../appIcon'
 import { ActionIcon, Menu, ScrollArea, Text, UnstyledButton } from '@mantine/core'
 import { navSections } from './navItems'
 
@@ -66,15 +67,15 @@ export function Sidebar({
                 className="absolute right-2 top-2 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
                 aria-label="Account settings menu"
               >
-                <i className="fa fa-cog" aria-hidden="true" />
+                <AppIcon name="settings" />
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
-              <Menu.Item leftSection={<i className="fa fa-cog" aria-hidden="true" />} onClick={onSettings}>
+              <Menu.Item leftSection={<AppIcon name="settings" />} onClick={onSettings}>
                 Settings
               </Menu.Item>
               <Menu.Divider />
-              <Menu.Item color="red" leftSection={<i className="fa fa-sign-out" aria-hidden="true" />} onClick={onLogout}>
+              <Menu.Item color="red" leftSection={<AppIcon name="log-out" />} onClick={onLogout}>
                 Logout
               </Menu.Item>
             </Menu.Dropdown>
@@ -131,8 +132,8 @@ export function Sidebar({
                           : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                       }`}
                     >
-                      <i className={`fa ${item.icon} w-4 text-center`} aria-hidden="true" />
-                      <Text size="sm" inherit className={collapsed ? 'lg:hidden' : ''}>
+                      <AppIcon name={item.icon} className="w-4 text-center" />
+                      <Text size="sm" className={collapsed ? 'lg:hidden' : ''}>
                         {item.label}
                       </Text>
                     </UnstyledButton>

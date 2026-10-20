@@ -36,10 +36,10 @@ export const STATUS: Record<ApplicantStatus, { label: string; color: string; ste
 // which buttons show for each stage (display only)
 export function stageActions(a: Applicant): { label: string; icon: string }[] {
   const list: { label: string; icon: string }[] = []
-  if (a.status === 'PENDING_OTP') list.push({ label: 'Send OTP', icon: 'fa-envelope-o' })
-  if (a.status === 'PENDING_KYC') list.push({ label: 'Review KYC', icon: 'fa-id-card-o' })
-  if (a.isReturning && a.status !== 'REJECTED') list.push({ label: 'Re-check KYC', icon: 'fa-refresh' })
-  if (a.status === 'KYC_APPROVED') list.push({ label: 'Start loan application', icon: 'fa-file-text-o' })
+  if (a.status === 'PENDING_OTP') list.push({ label: 'Send OTP', icon: 'mail' })
+  if (a.status === 'PENDING_KYC') list.push({ label: 'Review KYC', icon: 'contact-round' })
+  if (a.isReturning && a.status !== 'REJECTED') list.push({ label: 'Re-check KYC', icon: 'refresh-cw' })
+  if (a.status === 'KYC_APPROVED') list.push({ label: 'Start loan application', icon: 'file-text' })
   return list
 }
 
@@ -59,16 +59,16 @@ export type ActivityEvent = { title: string; detail: string; date: string; icon:
 export function activityFor(a: Applicant): ActivityEvent[] {
   const day = (n: number) => dayjs(a.registered).add(n, 'day').format('YYYY-MM-DD')
   const events: ActivityEvent[] = [
-    { title: 'Applicant registered', detail: `Application number ${a.applicantNo}`, date: a.registered, icon: 'fa-user-plus' },
+    { title: 'Applicant registered', detail: `Application number ${a.applicantNo}`, date: a.registered, icon: 'user-round-plus' },
   ]
   if (a.status !== 'PENDING_OTP') {
-    events.push({ title: 'OTP verified', detail: 'Verified by email', date: a.registered, icon: 'fa-shield' })
+    events.push({ title: 'OTP verified', detail: 'Verified by email', date: a.registered, icon: 'shield' })
   }
   if (a.status === 'KYC_APPROVED') {
-    events.push({ title: 'KYC approved', detail: 'Approved by Loan Officer', date: day(1), icon: 'fa-check-circle-o' })
+    events.push({ title: 'KYC approved', detail: 'Approved by Loan Officer', date: day(1), icon: 'circle-check' })
   }
   if (a.status === 'REJECTED') {
-    events.push({ title: 'KYC rejected', detail: 'Documents did not pass review', date: day(1), icon: 'fa-times-circle-o' })
+    events.push({ title: 'KYC rejected', detail: 'Documents did not pass review', date: day(1), icon: 'circle-x' })
   }
   return events.reverse()
 }

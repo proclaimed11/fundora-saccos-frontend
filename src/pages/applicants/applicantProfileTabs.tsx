@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { Badge, Button, Stepper, Text } from '@mantine/core'
 import dayjs from 'dayjs'
 import { CustomTable, type CustomTableColumn } from '../../components/customTable/customTable'
@@ -30,7 +31,7 @@ function Timeline({ applicant, limit }: { applicant: Applicant; limit?: number }
       {events.map((e) => (
         <li key={e.title} className="flex gap-3">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500">
-            <i className={`fa ${e.icon}`} aria-hidden="true" />
+            <AppIcon name={e.icon} />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex justify-between gap-3">
@@ -94,8 +95,8 @@ export function OverviewTab({ applicant }: { applicant: Applicant }) {
 export function KycTab({ applicant, onReview }: { applicant: Applicant; onReview?: () => void }) {
   const approvedOn = dayjs(applicant.registered).add(1, 'day')
   const documents = [
-    { name: 'NIDA document', file: 'nida-document.pdf', icon: 'fa-file-pdf-o' },
-    { name: 'ID scan', file: 'id-scan.jpg', icon: 'fa-file-image-o' },
+    { name: 'NIDA document', file: 'nida-document.pdf', icon: 'file-text' },
+    { name: 'ID scan', file: 'id-scan.jpg', icon: 'file-image' },
   ]
 
   return (
@@ -119,7 +120,7 @@ export function KycTab({ applicant, onReview }: { applicant: Applicant; onReview
             <Button
               size="xs"
               radius="xs"
-              leftSection={<i className="fa fa-id-card-o" aria-hidden="true" />}
+              leftSection={<AppIcon name="contact-round" />}
               onClick={onReview}
             >
               Review KYC
@@ -133,7 +134,7 @@ export function KycTab({ applicant, onReview }: { applicant: Applicant; onReview
         <ul className="mt-2 space-y-2">
           {documents.map((d) => (
             <li key={d.name} className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
-              <i className={`fa ${d.icon} text-xl text-gray-400`} aria-hidden="true" />
+              <AppIcon name={d.icon} className="text-xl text-gray-400"  size={20} />
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium text-gray-800">{d.name}</div>
                 <div className="truncate text-xs text-gray-500">{d.file}</div>
@@ -197,10 +198,7 @@ export function AccountsTab() {
       <ul className="space-y-2">
         {accounts.map((a) => (
           <li key={a.number} className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-3">
-            <i
-              className={`fa ${a.type === 'Bank account' ? 'fa-university' : 'fa-mobile'} w-6 text-center text-xl text-gray-400`}
-              aria-hidden="true"
-            />
+            <AppIcon name={a.type === 'Bank account' ? 'landmark' : 'smartphone'} className="w-6 text-center text-xl text-gray-400"  size={24} />
             <div className="min-w-0 flex-1">
               <div className="text-sm font-medium text-gray-800">{a.provider}</div>
               <div className="text-xs text-gray-500">

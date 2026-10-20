@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useState } from 'react'
 import dayjs from 'dayjs'
 import {
@@ -259,7 +260,7 @@ export function DisbursementDialog({ opened, application: a, accounts, usedRefer
             size="sm"
             accept="application/pdf,image/*"
             clearable
-            leftSection={<i className="fa fa-upload" aria-hidden="true" />}
+            leftSection={<AppIcon name="upload" />}
             value={proof}
             onChange={setProof}
           />
@@ -304,7 +305,7 @@ export function DisbursementDialog({ opened, application: a, accounts, usedRefer
             </Text>
           </div>
 
-          <Alert color="yellow" variant="light" icon={<i className="fa fa-exclamation-triangle" aria-hidden="true" />}>
+          <Alert color="yellow" variant="light" icon={<AppIcon name="triangle-alert" />}>
             <Text size="xs">
               This only records the payout. No money is moved by this system, so send it first. A recorded
               disbursement can't be edited. A mistake is fixed with a reversing entry.
@@ -330,7 +331,7 @@ export function DisbursementDialog({ opened, application: a, accounts, usedRefer
         <Button
           size="xs"
           radius="xs"
-          leftSection={<i className="fa fa-check" aria-hidden="true" />}
+          leftSection={<AppIcon name="check" />}
           onClick={submit}
         >
           Record disbursement

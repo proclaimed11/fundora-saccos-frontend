@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -76,15 +77,15 @@ export function LoanApplicationProfile() {
 
   const details = [
     {
-      icon: 'fa-percent',
+      icon: 'percent',
       label: 'Interest',
       value: `${application.interestRate}% p.a. · ${methodLabel(application.interestMethod)}`,
     },
-    { icon: 'fa-calendar', label: 'Tenure', value: `${application.tenure} months` },
-    { icon: 'fa-briefcase', label: 'Loan officer', value: application.loanOfficer },
-    { icon: 'fa-calendar-o', label: 'Created', value: dayjs(application.created).format('MMM D, YYYY') },
+    { icon: 'calendar', label: 'Tenure', value: `${application.tenure} months` },
+    { icon: 'hand-coins', label: 'Loan officer', value: application.loanOfficer },
+    { icon: 'calendar-days', label: 'Created', value: dayjs(application.created).format('MMM D, YYYY') },
     {
-      icon: 'fa-paper-plane-o',
+      icon: 'send',
       label: 'Submitted',
       value: application.submittedAt ? dayjs(application.submittedAt).format('MMM D, YYYY') : 'Not yet',
     },
@@ -106,7 +107,7 @@ export function LoanApplicationProfile() {
             size="xs"
             radius="xs"
             variant="default"
-            leftSection={<i className="fa fa-user-o" aria-hidden="true" />}
+            leftSection={<AppIcon name="user-round" />}
             onClick={() => navigate(`/applicants/${application.applicantId}`)}
           >
             View applicant
@@ -114,7 +115,7 @@ export function LoanApplicationProfile() {
           <Button
             size="xs"
             radius="xs"
-            leftSection={<i className="fa fa-pencil" aria-hidden="true" />}
+            leftSection={<AppIcon name="pencil" />}
             onClick={() => navigate(`/loan-applications/new?applicantId=${application.applicantId}`)}
           >
             Continue application
@@ -124,7 +125,7 @@ export function LoanApplicationProfile() {
             size="xs"
             radius="xs"
             color="red"
-            leftSection={<i className="fa fa-times" aria-hidden="true" />}
+            leftSection={<AppIcon name="x" />}
           >
             Cancel application
           </Button>
@@ -136,7 +137,7 @@ export function LoanApplicationProfile() {
         <div className={`${CARD} p-5`}>
           <div className="flex flex-col items-center border-b border-gray-100 pb-4 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-2xl text-green-700">
-              <i className="fa fa-file-text-o" aria-hidden="true" />
+              <AppIcon name="file-text" size={28} strokeWidth={1.25} />
             </div>
             <div className="mt-3 text-lg font-medium text-gray-800">
               {formatTzs(application.requestedAmount)}
@@ -171,7 +172,7 @@ export function LoanApplicationProfile() {
           <ul className="space-y-3 pt-4">
             {details.map((d) => (
               <li key={d.label} className="flex items-start gap-3 text-sm text-gray-700">
-                <i className={`fa ${d.icon} mt-0.5 w-4 text-center text-gray-400`} aria-hidden="true" />
+                <AppIcon name={d.icon} className="mt-0.5 w-4 text-center text-gray-400" />
                 <div className="min-w-0">
                   <div className="text-[11px] text-gray-400">{d.label}</div>
                   <div className="break-words">{d.value}</div>

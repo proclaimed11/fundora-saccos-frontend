@@ -1,3 +1,4 @@
+import { AppIcon } from '../../components/appIcon'
 import { Alert, Badge, Button, Stepper, Text } from '@mantine/core'
 import dayjs from 'dayjs'
 import { CustomTable, type CustomTableColumn } from '../../components/customTable/customTable'
@@ -74,7 +75,7 @@ function Timeline({ application, limit }: { application: LoanApplication; limit?
       {events.map((e) => (
         <li key={e.title} className="flex gap-3">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500">
-            <i className={`fa ${e.icon}`} aria-hidden="true" />
+            <AppIcon name={e.icon} />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex justify-between gap-3">
@@ -163,7 +164,7 @@ export function RequirementsTab({ application }: { application: LoanApplication 
             <ul className="mt-2 space-y-2">
               {guarantors.map((g) => (
                 <li key={g.id} className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
-                  <i className="fa fa-user-o w-6 text-center text-xl text-gray-400" aria-hidden="true" />
+                  <AppIcon name="user-round" className="w-6 text-center text-xl text-gray-400"  size={24} />
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-gray-800">{g.name}</div>
                     <div className="text-xs text-gray-500">
@@ -189,7 +190,7 @@ export function RequirementsTab({ application }: { application: LoanApplication 
                 {collaterals.map((c) => (
                   <li key={c.id} className="rounded-md border border-gray-200 px-3 py-2.5">
                     <div className="flex items-center gap-3">
-                      <i className="fa fa-shield w-6 text-center text-xl text-gray-400" aria-hidden="true" />
+                      <AppIcon name="shield" className="w-6 text-center text-xl text-gray-400"  size={24} />
                       <div className="min-w-0 flex-1">
                         <div className="text-sm font-medium text-gray-800">{c.type}</div>
                         <div className="truncate text-xs text-gray-500">
@@ -199,10 +200,7 @@ export function RequirementsTab({ application }: { application: LoanApplication 
                       <Pill value={c.status} />
                     </div>
                     <div className="mt-2 flex items-center gap-2 border-t border-gray-100 pt-2 text-xs">
-                      <i
-                        className={`fa fa-file-pdf-o ${c.document ? 'text-gray-400' : 'text-gray-300'}`}
-                        aria-hidden="true"
-                      />
+                      <AppIcon name="file-text" className="${c.document ? 'text-gray-400' : 'text-gray-300'}" />
                       {c.document ? (
                         <>
                           <span className="min-w-0 flex-1 truncate text-gray-600">{c.document}</span>
@@ -244,7 +242,7 @@ export function RequirementsTab({ application }: { application: LoanApplication 
                 color="red"
                 variant="light"
                 title="Credit assessment failed"
-                icon={<i className="fa fa-times-circle" aria-hidden="true" />}
+                icon={<AppIcon name="circle-x" />}
               >
                 <Text size="sm">
                   {shortfall > 0
@@ -299,7 +297,7 @@ export function ApprovalsTab({ application }: { application: LoanApplication }) 
             size="xs"
             radius="xs"
             variant="default"
-            leftSection={<i className="fa fa-external-link" aria-hidden="true" />}
+            leftSection={<AppIcon name="external-link" />}
             onClick={() => navigate(`/loan-approvals?review=${application.id}`)}
           >
             Open in Approvals
@@ -374,7 +372,7 @@ export function ContractTab({
         <Stepper.Step label="Signed" />
       </Stepper>
 
-      <Alert color="blue" variant="light" icon={<i className="fa fa-info-circle" aria-hidden="true" />}>
+      <Alert color="blue" variant="light" icon={<AppIcon name="info" />}>
         <Text size="sm">{hint}</Text>
       </Alert>
 
@@ -402,7 +400,7 @@ export function ContractTab({
           <SectionTitle>Documents</SectionTitle>
           <ul className="mt-2 space-y-2">
             <li className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
-              <i className="fa fa-file-pdf-o text-xl text-gray-400" aria-hidden="true" />
+              <AppIcon name="file-text" className="text-xl text-gray-400"  size={20} />
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium text-gray-800">Loan contract</div>
                 <div className="truncate text-xs text-gray-500">{contract.contractNo}.pdf</div>
@@ -413,7 +411,7 @@ export function ContractTab({
             </li>
             {contract.signed ? (
               <li className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
-                <i className="fa fa-file-image-o text-xl text-gray-400" aria-hidden="true" />
+                <AppIcon name="file-image" className="text-xl text-gray-400"  size={20} />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium text-gray-800">Signed copy</div>
                   <div className="truncate text-xs text-gray-500">{contract.contractNo}-signed.pdf</div>
@@ -424,13 +422,13 @@ export function ContractTab({
               </li>
             ) : (
                 <li className="flex items-center gap-3 rounded-md border border-dashed border-gray-200 px-3 py-2.5">
-                    <i className="fa fa-file-image-o text-xl text-gray-300" aria-hidden="true" />
+                    <AppIcon name="file-image" className="text-xl text-gray-300"  size={20} />
                     <div className="min-w-0 flex-1 text-xs text-gray-500">Signed copy not uploaded yet</div>
                     {contract.status === 'SENT' && (
                     <Button
                         size="compact-xs"
                         radius="xs"
-                        leftSection={<i className="fa fa-upload" aria-hidden="true" />}
+                        leftSection={<AppIcon name="upload" />}
                         onClick={onUploadSigned}
                     >
                         Upload signed contract
