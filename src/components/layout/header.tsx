@@ -1,11 +1,14 @@
 import { AppIcon } from '../appIcon'
 import { ActionIcon } from '@mantine/core'
+import { Link } from 'react-router-dom'
 import logo from '../../assets/logo.png'
 import { NavSearch } from './navSearch'
+import type { Crumb } from './pageHeader'
 
 type HeaderProps = {
   /** icon-only sidebar on large screens, the logo block shrinks to match it */
   collapsed: boolean
+  breadcrumbs?: Crumb[]
   onMenuClick: () => void
   onNavigate: (key: string) => void
 }
@@ -13,36 +16,75 @@ type HeaderProps = {
 // white icon buttons contrast clearly against the green bar
 const ICON_BTN = 'text-white hover:bg-white/15'
 
-export function Header({ collapsed, onMenuClick, onNavigate }: HeaderProps) {
+export function Header({ collapsed, breadcrumbs, onMenuClick, onNavigate }: HeaderProps) {
   return (
-    <header className="relative z-30 flex h-12 shrink-0 items-center bg-brand text-white">
+    <header className="relative z-30 flex h-12 shrink-0 items-center bg-[#39d128] text-white">
       {/* logo block: the same width as the sidebar below it, so the two line up */}
       <div
-        className={`flex shrink-0 items-center px-3 transition-[width] duration-200 lg:justify-start lg:px-4 ${
+        className={`relative flex shrink-0 items-center px-3 transition-[width] duration-200 lg:justify-start lg:px-4 ${
           collapsed ? 'lg:w-14 lg:justify-center lg:px-0' : 'lg:w-56'
         }`}
       >
         <img
           src={logo}
           alt="Company logo"
-          className={`h-10 w-auto brightness-0 invert ${
-            collapsed ? 'lg:h-8 lg:w-8 lg:object-cover lg:object-left' : ''
+          className={`h-10 w-auto brightness-0 invert transition-opacity ${
+            collapsed ? 'lg:pointer-events-none lg:opacity-0' : ''
           }`}
         />
+        <ActionIcon
+          variant="subtle"
+          size="lg"
+          className={`absolute right-0 top-1/2 hidden -translate-y-1/2 ${ICON_BTN} lg:flex`}
+          aria-label="Toggle sidebar"
+          onClick={onMenuClick}
+        >
+          <AppIcon name="menu" />
+        </ActionIcon>
       </div>
 
       <ActionIcon
         variant="subtle"
         size="lg"
-        className={ICON_BTN}
+        className={`${ICON_BTN} lg:hidden`}
         aria-label="Toggle sidebar"
         onClick={onMenuClick}
       >
         <AppIcon name="menu" />
       </ActionIcon>
 
-      {/* search: left-aligned box on wide screens, an icon at the right on small ones */}
-      <div className="flex min-w-0 flex-1 justify-end px-3 sm:justify-start">
+      {breadcrumbs && breadcrumbs.length > 0 && (
+        <nav aria-label="Breadcrumb" className="min-w-0 flex-1 overflow-hidden px-2">
+          <ol className="flex min-w-0 items-center gap-1.5 overflow-hidden text-xs">
+            {breadcrumbs.map((crumb, i) => {
+              const isLast = i === breadcrumbs.length - 1
+              return (
+                <li key={`${crumb.label}-${i}`} className="flex min-w-0 shrink-0 items-center gap-1.5">
+                  {i > 0 && <AppIcon name="chevron-right" className="shrink-0 text-white/50" size={14} />}
+                  {crumb.to && !isLast ? (
+                    <Link
+                      to={crumb.to}
+                      className="inline-flex items-center text-white/80 no-underline transition-colors hover:text-white"
+                    >
+                      {i === 0 && <AppIcon name="home" className="mr-1 block shrink-0" size={14} />}
+                      <span className="truncate">{crumb.label}</span>
+                    </Link>
+                  ) : (
+                    <span
+                      aria-current={isLast ? 'page' : undefined}
+                      className={`truncate ${isLast ? 'text-white' : 'text-white/80'}`}
+                    >
+                      {crumb.label}
+                    </span>
+                  )}
+                </li>
+              )
+            })}
+          </ol>
+        </nav>
+      )}
+
+      <div className="ml-auto flex min-w-0 shrink-0 items-center md:absolute md:left-1/2 md:ml-0 md:-translate-x-1/2">
         <NavSearch onNavigate={onNavigate} />
       </div>
 
@@ -55,7 +97,7 @@ export function Header({ collapsed, onMenuClick, onNavigate }: HeaderProps) {
         <ActionIcon variant="subtle" size="lg" className={`relative ${ICON_BTN}`} aria-label="Notifications">
           <AppIcon name="bell" />
           {/* SAMPLE ONLY: show this dot when there are unread notifications */}
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-orange-400 ring-2 ring-brand" />
+          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-orange-400 ring-2 ring-[#39d128]" />
         </ActionIcon>
 
       </div>

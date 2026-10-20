@@ -1,86 +1,125 @@
 import { AppIcon } from '../appIcon'
-import { ActionIcon, Kbd, Text, UnstyledButton } from '@mantine/core'
-import {
-  Spotlight,
-  spotlight,
-  type SpotlightActionGroupData,
-} from '@mantine/spotlight'
+import { ActionIcon, Autocomplete } from '@mantine/core'
+import { useEffect, useRef, useState } from 'react'
 import { navSections } from './navItems'
 
-const isMac = typeof navigator !== 'undefined' && /Mac/i.test(navigator.platform)
-
-// thin-stroke search icon, lower strokeWidth for a lighter line
-function SearchIcon({ size = 14, strokeWidth = 1.5 }: { size?: number; strokeWidth?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={strokeWidth}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  )
-}
-
 export function NavSearch({ onNavigate }: { onNavigate: (key: string) => void }) {
-  const actions: SpotlightActionGroupData[] = navSections.map((section) => ({
-    group: section.label,
-    actions: section.items.map((item) => ({
-      id: item.key,
-      label: item.label,
-      description: section.label, // also makes typing "finance" find the finance pages
-      leftSection: <AppIcon name={item.icon} className="w-4 text-center" />,
-      onClick: () => onNavigate(item.key),
-    })),
+  const [query, setQuery] = useState('')
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const mobileInputRef = useRef<HTMLInputElement>(null)
+  const searchItems = navSections.flatMap((section) =>
+    section.items.map((item) => ({ ...item, section: section.label })),
+  )
+  const suggestions = searchItems.map((item) => ({
+    value: item.label,
+    label: item.label,
   }))
+
+  useEffect(() => {
+    if (mobileOpen) {
+      mobileInputRef.current?.focus()
+    }
+  }, [mobileOpen])
+
+  const selectSuggestion = (label: string) => {
+    const item = searchItems.find((candidate) => candidate.label === label)
+    if (item) {
+      setQuery('')
+      setMobileOpen(false)
+      onNavigate(item.key)
+    }
+  }
+
+  const renderOption = ({ option }: { option: { value: string } }) => {
+    const item = searchItems.find((candidate) => candidate.label === option.value)
+    return (
+      <div className="flex items-center gap-2">
+        {item && <AppIcon name={item.icon} size={14} className="shrink-0 text-gray-500" />}
+        <span className="flex-1">{item?.label ?? option.value}</span>
+        {item && <span className="text-xs text-gray-400">{item.section}</span>}
+      </div>
+    )
+  }
 
   return (
     <>
-      {/* wide screens: search box look-alike on the green bar */}
-      <UnstyledButton
-        onClick={() => spotlight.open()}
-        aria-label="Search"
-        className="hidden w-full max-w-md items-center gap-2 rounded-md bg-white/15 px-3 py-1.5 text-white transition-colors hover:bg-white/25 sm:flex"
-      >
-        <SearchIcon />
-        <Text size="xs" inherit className="flex-1 text-left text-white/80">
-          Search or jump to…
-        </Text>
-        <Kbd size="xs" className="border-0 bg-white/20 text-white">
-          {isMac ? '⌘ K' : 'Ctrl K'}
-        </Kbd>
-      </UnstyledButton>
-
-      {/* small screens: icon only */}
-      <ActionIcon
-        variant="subtle"
-        size="lg"
-        className="text-white hover:bg-white/15 sm:hidden"
-        aria-label="Search"
-        onClick={() => spotlight.open()}
-      >
-        <SearchIcon size={18} />
-      </ActionIcon>
-
-      <Spotlight
-        actions={actions}
-        shortcut="mod + K"
-        highlightQuery
-        scrollable
-        maxHeight={360}
-        nothingFound="Nothing found"
-        searchProps={{
-          leftSection: <SearchIcon size={16} />,
-          placeholder: 'Search or jump to…',
+      <Autocomplete
+        aria-label="Search pages"
+        placeholder="Search or jump to…"
+        value={query}
+        onChange={setQuery}
+        data={suggestions}
+        dropdownOpened={query.trim().length > 0}
+        limit={6}
+        maxDropdownHeight={320}
+        onOptionSubmit={selectSuggestion}
+        renderOption={renderOption}
+        leftSection={<AppIcon name="search" size={14} strokeWidth={1.5} />}
+        size="xs"
+        radius="md"
+        className="hidden w-72 max-w-[28vw] md:block"
+        classNames={{
+          input:
+            'border-0 bg-white/15 text-white placeholder:text-white/70 hover:bg-white/20 focus:bg-white/20',
+          dropdown: 'z-50',
+        }}
+        styles={{
+          input: { backgroundColor: 'rgba(255, 255, 255, 0.15)', color: 'white' },
+          section: { color: 'rgba(255, 255, 255, 0.8)' },
         }}
       />
+      <div className="flex min-w-0 items-center md:hidden">
+        <div
+          className="overflow-hidden transition-[width,opacity] duration-200 ease-out"
+          style={{
+            width: mobileOpen ? 'min(14rem, 55vw)' : 0,
+            opacity: mobileOpen ? 1 : 0,
+          }}
+          aria-hidden={!mobileOpen}
+        >
+          <Autocomplete
+            ref={mobileInputRef}
+            aria-label="Search pages"
+            disabled={!mobileOpen}
+            placeholder="Search…"
+            value={query}
+            onChange={setQuery}
+            data={suggestions}
+            dropdownOpened={mobileOpen && query.trim().length > 0}
+            limit={6}
+            maxDropdownHeight={320}
+            onOptionSubmit={selectSuggestion}
+            renderOption={renderOption}
+            leftSection={<AppIcon name="search" size={14} strokeWidth={1.5} />}
+            size="xs"
+            radius="md"
+            className="w-56"
+            classNames={{
+              input:
+                'border-0 bg-white/15 text-white placeholder:text-white/70 hover:bg-white/20 focus:bg-white/20',
+              dropdown: 'z-50',
+            }}
+            styles={{
+              input: { backgroundColor: 'rgba(255, 255, 255, 0.15)', color: 'white' },
+              section: { color: 'rgba(255, 255, 255, 0.8)' },
+            }}
+          />
+        </div>
+        <ActionIcon
+          variant="subtle"
+          size="lg"
+          className="shrink-0 text-white hover:bg-white/15"
+          aria-label={mobileOpen ? 'Close search' : 'Search'}
+          onClick={() => {
+            setMobileOpen((open) => !open)
+            if (mobileOpen) {
+              setQuery('')
+            }
+          }}
+        >
+          <AppIcon name="search" size={18} strokeWidth={1.5} />
+        </ActionIcon>
+      </div>
     </>
   )
 }

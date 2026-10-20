@@ -52,7 +52,7 @@ export function Dashboard() {
       subtitle={
         <>
           Welcome Back{' '}
-          <span className="text-base font-bold text-white">John Doe</span>!
+          <span className="text-sm font-bold text-white">John Doe</span>!
         </>
       }
     >

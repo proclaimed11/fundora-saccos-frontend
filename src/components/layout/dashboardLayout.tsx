@@ -46,6 +46,7 @@ export function DashboardLayout({
     <div className="flex h-screen flex-col bg-gray-100">
       <Header
         collapsed={collapsed}
+        breadcrumbs={breadcrumbs}
         onMenuClick={() => {
           setMenuOpen((o) => !o)
           setCollapsed((c) => !c)
@@ -64,8 +65,8 @@ export function DashboardLayout({
           onLogout={onLogout ?? logout}
         />
         <div className="min-w-0 flex-1 overflow-auto">
-          <PageHeader title={title} breadcrumbs={breadcrumbs} subtitle={subtitle} actions={actions} />
-          <main className={`relative z-10 px-4 pb-4 ${overlap ? '-mt-13' : 'mt-4'}`}>
+          <PageHeader title={title} subtitle={subtitle} actions={actions} />
+          <main className={`relative z-10 px-4 pb-4 ${overlap ? '-mt-5' : 'mt-4'}`}>
             {children}
           </main>
         </div>
