@@ -57,7 +57,7 @@ export function NavSearch({ onNavigate }: { onNavigate: (key: string) => void })
         leftSection={<AppIcon name="search" size={14} strokeWidth={1.5} />}
         size="xs"
         radius="md"
-        className="hidden w-72 max-w-[28vw] md:block"
+        className="hidden w-72 max-w-[28vw] xl:block"
         classNames={{
           input:
             'border-0 bg-white/15 text-white placeholder:text-white/70 hover:bg-white/20 focus:bg-white/20',
@@ -68,7 +68,7 @@ export function NavSearch({ onNavigate }: { onNavigate: (key: string) => void })
           section: { color: 'rgba(255, 255, 255, 0.8)' },
         }}
       />
-      <div className="flex min-w-0 items-center md:hidden">
+      <div className="flex min-w-0 items-center xl:hidden">
         <div
           className="overflow-hidden transition-[width,opacity] duration-200 ease-out"
           style={{

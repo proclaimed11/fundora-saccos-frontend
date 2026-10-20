@@ -26,7 +26,7 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
   return (
     // Same color as the top header, so the two read as one band.
     // Leave space below the title row for the content to overlap.
-    <div className="flex shrink-0 items-start justify-between gap-4 bg-[#39d128] px-4 pb-8 pt-0">
+    <div className="flex shrink-0 items-start justify-between gap-4 bg-[#32c524] px-4 pb-8 pt-0">
       <div className="min-w-0">
         <Text size="md" c="white" className="leading-none">
           {parts.map((part, i) => (
