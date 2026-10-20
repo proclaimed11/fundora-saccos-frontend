@@ -1,0 +1,196 @@
+import { useState, type ReactNode } from 'react'
+import { Alert, Button, Checkbox, Modal, Text } from '@mantine/core'
+import dayjs from 'dayjs'
+import { formatTzs } from '../../utils/format'
+import {
+  contractFor,
+  estimateInstallment,
+  methodLabel,
+  scheduleFor,
+  totalRepayable,
+  type LoanApplication,
+} from './loanApplicationsData'
+
+type Props = {
+  opened: boolean
+  application: LoanApplication | null
+  /** true while the contract is generated but not sent yet */
+  canSend: boolean
+  onClose: () => void
+  onSend: () => void
+}
+
+function Clause({ no, title, children }: { no: number; title: string; children: ReactNode }) {
+  return (
+    <section className="mt-5">
+      <h4 className="text-[12px] font-bold uppercase tracking-wide text-gray-800">
+        {no}. {title}
+      </h4>
+      <div className="mt-1 text-[13px] leading-relaxed text-gray-700">{children}</div>
+    </section>
+  )
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-4 border-b border-gray-100 py-2 text-sm">
+      <span className="text-gray-500">{label}</span>
+      <span className="text-right font-medium text-gray-800">{value}</span>
+    </div>
+  )
+}
+
+export function ContractReviewDialog({ opened, application: a, canSend, onClose, onSend }: Props) {
+  const [reviewed, setReviewed] = useState(false)
+
+  if (!a) return <Modal opened={false} onClose={onClose} />
+
+  const contract = contractFor(a)
+  const installment = Math.round(estimateInstallment(a))
+  const total = Math.round(totalRepayable(a))
+  const firstDue = scheduleFor(a)[0]?.dueDate
+
+  const close = () => {
+    setReviewed(false)
+    onClose()
+  }
+
+  const send = () => {
+    setReviewed(false)
+    onSend()
+  }
+
+  return (
+    <Modal opened={opened} onClose={close} title="Review contract" size={980} centered>
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+        {/* the contract, as the borrower will see it */}
+        <div className="max-h-[62vh] overflow-y-auto rounded-md border border-gray-200 bg-gray-50 p-4">
+          <div className="mx-auto max-w-[560px] bg-white p-8 font-serif shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+            <div className="border-b border-gray-300 pb-4 text-center">
+              <div className="text-[11px] uppercase tracking-[0.2em] text-gray-500">Fundora Credit Solutions</div>
+              <h3 className="mt-1 text-lg font-bold tracking-wide text-gray-900">LOAN AGREEMENT</h3>
+              <div className="mt-1 text-xs text-gray-500">
+                Contract No. {contract?.contractNo} · {contract ? dayjs(contract.generated).format('MMMM D, YYYY') : ''}
+              </div>
+            </div>
+
+            <Clause no={1} title="Parties">
+              This agreement is made between <b>Fundora Credit Solutions</b> (the Lender) and <b>{a.applicantName}</b>{' '}
+              (the Borrower), on the application <b>{a.applicationNo}</b>.
+            </Clause>
+
+            <Clause no={2} title="The loan">
+              <table className="mt-1 w-full text-[13px]">
+                <tbody>
+                  {[
+                    ['Principal amount', formatTzs(a.requestedAmount)],
+                    ['Interest rate', `${a.interestRate}% per year`],
+                    ['Interest method', methodLabel(a.interestMethod)],
+                    ['Tenure', `${a.tenure} months`],
+                  ].map(([k, v]) => (
+                    <tr key={k} className="border-b border-gray-100">
+                      <td className="py-1.5 text-gray-500">{k}</td>
+                      <td className="py-1.5 text-right font-medium text-gray-900">{v}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Clause>
+
+            <Clause no={3} title="Repayment">
+              The Borrower repays the loan in {a.tenure} monthly installments of about <b>{formatTzs(installment)}</b>
+              {firstDue ? `, the first due on ${dayjs(firstDue).format('MMMM D, YYYY')}` : ''}. The total repayable is
+              about <b>{formatTzs(total)}</b>. Each payment is applied to penalties first, then interest, then principal.
+            </Clause>
+
+            <Clause no={4} title="Late payment">
+              A penalty of {a.penaltyRate}% is charged on each installment that is paid late.
+            </Clause>
+
+            {(a.guarantorRequired || a.collateralRequired) && (
+              <Clause no={5} title="Security">
+                {a.guarantorRequired && 'The loan is guaranteed by the guarantor(s) named in the application. '}
+                {a.collateralRequired && 'The loan is secured by the collateral listed in the application.'}
+              </Clause>
+            )}
+
+            <div className="mt-8 grid grid-cols-2 gap-8 text-[12px] text-gray-700">
+              {['Borrower', 'For the Lender'].map((who) => (
+                <div key={who}>
+                  <div className="h-10 border-b border-gray-400" />
+                  <div className="mt-1 font-medium">{who}</div>
+                  <div className="text-gray-500">Name and date</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* before you send */}
+        <div className="space-y-4">
+          <div>
+            <Text size="sm" fw={600} mb={4}>
+              Check these first
+            </Text>
+            <Row label="Borrower" value={a.applicantName} />
+            <Row label="Amount" value={formatTzs(a.requestedAmount)} />
+            <Row label="Rate and tenure" value={`${a.interestRate}% · ${a.tenure} months`} />
+            <Row label="Monthly installment" value={formatTzs(installment)} />
+          </div>
+
+          {canSend ? (
+            <>
+              <Alert color="blue" variant="light" icon={<i className="fa fa-info-circle" aria-hidden="true" />}>
+                <Text size="xs">
+                  The borrower gets an email with a link to print the contract. They sign it and return the hard copy,
+                  then you upload the signed scan.
+                </Text>
+              </Alert>
+              <Checkbox
+                label="I have reviewed this contract"
+                checked={reviewed}
+                onChange={(e) => setReviewed(e.currentTarget.checked)}
+              />
+            </>
+          ) : (
+            contract && (
+              <Alert color="gray" variant="light" icon={<i className="fa fa-lock" aria-hidden="true" />}>
+                <Text size="xs">
+                  {contract.status === 'SIGNED'
+                    ? `Signed${contract.signed ? ` on ${dayjs(contract.signed).format('MMM D, YYYY')}` : ''}. This copy is read-only.`
+                    : `Sent${contract.sent ? ` on ${dayjs(contract.sent).format('MMM D, YYYY')}` : ''}. Waiting for the signed copy.`}
+                </Text>
+              </Alert>
+            )
+          )}
+
+          <Text size="xs" c="dimmed">
+            The wording shown here is sample text. It is replaced by your contract template later.
+          </Text>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 pt-4">
+        <Button size="xs" radius="xs" variant="default" leftSection={<i className="fa fa-print" aria-hidden="true" />}>
+          Print
+        </Button>
+        <div className="flex gap-2">
+          <Button size="xs" radius="xs" variant="default" onClick={close}>
+            {canSend ? 'Review later' : 'Close'}
+          </Button>
+          {canSend && (
+            <Button
+              size="xs"
+              radius="xs"
+              disabled={!reviewed}
+              leftSection={<i className="fa fa-paper-plane-o" aria-hidden="true" />}
+              onClick={send}
+            >
+              Send to borrower
+            </Button>
+          )}
+        </div>
+      </div>
+    </Modal>
+  )
+}

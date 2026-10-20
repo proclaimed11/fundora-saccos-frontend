@@ -1,0 +1,8 @@
+@layer theme, base, mantine, mantine-datatable, components, utilities;
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Source Sans 3 Variable", "Source Sans 3", system-ui, sans-serif;
+  --font-heading: var(--font-sans);
+  --color-brand: #39d128;
+}

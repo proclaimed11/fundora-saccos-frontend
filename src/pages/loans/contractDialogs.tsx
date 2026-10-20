@@ -1,0 +1,115 @@
+import { useState } from 'react'
+import { Alert, Button, FileInput, Modal, Text } from '@mantine/core'
+
+/* ---------- simple confirm dialog (generate, send, create loan) ---------- */
+
+type ConfirmProps = {
+  opened: boolean
+  title: string
+  message: string
+  confirmLabel: string
+  onClose: () => void
+  onConfirm: () => void
+}
+
+export function ContractConfirmDialog({
+  opened,
+  title,
+  message,
+  confirmLabel,
+  onClose,
+  onConfirm,
+}: ConfirmProps) {
+  return (
+    <Modal opened={opened} onClose={onClose} title={title} centered>
+      <div className="space-y-4">
+        <Text size="sm">{message}</Text>
+        <div className="flex justify-end gap-2">
+          <Button size="xs" radius="xs" variant="default" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button size="xs" radius="xs" onClick={onConfirm}>
+            {confirmLabel}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
+/* ---------- upload the signed copy ---------- */
+
+type SignedProps = {
+  opened: boolean
+  contractNo: string
+  onClose: () => void
+  onUploaded: (file: File) => void
+}
+
+export function SignedContractDialog({ opened, contractNo, onClose, onUploaded }: SignedProps) {
+  const [file, setFile] = useState<File | null>(null)
+  const [error, setError] = useState<string>()
+
+  const close = () => {
+    setFile(null)
+    setError(undefined)
+    onClose()
+  }
+
+  const upload = () => {
+    if (!file) {
+      setError('Choose the signed contract to upload')
+      return
+    }
+    // TODO: call POST /api/loan-origination/contracts/{contractId}/sign as multipart/form-data (part: file)
+    onUploaded(file)
+    close()
+  }
+
+  return (
+    <Modal opened={opened} onClose={close} title="Upload signed contract" centered>
+      <div className="space-y-4">
+        <Text size="sm">
+          Upload the copy the borrower printed, signed and returned for contract{' '}
+          <span className="font-medium">{contractNo}</span>.
+        </Text>
+
+        <FileInput
+          label="Signed contract"
+          placeholder="Upload PDF or image"
+          size="sm"
+          accept="application/pdf,image/*"
+          clearable
+          leftSection={<i className="fa fa-upload" aria-hidden="true" />}
+          value={file}
+          onChange={(f) => {
+            setFile(f)
+            setError(undefined)
+          }}
+          error={error}
+        />
+
+        <Alert color="blue" variant="light" icon={<i className="fa fa-info-circle" aria-hidden="true" />}>
+          <Text size="sm">
+            The contract will be marked as signed and the application moves to the next step, where the
+            loan can be created.
+          </Text>
+        </Alert>
+
+        <div className="flex justify-end gap-2">
+          <Button size="xs" radius="xs" variant="default" onClick={close}>
+            Cancel
+          </Button>
+          <Button
+            size="xs"
+            radius="xs"
+            leftSection={<i className="fa fa-upload" aria-hidden="true" />}
+            onClick={upload}
+          >
+            Upload
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
