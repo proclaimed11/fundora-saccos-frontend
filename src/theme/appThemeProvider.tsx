@@ -23,7 +23,7 @@ import type {
 const PALETTE_STORAGE_KEY = 'project-tracker-theme'
 const COLORS_STORAGE_KEY = 'project-tracker-theme-colors'
 const SIDEBAR_APPEARANCE_STORAGE_KEY = 'project-tracker-sidebar-appearance'
-const FONT_STACK = '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
+const FONT_STACK = '"Geist Variable", Geist, sans-serif'
 
 type ThemeVariables = CSSProperties & {
   '--app-brand': string
