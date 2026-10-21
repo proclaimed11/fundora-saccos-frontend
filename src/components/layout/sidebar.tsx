@@ -46,10 +46,9 @@ export function Sidebar({
         />
       )}
 
-      {/* white panel with a soft shadow, so it floats above the page.
-          lg:relative + lg:z-20 keeps the shadow above the page content */}
+      {/* lg:relative + lg:z-20 keeps the sidebar layered above the page content */}
       <aside
-        className={`fixed bottom-0 left-0 top-12 z-40 flex w-56 shrink-0 flex-col overflow-hidden bg-white shadow-[4px_0_24px_rgba(15,23,42,0.12)] transition-[width,transform] duration-200 lg:relative lg:inset-auto lg:z-20 lg:h-full lg:translate-x-0 ${
+        className={`fixed bottom-0 left-0 top-12 z-40 flex w-56 shrink-0 flex-col overflow-hidden bg-white transition-[width,transform] duration-200 lg:relative lg:inset-auto lg:z-20 lg:h-full lg:translate-x-0 ${
           collapsed ? 'lg:w-14' : 'lg:w-56'
         } ${open ? 'translate-x-0' : '-translate-x-full'}`}
       >
@@ -101,7 +100,7 @@ export function Sidebar({
           className="min-h-0 flex-1"
           styles={{
             scrollbar: { background: 'transparent' },
-            thumb: { background: 'rgba(0, 0, 0, 0.25)' },
+            thumb: { background: 'var(--color-brand-subtle)' },
           }}
         >
           <nav className="flex flex-col pb-4">
@@ -124,18 +123,24 @@ export function Sidebar({
                       onClick={() => onChange(item.key)}
                       aria-current={isActive ? 'page' : undefined}
                       title={item.label}
-                      className={`mx-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-md px-3 py-2 text-left transition-colors ${
+                      className={`relative ml-0 flex w-full items-center gap-3 rounded-none px-5 py-2 text-left transition-colors ${
                         collapsed ? 'lg:justify-center lg:px-0' : ''
                       } ${
                         isActive
-                          ? 'bg-brand/10 text-[#259118]'
-                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                          ? 'bg-brand-subtle text-[#259118]'
+                          : 'text-gray-600 hover:bg-brand-subtle hover:text-gray-600'
                       }`}
                     >
                       <AppIcon name={item.icon} className="w-4 text-center" />
                       <Text size="sm" className={collapsed ? 'lg:hidden' : ''}>
                         {item.label}
                       </Text>
+                      {isActive && (
+                        <span
+                          aria-hidden="true"
+                          className="absolute inset-y-0 left-0 w-1 bg-brand"
+                        />
+                      )}
                     </UnstyledButton>
                   )
                 })}

@@ -15,6 +15,7 @@ import { ContractsPage } from './pages/loans/contracts'
 import { DisbursementsPage } from './pages/loans/disbursements'
 import { LoansPage } from './pages/loans/loans'
 import { LoanProfile } from './pages/loans/loanProfile'
+import { ThemeSettingsPage } from './pages/themeSettings'
 
 // pages inside this route need a logged-in user
 function ProtectedRoute() {
@@ -54,6 +55,7 @@ function App() {
           <Route path="/loan-disbursements" element={<DisbursementsPage />} />
           <Route path="/loans" element={<LoansPage />} />
           <Route path="/loans/:id" element={<LoanProfile />} />
+          <Route path="/theme-settings" element={<ThemeSettingsPage />} />
           {/* new pages go here, using the path from navItems.tsx */}
         </Route>
 

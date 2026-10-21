@@ -1,6 +1,5 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import '@fontsource-variable/inter'
 import './index.css'
 import '@mantine/core/styles.layer.css'
 import '@mantine/dates/styles.layer.css'
@@ -12,7 +11,7 @@ import { MantineProvider, createTheme, type MantineColorsTuple } from '@mantine/
 import { AuthProvider } from './auth/authContext.tsx'
 import { BrowserRouter } from 'react-router-dom'
 
-const fontStack = '"Inter Variable", Inter, "Helvetica Neue", Helvetica, Arial, sans-serif'
+const fontStack = '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
 
 // index 6 is #268a0f, the theme color
 const brand: MantineColorsTuple = [

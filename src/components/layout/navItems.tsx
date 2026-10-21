@@ -58,6 +58,7 @@ export const navSections: NavSection[] = [
       { key: 'company-profile', label: 'Company Profile', icon: 'building-2', path: '/company-profile' },
       { key: 'security', label: 'Security Settings', icon: 'lock-keyhole', path: '/security' },
       { key: 'notifications', label: 'Notifications', icon: 'bell', path: '/notifications' },
+      { key: 'theme-settings', label: 'Theme Settings', icon: 'palette', path: '/theme-settings' },
       { key: 'audit', label: 'Audit Log', icon: 'history', path: '/audit' },
     ],
   },

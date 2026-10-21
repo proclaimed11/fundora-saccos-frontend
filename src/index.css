@@ -2,7 +2,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter Variable", Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-sans: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   --font-heading: var(--font-sans);
   --color-brand: #39d128;
+  --color-brand-subtle: color-mix(in srgb, var(--color-brand) 10%, white);
 }
