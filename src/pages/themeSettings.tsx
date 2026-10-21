@@ -1,4 +1,4 @@
-import { Button, ColorInput, Text } from '@mantine/core'
+import { Button, ColorInput, SegmentedControl, Text } from '@mantine/core'
 import { ContentCard } from '../components/contentCard'
 import { DashboardLayout } from '../components/layout/dashboardLayout'
 import { useAppTheme, themeSurfaces, type ThemeSurface } from '../theme/themeContext'
@@ -8,7 +8,15 @@ const CARD = 'rounded-md bg-white p-4 shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
 const isHexColor = (value: string) => /^#[\da-f]{6}$/i.test(value)
 
-function SurfacePreview({ surface, color }: { surface: ThemeSurface; color: string }) {
+function SurfacePreview({
+  surface,
+  color,
+  sidebarAppearance,
+}: {
+  surface: ThemeSurface
+  color: string
+  sidebarAppearance: 'light' | 'dark'
+}) {
   if (surface === 'topHeader' || surface === 'pageHeader') {
     return (
       <div className="rounded p-3 text-xs font-semibold text-white" style={{ backgroundColor: color }}>
@@ -26,8 +34,26 @@ function SurfacePreview({ surface, color }: { surface: ThemeSurface; color: stri
   }
   if (surface === 'sidebarHighlight') {
     return (
-      <div className="rounded px-3 py-3 text-xs text-gray-700" style={{ backgroundColor: color }}>
-        Active or hovered navigation
+      <div
+        className="space-y-1 rounded p-2 text-xs"
+        style={{
+          backgroundColor: sidebarAppearance === 'dark' ? '#1f2937' : '#ffffff',
+          color: sidebarAppearance === 'dark' ? '#e5e7eb' : '#4b5563',
+        }}
+      >
+        <div
+          className="rounded px-2 py-1"
+          style={{ backgroundColor: color, color: 'var(--app-sidebar-highlight-text)' }}
+        >
+          Active navigation
+        </div>
+        <div
+          className="rounded px-2 py-1"
+          style={{ backgroundColor: color, color: 'var(--app-sidebar-highlight-text)' }}
+        >
+          Hovered navigation
+        </div>
+        <div className="px-2 py-1">Inactive navigation</div>
       </div>
     )
   }
@@ -60,13 +86,18 @@ export function ThemeSettingsPage() {
   const {
     palette,
     setPaletteId,
+    sidebarAppearance,
+    setSidebarAppearance,
     surfaceColors,
     surfaceOverrides,
     setSurfaceColor,
     resetSurfaceColor,
     resetThemeCustomization,
   } = useAppTheme()
-  const hasCustomColors = Object.keys(surfaceOverrides).length > 0
+  const hasCustomColors =
+    Object.keys(surfaceOverrides).length > 0 ||
+    palette.id !== 'green' ||
+    sidebarAppearance !== 'dark'
 
   return (
     <DashboardLayout
@@ -167,8 +198,28 @@ export function ThemeSettingsPage() {
                   {description}
                 </Text>
                 <div className="mb-3">
-                  <SurfacePreview surface={id} color={surfaceColors[id]} />
+                  <SurfacePreview
+                    surface={id}
+                    color={surfaceColors[id]}
+                    sidebarAppearance={sidebarAppearance}
+                  />
                 </div>
+                {id === 'sidebarHighlight' && (
+                  <SegmentedControl
+                    fullWidth
+                    size="xs"
+                    value={sidebarAppearance}
+                    onChange={(value) => {
+                      if (value === 'light' || value === 'dark') setSidebarAppearance(value)
+                    }}
+                    data={[
+                      { label: 'Light sidebar', value: 'light' },
+                      { label: 'Dark sidebar', value: 'dark' },
+                    ]}
+                    className="mb-3"
+                    aria-label="Sidebar appearance"
+                  />
+                )}
                 <ColorInput
                   label={`${label} color`}
                   format="hex"

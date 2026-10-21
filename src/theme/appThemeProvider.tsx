@@ -17,10 +17,12 @@ import type {
   ThemeSurface,
   ThemeSurfaceColors,
   ThemeSurfaceOverrides,
+  SidebarAppearance,
 } from './themeContext'
 
 const PALETTE_STORAGE_KEY = 'project-tracker-theme'
 const COLORS_STORAGE_KEY = 'project-tracker-theme-colors'
+const SIDEBAR_APPEARANCE_STORAGE_KEY = 'project-tracker-sidebar-appearance'
 const FONT_STACK = '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
 
 type ThemeVariables = CSSProperties & {
@@ -35,11 +37,22 @@ type ThemeVariables = CSSProperties & {
   '--app-sidebar-highlight': string
   '--app-content-background': string
   '--app-loader': string
+  '--app-sidebar-background': string
+  '--app-sidebar-text': string
+  '--app-sidebar-muted': string
+  '--app-sidebar-border': string
+  '--app-sidebar-highlight-text': string
+  '--app-sidebar-avatar': string
+  '--app-sidebar-avatar-text': string
 }
 
 function getInitialPaletteId(): PaletteId {
   const storedPaletteId = window.localStorage.getItem(PALETTE_STORAGE_KEY)
   return isPaletteId(storedPaletteId) ? storedPaletteId : 'green'
+}
+
+function getInitialSidebarAppearance(): SidebarAppearance {
+  return window.localStorage.getItem(SIDEBAR_APPEARANCE_STORAGE_KEY) === 'light' ? 'light' : 'dark'
 }
 
 function isHexColor(value: unknown): value is string {
@@ -80,6 +93,14 @@ function mixHex(first: string, second: string, amount: number) {
     .join('')}`
 }
 
+function getContrastingTextColor(hex: string) {
+  const channels = hex.match(/[\da-f]{2}/gi)?.map((channel) => Number.parseInt(channel, 16) / 255) ?? []
+  const luminance = channels
+    .map((channel) => (channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4))
+    .reduce((total, channel, index) => total + channel * [0.2126, 0.7152, 0.0722][index], 0)
+  return luminance > 0.45 ? '#263238' : '#ffffff'
+}
+
 function createCustomBrandShades(primary: string): MantineColorsTuple {
   const lighterMixes = [0.94, 0.86, 0.72, 0.54, 0.34, 0.16]
   const darkerMixes = [0.14, 0.3, 0.48]
@@ -99,6 +120,8 @@ function createCustomBrandShades(primary: string): MantineColorsTuple {
 
 export function AppThemeProvider({ children }: { children: ReactNode }) {
   const [paletteId, setPaletteIdState] = useState<PaletteId>(getInitialPaletteId)
+  const [sidebarAppearance, setSidebarAppearanceState] =
+    useState<SidebarAppearance>(getInitialSidebarAppearance)
   const [overrides, setOverrides] = useState<ThemeSurfaceOverrides>(getInitialOverrides)
   const palette = themePalettes.find((item) => item.id === paletteId)
   if (!palette) {
@@ -108,6 +131,11 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
   const setPaletteId = (nextPaletteId: PaletteId) => {
     window.localStorage.setItem(PALETTE_STORAGE_KEY, nextPaletteId)
     setPaletteIdState(nextPaletteId)
+  }
+
+  const setSidebarAppearance = (appearance: SidebarAppearance) => {
+    window.localStorage.setItem(SIDEBAR_APPEARANCE_STORAGE_KEY, appearance)
+    setSidebarAppearanceState(appearance)
   }
 
   const baseBrand = overrides.primary ?? palette.shades[6]
@@ -120,12 +148,12 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
       topHeader: palette.shades[7],
       pageHeader: palette.shades[7],
       sidebarIndicator: palette.shades[6],
-      sidebarHighlight: '#fafcfb',
+      sidebarHighlight: sidebarAppearance === 'dark' ? '#374151' : '#fafcfb',
       primary: palette.shades[6],
       loader: palette.shades[6],
       contentBackground: '#fafcfb',
     }),
-    [palette],
+    [palette, sidebarAppearance],
   )
   const surfaceColors = useMemo(
     () => ({ ...defaultSurfaceColors, ...overrides }),
@@ -154,7 +182,11 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
 
   const resetThemeCustomization = () => {
     window.localStorage.removeItem(COLORS_STORAGE_KEY)
+    window.localStorage.removeItem(SIDEBAR_APPEARANCE_STORAGE_KEY)
+    window.localStorage.setItem(PALETTE_STORAGE_KEY, 'green')
+    setPaletteIdState('green')
     setOverrides({})
+    setSidebarAppearanceState('dark')
   }
 
   const theme = useMemo(
@@ -181,10 +213,17 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
       '--app-brand-subtle': '#fafcfb',
       '--app-sidebar-indicator': surfaceColors.sidebarIndicator,
       '--app-sidebar-highlight': surfaceColors.sidebarHighlight,
+      '--app-sidebar-background': sidebarAppearance === 'dark' ? '#1f2937' : '#ffffff',
+      '--app-sidebar-text': sidebarAppearance === 'dark' ? '#e5e7eb' : '#4b5563',
+      '--app-sidebar-muted': sidebarAppearance === 'dark' ? '#9ca3af' : '#9ca3af',
+      '--app-sidebar-border': sidebarAppearance === 'dark' ? '#374151' : '#f3f4f6',
+      '--app-sidebar-highlight-text': getContrastingTextColor(surfaceColors.sidebarHighlight),
+      '--app-sidebar-avatar': sidebarAppearance === 'dark' ? '#374151' : '#fafcfb',
+      '--app-sidebar-avatar-text': sidebarAppearance === 'dark' ? '#f9fafb' : palette.shades[8],
       '--app-content-background': surfaceColors.contentBackground,
       '--app-loader': surfaceColors.loader,
     }),
-    [palette, surfaceColors],
+    [palette, sidebarAppearance, surfaceColors],
   )
 
   useLayoutEffect(() => {
@@ -199,6 +238,8 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
       value={{
         palette,
         setPaletteId,
+        sidebarAppearance,
+        setSidebarAppearance,
         surfaceColors,
         surfaceOverrides: overrides,
         setSurfaceColor,

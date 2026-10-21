@@ -63,13 +63,17 @@ export function StatWidget({
             >
               {hasCustomCurrencyLabel ? (
                 <>
-                  {miniLabel && <span className="mr-1 text-sm font-normal">{miniLabel}</span>}
+                  {miniLabel && (
+                    <span className="mr-1 text-xs font-semibold text-brand">{miniLabel}</span>
+                  )}
                   {value.slice(4)}
                 </>
               ) : (
                 value
               )}
-              {displayUnit && <span className="ml-1 text-sm font-normal">{displayUnit}</span>}
+              {displayUnit && (
+                <span className="ml-1 text-xs font-semibold text-brand">{displayUnit}</span>
+              )}
             </div>
           </div>
 

@@ -48,13 +48,13 @@ export function Sidebar({
 
       {/* lg:relative + lg:z-20 keeps the sidebar layered above the page content */}
       <aside
-        className={`fixed bottom-0 left-0 top-12 z-40 flex w-56 shrink-0 flex-col overflow-hidden bg-white transition-[width,transform] duration-200 lg:relative lg:inset-auto lg:z-20 lg:h-full lg:translate-x-0 ${
+        className={`fixed bottom-0 left-0 top-12 z-40 flex w-56 shrink-0 flex-col overflow-hidden bg-sidebar-background transition-[width,transform] duration-200 lg:relative lg:inset-auto lg:z-20 lg:h-full lg:translate-x-0 ${
           collapsed ? 'lg:w-14' : 'lg:w-56'
         } ${open ? 'translate-x-0' : '-translate-x-full'}`}
       >
         {/* user */}
         <div
-          className={`relative flex shrink-0 flex-col items-center border-b border-gray-100 px-4 py-5 text-center ${
+          className={`relative flex shrink-0 flex-col items-center border-b border-sidebar-border px-4 py-5 text-center ${
             collapsed ? 'lg:px-1 lg:py-3' : ''
           }`}
         >
@@ -63,7 +63,7 @@ export function Sidebar({
               <ActionIcon
                 variant="subtle"
                 size="sm"
-                className="absolute right-2 top-2 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                className="absolute right-2 top-2 text-sidebar-text hover:bg-sidebar-highlight hover:text-sidebar-highlight-text"
                 aria-label="Account settings menu"
               >
                 <AppIcon name="settings" />
@@ -80,15 +80,15 @@ export function Sidebar({
             </Menu.Dropdown>
           </Menu>
           <div
-            className={`flex h-16 w-16 items-center justify-center rounded-full bg-brand-subtle text-xl font-medium text-brand-dark ${
+            className={`flex h-16 w-16 items-center justify-center rounded-full bg-sidebar-avatar text-xl font-medium text-sidebar-avatar-text ${
               collapsed ? 'lg:h-9 lg:w-9 lg:text-sm' : ''
             }`}
           >
             {initials(user.name)}
           </div>
           <div className={collapsed ? 'lg:hidden' : ''}>
-            <div className="mt-3 text-sm font-medium text-brand-dark">{user.name}</div>
-            <div className="text-xs text-gray-500">{user.role}</div>
+            <div className="mt-3 text-sm font-medium text-sidebar-text">{user.name}</div>
+            <div className="text-xs text-sidebar-muted">{user.role}</div>
           </div>
         </div>
 
@@ -107,13 +107,10 @@ export function Sidebar({
             {navSections.map((section) => (
               <div key={section.label} className="mt-3 first:mt-2">
                 {/* group label, replaced by a thin divider when the rail is collapsed */}
-                <Text
-                  size="xs"
-                  className={`px-5 pb-1 text-gray-400 ${collapsed ? 'lg:hidden' : ''}`}
-                >
+                <Text size="xs" className={`px-5 pb-1 text-sidebar-muted ${collapsed ? 'lg:hidden' : ''}`}>
                   {section.label}
                 </Text>
-                {collapsed && <div className="mx-3 mb-1 hidden border-t border-gray-100 lg:block" />}
+                {collapsed && <div className="mx-3 mb-1 hidden border-t border-sidebar-border lg:block" />}
 
                 {section.items.map((item) => {
                   const isActive = item.key === active
@@ -127,8 +124,8 @@ export function Sidebar({
                         collapsed ? 'lg:justify-center lg:px-0' : ''
                       } ${
                         isActive
-                          ? 'bg-sidebar-highlight text-brand-dark'
-                          : 'text-gray-600 hover:bg-sidebar-highlight hover:text-gray-600'
+                          ? 'bg-sidebar-highlight text-sidebar-highlight-text'
+                          : 'text-sidebar-text hover:bg-sidebar-highlight hover:text-sidebar-highlight-text'
                       }`}
                     >
                       <AppIcon name={item.icon} className="w-4 text-center" />

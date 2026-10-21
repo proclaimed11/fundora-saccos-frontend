@@ -16,6 +16,13 @@
   --color-brand-subtle: var(--app-brand-subtle);
   --color-sidebar-highlight: var(--app-sidebar-highlight);
   --color-sidebar-indicator: var(--app-sidebar-indicator);
+  --color-sidebar-background: var(--app-sidebar-background);
+  --color-sidebar-text: var(--app-sidebar-text);
+  --color-sidebar-muted: var(--app-sidebar-muted);
+  --color-sidebar-border: var(--app-sidebar-border);
+  --color-sidebar-highlight-text: var(--app-sidebar-highlight-text);
+  --color-sidebar-avatar: var(--app-sidebar-avatar);
+  --color-sidebar-avatar-text: var(--app-sidebar-avatar-text);
   --color-content-background: var(--app-content-background);
   --color-loader: var(--app-loader);
 }
