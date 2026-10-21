@@ -35,7 +35,7 @@ export function Preloader() {
     >
       {/* no separate fade here: the logo and spinner are part of the overlay,
           so they stay visible and only vanish at the final full transparency */}
-      <img src={logo} alt="" className="h-14 w-auto" />
+      <img src={logo} alt="" className="h-20 w-auto max-w-[80vw] object-contain" />
       <div className="h-8 w-8 rounded-full border-[3px] border-gray-200 border-t-loader motion-safe:animate-spin" />
     </div>
   )

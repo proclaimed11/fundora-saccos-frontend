@@ -31,10 +31,11 @@ export function Login({ onLogin }: LoginProps) {
     <div className="flex min-h-screen items-center justify-center bg-content-background p-4">
       <div className="w-full max-w-sm rounded-md border-t-4 border-brand bg-white p-8 shadow-sm">
         <div className="mb-6 text-center">
-          <img src={logo} alt="Company logo" className="mx-auto mb-4 h-12 w-auto" />
-          <Text size="xl" fw={700} c="brand.8">
-            Project-Tracker
-          </Text>
+          <img
+            src={logo}
+            alt="Fundora Saccos"
+            className="mx-auto mb-2 h-20 w-56 max-w-full object-cover"
+          />
           <Text size="sm" c="dimmed">
             Sign in to your account
           </Text>

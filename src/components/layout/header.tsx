@@ -28,7 +28,7 @@ export function Header({ collapsed, breadcrumbs, onMenuClick, onNavigate }: Head
         <img
           src={logo}
           alt="Company logo"
-          className={`h-10 w-auto brightness-0 invert transition-opacity ${
+          className={`h-10 w-32 max-w-full object-cover brightness-0 invert transition-opacity lg:w-36 ${
             collapsed ? 'lg:pointer-events-none lg:opacity-0' : ''
           }`}
         />
