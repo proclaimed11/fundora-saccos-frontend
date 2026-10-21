@@ -13,7 +13,7 @@ import { useAppTheme } from '../theme/themeContext'
 const stats = [
   { label: 'Active Loans', value: 64, icon: 'hand-coins', color: '#45bdfc' },
   { label: 'Total Outstanding', value: formatTzs(1625000), miniLabel: 'TZS', icon: 'scale', color: '#8e44ad' },
-  { label: 'Collected This Month', value: formatTzs(178525), miniLabel: 'TZS', icon: 'calendar', color: 'var(--app-brand)' },
+  { label: 'Collected This Month', value: formatTzs(178525), miniLabel: 'TZS', icon: 'calendar', color: '#1eeb3a' },
   { label: 'Pending Approvals', value: 9, icon: 'square-check', color: '#0077b5' },
   { label: 'Overdue Loans', value: 7, icon: 'clock', color: '#e08a1e' },
 ]
@@ -52,8 +52,8 @@ export function Dashboard() {
       breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Dashboard' }]}
       subtitle={
         <>
-          Welcome Back{' '}
-          <span className="text-sm font-bold text-white">John Doe</span>!
+          Welcome Back{'  '}
+          <span className="text-sm font-bold" style={{ color: '#ffffff' }}>John Doe</span>!
         </>
       }
     >

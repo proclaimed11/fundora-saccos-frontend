@@ -85,7 +85,6 @@ export function ApplicantProfile() {
         <>
           <Button
             size="xs"
-            radius="xs"
             variant="default"
             leftSection={<AppIcon name="pen-line" />}
           >
@@ -95,7 +94,6 @@ export function ApplicantProfile() {
             <Button
               key={x.label}
               size="xs"
-              radius="xs"
               leftSection={<AppIcon name={x.icon} />}
               onClick={x.label === 'Review KYC' ? () => setReviewOpen(true) : undefined}
             >
@@ -104,7 +102,6 @@ export function ApplicantProfile() {
           ))}
           <Button
             size="xs"
-            radius="xs"
             color="red"
             leftSection={<AppIcon name="trash" />}
           >

@@ -208,7 +208,6 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
         <div className="mt-3 flex flex-wrap gap-2">
           <Button
             size="xs"
-            radius="xs"
             variant={next.kind ? 'filled' : 'default'}
             leftSection={<AppIcon name={next.icon} />}
             onClick={() => onAct(a)}
@@ -218,7 +217,6 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
           {stage === 'LOAN' && (
             <Button
               size="xs"
-              radius="xs"
               leftSection={<AppIcon name="banknote" />}
               onClick={() => onDisburse(a)}
             >
@@ -348,7 +346,6 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
 
       <Button
         size="xs"
-        radius="xs"
         variant="default"
         leftSection={<AppIcon name="external-link" />}
         onClick={() => onOpenApplication(a)}
@@ -655,7 +652,6 @@ const disburse = (a: LoanApplication) =>
               {notice.next && (
                 <Button
                   size="compact-xs"
-                  radius="xs"
                   onClick={() => {
                     setDialog({ kind: notice.next!.kind, id: notice.next!.id })
                     setNotice(null)
@@ -676,7 +672,7 @@ const disburse = (a: LoanApplication) =>
                 {lateSent.length} {lateSent.length === 1 ? 'contract has' : 'contracts have'} been waiting for a
                 signature for over {LATE_AFTER_DAYS} days.
               </Text>
-              <Button size="compact-xs" radius="xs" variant="default" onClick={() => setFilter('SENT')}>
+              <Button size="compact-xs" variant="default" onClick={() => setFilter('SENT')}>
                 Show them
               </Button>
             </div>

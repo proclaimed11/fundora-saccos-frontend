@@ -1,5 +1,5 @@
 import { AppIcon } from './appIcon'
-import { Skeleton } from '@mantine/core'
+import { Card, Skeleton } from '@mantine/core'
 
 type StatWidgetProps = {
   value: string | number
@@ -34,58 +34,73 @@ export function StatWidget({
   const formattedLabel = label.toLowerCase().replace(/\b\w/g, (character) => character.toUpperCase())
 
   return (
-    <Tag
-      type={onClick ? 'button' : undefined}
-      onClick={onClick}
-      className={`flex w-full items-center justify-between gap-3 rounded border border-gray-200 bg-white px-4 py-4 text-left ${
-        onClick
-          ? 'cursor-pointer transition-colors hover:border-gray-300 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300'
-          : ''
+    <Card
+      padding={0}
+      radius="md"
+      withBorder
+      shadow="none"
+      className={`overflow-hidden border-gray-200 ${
+        onClick ? 'transition-colors hover:border-gray-300' : ''
       }`}
     >
-      {loading ? (
-        <>
-          <div className="min-w-0 flex-1">
-            <Skeleton height={10} width={90} mb={8} />
-            <Skeleton height={20} width={70} />
-          </div>
-          <Skeleton height={40} width={40} circle className="shrink-0" />
-        </>
-      ) : (
-        <>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-[11px] font-semibold tracking-wide text-slate-500">
-              {formattedLabel}
+      <Tag
+        type={onClick ? 'button' : undefined}
+        onClick={onClick}
+        className={`flex w-full items-center justify-between gap-3 px-4 py-4 text-left ${
+          onClick
+            ? 'cursor-pointer transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-300'
+            : ''
+        }`}
+      >
+        {loading ? (
+          <>
+            <div className="min-w-0 flex-1">
+              <Skeleton height={10} width={90} mb={8} />
+              <Skeleton height={20} width={70} />
             </div>
-            <div
-              className="truncate text-lg font-semibold leading-tight text-gray-800"
-              style={valueColor ? { color: valueColor } : undefined}
-            >
-              {hasCustomCurrencyLabel ? (
-                <>
-                  {miniLabel && (
-                    <span className="mr-1 text-xs font-semibold text-brand">{miniLabel}</span>
-                  )}
-                  {value.slice(4)}
-                </>
-              ) : (
-                value
-              )}
-              {displayUnit && (
-                <span className="ml-1 text-xs font-semibold text-brand">{displayUnit}</span>
-              )}
+            <Skeleton height={40} width={40} circle className="shrink-0" />
+          </>
+        ) : (
+          <>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[11px] font-semibold tracking-wide text-slate-500">
+                {formattedLabel}
+              </div>
+              <div
+                className="truncate text-lg font-semibold leading-tight text-gray-800"
+                style={valueColor ? { color: valueColor } : undefined}
+              >
+                {hasCustomCurrencyLabel ? (
+                  <>
+                    {miniLabel && (
+                      <span className="mr-1 text-xs font-extrabold text-brand">{miniLabel}</span>
+                    )}
+                    {value.slice(4)}
+                  </>
+                ) : (
+                  value
+                )}
+                {displayUnit && (
+                  <span className="ml-1 text-xs font-extrabold text-brand">{displayUnit}</span>
+                )}
+              </div>
             </div>
-          </div>
 
-          <span
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-            style={{ backgroundColor: color }}
-            aria-hidden="true"
-          >
-            <AppIcon name={icon} className="text-center leading-none text-white" size={26} strokeWidth={1.25} />
-          </span>
-        </>
-      )}
-    </Tag>
+            <span
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+              style={{ backgroundColor: color }}
+              aria-hidden="true"
+            >
+              <AppIcon
+                name={icon}
+                className="text-center leading-none text-white"
+                size={26}
+                strokeWidth={1.25}
+              />
+            </span>
+          </>
+        )}
+      </Tag>
+    </Card>
   )
 }

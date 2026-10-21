@@ -791,7 +791,6 @@ export function NewLoanApplicationPage() {
       actions={
         <Button
           size="xs"
-          radius="xs"
           color="red"
           leftSection={<AppIcon name="x" />}
           onClick={goBack}

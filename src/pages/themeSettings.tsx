@@ -96,7 +96,7 @@ export function ThemeSettingsPage() {
   } = useAppTheme()
   const hasCustomColors =
     Object.keys(surfaceOverrides).length > 0 ||
-    palette.id !== 'green' ||
+    palette.id !== 'deep-teal' ||
     sidebarAppearance !== 'dark'
 
   return (

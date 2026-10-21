@@ -95,7 +95,6 @@ export function KycReview() {
       render: (a) => (
         <Button
           size="compact-xs"
-          radius="xs"
           leftSection={<AppIcon name="contact-round" />}
           onClick={(e) => {
             e.stopPropagation() // don't also open the profile

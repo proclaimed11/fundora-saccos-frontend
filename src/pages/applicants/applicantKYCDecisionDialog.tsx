@@ -97,10 +97,10 @@ export function KycDecisionDialog({ applicant, onClose, onDecided }: KycDecision
                   </div>
                 )}
                 <div className="flex justify-end gap-2">
-                  <Button size="xs" radius="xs" variant="default" onClick={() => setPending(null)}>
+                  <Button size="xs" variant="default" onClick={() => setPending(null)}>
                     Back
                   </Button>
-                  <Button size="xs" radius="xs" color={approving ? undefined : 'red'} onClick={confirm}>
+                  <Button size="xs" color={approving ? undefined : 'red'} onClick={confirm}>
                     {approving ? 'Confirm approval' : 'Confirm rejection'}
                   </Button>
                 </div>
@@ -173,10 +173,10 @@ export function KycDecisionDialog({ applicant, onClose, onDecided }: KycDecision
                 />
 
                 <div className="flex justify-end gap-2">
-                  <Button size="xs" radius="xs" color="red" variant="light" onClick={() => choose('REJECTED')}>
+                  <Button size="xs" color="red" variant="light" onClick={() => choose('REJECTED')}>
                     Reject
                   </Button>
-                  <Button size="xs" radius="xs" onClick={() => choose('APPROVED')}>
+                  <Button size="xs" onClick={() => choose('APPROVED')}>
                     Approve
                   </Button>
                 </div>

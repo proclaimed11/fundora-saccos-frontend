@@ -117,7 +117,6 @@ export function LoanApplications() {
         // inactive for now: no click handler until the wizard is built
         <Button
           size="xs"
-          radius="xs"
           leftSection={<AppIcon name="plus" />}
           onClick={() => navigate('/loan-applications/new')}
         >

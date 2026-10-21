@@ -247,12 +247,11 @@ export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubm
       </div>
 
       <div className="mt-5 flex justify-end gap-2 border-t border-gray-100 pt-4">
-        <Button size="xs" radius="xs" variant="default" onClick={close}>
+        <Button size="xs" variant="default" onClick={close}>
           Cancel
         </Button>
         <Button
           size="xs"
-          radius="xs"
           leftSection={<AppIcon name="check" />}
           onClick={submit}
         >

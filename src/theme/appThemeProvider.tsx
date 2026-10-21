@@ -48,7 +48,7 @@ type ThemeVariables = CSSProperties & {
 
 function getInitialPaletteId(): PaletteId {
   const storedPaletteId = window.localStorage.getItem(PALETTE_STORAGE_KEY)
-  return isPaletteId(storedPaletteId) ? storedPaletteId : 'green'
+  return isPaletteId(storedPaletteId) ? storedPaletteId : 'deep-teal'
 }
 
 function getInitialSidebarAppearance(): SidebarAppearance {
@@ -183,8 +183,8 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
   const resetThemeCustomization = () => {
     window.localStorage.removeItem(COLORS_STORAGE_KEY)
     window.localStorage.removeItem(SIDEBAR_APPEARANCE_STORAGE_KEY)
-    window.localStorage.setItem(PALETTE_STORAGE_KEY, 'green')
-    setPaletteIdState('green')
+    window.localStorage.setItem(PALETTE_STORAGE_KEY, 'deep-teal')
+    setPaletteIdState('deep-teal')
     setOverrides({})
     setSidebarAppearanceState('dark')
   }

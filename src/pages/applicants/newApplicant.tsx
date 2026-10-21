@@ -208,7 +208,6 @@ export function NewApplicantPage() {
                 // inactive for now: no click handler until the form is built
             <Button
                 size="xs"
-                radius="xs"
                 color="red"
                 leftSection={<AppIcon name="user-round-x" />}
                 >

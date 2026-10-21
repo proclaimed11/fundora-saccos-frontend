@@ -333,7 +333,6 @@ function ReviewDrawer({ row, onClose, onApprove }: DrawerProps) {
                   {/* TODO: POST /api/loan-origination/applications/{applicationId}/reject { approverId, comments } */}
                   <Button
                     size="xs"
-                    radius="xs"
                     color="red"
                     variant="light"
                     leftSection={<AppIcon name="x" />}
@@ -342,7 +341,6 @@ function ReviewDrawer({ row, onClose, onApprove }: DrawerProps) {
                   </Button>
                   <Button
                     size="xs"
-                    radius="xs"
                     leftSection={<AppIcon name="check" />}
                     onClick={() => onApprove(r)}
                   >
@@ -363,7 +361,6 @@ function ReviewDrawer({ row, onClose, onApprove }: DrawerProps) {
 
         <Button
           size="xs"
-          radius="xs"
           variant="default"
           leftSection={<AppIcon name="external-link" />}
           onClick={() => navigate(`/loan-applications/${r.id}`)}

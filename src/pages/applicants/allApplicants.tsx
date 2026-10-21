@@ -156,7 +156,6 @@ export function Applicants() {
         // inactive for now: no click handler until the form is built
       <Button
         size="xs"
-        radius="xs"
         leftSection={<AppIcon name="user-round-plus" />}
         onClick={() => navigate('/applicants/new')}
       >
@@ -234,7 +233,6 @@ export function Applicants() {
                 <Button
                   key={x.label}
                   size="xs"
-                  radius="xs"
                   variant={x.label === 'Start loan application' ? 'filled' : 'default'}
                   leftSection={<AppIcon name={x.icon} />}
                   onClick={x.label === 'Review KYC' ? () => setKycFor(selected) : undefined}
@@ -267,10 +265,10 @@ export function Applicants() {
               Rejecting stops this applicant's loan application. Approval is valid for 12 months.
             </Text>
             <div className="flex justify-end gap-2">
-              <Button size="xs" radius="xs" color="red" variant="light">
+              <Button size="xs" color="red" variant="light">
                 Reject
               </Button>
-              <Button size="xs" radius="xs">
+              <Button size="xs">
                 Approve
               </Button>
             </div>

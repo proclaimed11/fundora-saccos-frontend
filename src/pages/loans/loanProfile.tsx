@@ -382,7 +382,6 @@ export function LoanProfile() {
         <>
           <Button
             size="xs"
-            radius="xs"
             variant="default"
             leftSection={<AppIcon name="user-round" />}
             onClick={() => navigate(`/applicants/${view.applicantId}`)}
@@ -392,7 +391,6 @@ export function LoanProfile() {
           {view.applicationId && (
             <Button
               size="xs"
-              radius="xs"
               variant="default"
               leftSection={<AppIcon name="file-text" />}
               onClick={() => navigate(`/loan-applications/${view.applicationId}`)}
@@ -404,7 +402,6 @@ export function LoanProfile() {
             <>
               <Button
                 size="xs"
-                radius="xs"
                 variant="default"
                 leftSection={<AppIcon name="triangle-alert" />}
                 onClick={accrue}
@@ -413,7 +410,6 @@ export function LoanProfile() {
               </Button>
               <Button
                 size="xs"
-                radius="xs"
                 leftSection={<AppIcon name="banknote" />}
                 onClick={() => setPayOpen(true)}
               >
@@ -552,7 +548,7 @@ export function LoanProfile() {
                             been charged yet, about {formatTzs(toCharge.reduce((s, p) => s + p.amount, 0))} in total. The
                             daily job charges them at 06:30 UTC, or you can do it now.
                           </Text>
-                          <Button size="compact-xs" radius="xs" onClick={accrue}>
+                          <Button size="compact-xs" onClick={accrue}>
                             Charge now
                           </Button>
                         </div>

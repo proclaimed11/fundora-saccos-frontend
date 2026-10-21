@@ -34,7 +34,7 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
         </Text>
 
         {subtitle && (
-          <Text size="xs" c="white" mt={6} className="truncate opacity-90">
+          <Text size="xs" c="white" mt={6} className="truncate">
             {subtitle}
           </Text>
         )}

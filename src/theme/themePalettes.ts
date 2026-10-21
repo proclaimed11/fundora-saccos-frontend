@@ -1,6 +1,6 @@
 import type { MantineColorsTuple } from '@mantine/core'
 
-export type PaletteId = 'green' | 'deep-blue' | 'deep-pink'
+export type PaletteId = 'green' | 'deep-blue' | 'deep-pink' | 'deep-teal'
 
 export type ThemePalette = {
   id: PaletteId
@@ -59,6 +59,23 @@ export const themePalettes: ThemePalette[] = [
       '#971a50',
       '#73143d',
       '#4f0e2a',
+    ],
+  },
+  {
+    id: 'deep-teal',
+    name: 'Deep Teal',
+    description: 'A deep teal theme',
+    shades: [
+      '#e6f4f1',
+      '#cce9e4',
+      '#a3d9d1',
+      '#73c4b9',
+      '#49ae9f',
+      '#269688',
+      '#0f766e',
+      '#0d645d',
+      '#0a514c',
+      '#073e3a',
     ],
   },
 ]

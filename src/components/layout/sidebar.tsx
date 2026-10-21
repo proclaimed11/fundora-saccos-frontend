@@ -87,7 +87,7 @@ export function Sidebar({
             {initials(user.name)}
           </div>
           <div className={collapsed ? 'lg:hidden' : ''}>
-            <div className="mt-3 text-sm font-medium text-sidebar-text">{user.name}</div>
+            <div className="mt-3 text-sm font-medium text-white">{user.name}</div>
             <div className="text-xs text-sidebar-muted">{user.role}</div>
           </div>
         </div>

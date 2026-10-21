@@ -172,17 +172,16 @@ export function ContractReviewDialog({ opened, application: a, canSend, onClose,
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 pt-4">
-        <Button size="xs" radius="xs" variant="default" leftSection={<AppIcon name="printer" />}>
+        <Button size="xs" variant="default" leftSection={<AppIcon name="printer" />}>
           Print
         </Button>
         <div className="flex gap-2">
-          <Button size="xs" radius="xs" variant="default" onClick={close}>
+          <Button size="xs" variant="default" onClick={close}>
             {canSend ? 'Review later' : 'Close'}
           </Button>
           {canSend && (
             <Button
               size="xs"
-              radius="xs"
               disabled={!reviewed}
               leftSection={<AppIcon name="send" />}
               onClick={send}

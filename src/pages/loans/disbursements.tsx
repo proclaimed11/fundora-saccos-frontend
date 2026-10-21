@@ -126,7 +126,6 @@ function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication 
           <div className="mt-3">
             <Button
               size="xs"
-              radius="xs"
               leftSection={<AppIcon name="banknote" />}
               onClick={() => onDisburse(r)}
             >
@@ -139,7 +138,7 @@ function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication 
           <Alert color="orange" variant="light" icon={<AppIcon name="triangle-alert" />}>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Text size="sm">The loan is disbursed, but the ledger entry has not been posted yet.</Text>
-              <Button size="compact-xs" radius="xs" onClick={() => onPostGl(r)}>
+              <Button size="compact-xs" onClick={() => onPostGl(r)}>
                 Post to ledger
               </Button>
             </div>
@@ -224,7 +223,6 @@ function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication 
 
       <Button
         size="xs"
-        radius="xs"
         variant="default"
         leftSection={<AppIcon name="external-link" />}
         onClick={() => onOpenApplication(r)}
@@ -533,7 +531,6 @@ export function DisbursementsPage() {
               {notice.viewId && (
                 <Button
                   size="compact-xs"
-                  radius="xs"
                   onClick={() => {
                     openView(notice.viewId!)
                     setNotice(null)

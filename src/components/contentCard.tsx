@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Text } from '@mantine/core'
+import { Card, Text } from '@mantine/core'
 
 type ContentCardProps = {
   /** optional heading shown at the top of the card */
@@ -31,7 +31,13 @@ export function ContentCard({
   const hasHeader = Boolean(title || action)
 
   return (
-    <section className={`rounded-md bg-white ${CARD_SHADOW} ${className}`}>
+    <Card
+      component="section"
+      padding={0}
+      radius="md"
+      shadow="none"
+      className={`bg-white ${CARD_SHADOW} ${className}`}
+    >
       {hasHeader &&
         (headerColor ? (
           <div
@@ -56,6 +62,6 @@ export function ContentCard({
           </div>
         ))}
       <div className={flush ? '' : 'p-4'}>{children}</div>
-    </section>
+    </Card>
   )
 }

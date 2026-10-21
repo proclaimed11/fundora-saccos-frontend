@@ -105,7 +105,6 @@ export function LoanApplicationProfile() {
         <>
           <Button
             size="xs"
-            radius="xs"
             variant="default"
             leftSection={<AppIcon name="user-round" />}
             onClick={() => navigate(`/applicants/${application.applicantId}`)}
@@ -114,7 +113,6 @@ export function LoanApplicationProfile() {
           </Button>
           <Button
             size="xs"
-            radius="xs"
             leftSection={<AppIcon name="pencil" />}
             onClick={() => navigate(`/loan-applications/new?applicantId=${application.applicantId}`)}
           >
@@ -123,7 +121,6 @@ export function LoanApplicationProfile() {
           {/* inactive for now: no click handler until cancelling is wired up */}
           <Button
             size="xs"
-            radius="xs"
             color="red"
             leftSection={<AppIcon name="x" />}
           >

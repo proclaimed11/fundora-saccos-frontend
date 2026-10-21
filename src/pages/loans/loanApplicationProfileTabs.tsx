@@ -295,7 +295,6 @@ export function ApprovalsTab({ application }: { application: LoanApplication }) 
         {inApprovalStage && (
           <Button
             size="xs"
-            radius="xs"
             variant="default"
             leftSection={<AppIcon name="external-link" />}
             onClick={() => navigate(`/loan-approvals?review=${application.id}`)}
@@ -427,7 +426,6 @@ export function ContractTab({
                     {contract.status === 'SENT' && (
                     <Button
                         size="compact-xs"
-                        radius="xs"
                         leftSection={<AppIcon name="upload" />}
                         onClick={onUploadSigned}
                     >

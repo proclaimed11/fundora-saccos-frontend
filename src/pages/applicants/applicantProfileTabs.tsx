@@ -119,7 +119,6 @@ export function KycTab({ applicant, onReview }: { applicant: Applicant; onReview
           <div className="mt-3 flex gap-2">
             <Button
               size="xs"
-              radius="xs"
               leftSection={<AppIcon name="contact-round" />}
               onClick={onReview}
             >

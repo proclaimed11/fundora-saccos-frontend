@@ -26,10 +26,10 @@ export function ContractConfirmDialog({
       <div className="space-y-4">
         <Text size="sm">{message}</Text>
         <div className="flex justify-end gap-2">
-          <Button size="xs" radius="xs" variant="default" onClick={onClose}>
+          <Button size="xs" variant="default" onClick={onClose}>
             Cancel
           </Button>
-          <Button size="xs" radius="xs" onClick={onConfirm}>
+          <Button size="xs" onClick={onConfirm}>
             {confirmLabel}
           </Button>
         </div>
@@ -98,12 +98,11 @@ export function SignedContractDialog({ opened, contractNo, onClose, onUploaded }
         </Alert>
 
         <div className="flex justify-end gap-2">
-          <Button size="xs" radius="xs" variant="default" onClick={close}>
+          <Button size="xs" variant="default" onClick={close}>
             Cancel
           </Button>
           <Button
             size="xs"
-            radius="xs"
             leftSection={<AppIcon name="upload" />}
             onClick={upload}
           >

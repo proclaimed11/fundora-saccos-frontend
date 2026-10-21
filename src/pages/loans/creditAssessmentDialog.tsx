@@ -148,10 +148,10 @@ export function CreditAssessmentDialog({
         )}
 
         <div className="flex justify-end gap-2">
-          <Button size="xs" radius="xs" variant="default" onClick={close}>
+          <Button size="xs" variant="default" onClick={close}>
             Cancel
           </Button>
-          <Button size="xs" radius="xs" onClick={run}>
+          <Button size="xs" onClick={run}>
             {required ? 'Run assessment' : 'Continue to approval'}
           </Button>
         </div>
