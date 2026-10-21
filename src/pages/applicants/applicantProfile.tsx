@@ -117,7 +117,7 @@ export function ApplicantProfile() {
         {/* profile summary */}
         <div className={`${CARD} p-5`}>
           <div className="flex flex-col items-center border-b border-gray-100 pb-4 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-xl font-medium text-green-700">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-subtle text-xl font-medium text-brand-dark">
               {initials(applicant.name)}
             </div>
             <div className="mt-3 text-base font-medium text-gray-800">{applicant.name}</div>

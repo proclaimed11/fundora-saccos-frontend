@@ -80,14 +80,14 @@ export function Sidebar({
             </Menu.Dropdown>
           </Menu>
           <div
-            className={`flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-xl font-medium text-green-700 ${
+            className={`flex h-16 w-16 items-center justify-center rounded-full bg-brand-subtle text-xl font-medium text-brand-dark ${
               collapsed ? 'lg:h-9 lg:w-9 lg:text-sm' : ''
             }`}
           >
             {initials(user.name)}
           </div>
           <div className={collapsed ? 'lg:hidden' : ''}>
-            <div className="mt-3 text-sm font-medium text-[#259118]">{user.name}</div>
+            <div className="mt-3 text-sm font-medium text-brand-dark">{user.name}</div>
             <div className="text-xs text-gray-500">{user.role}</div>
           </div>
         </div>
@@ -100,7 +100,7 @@ export function Sidebar({
           className="min-h-0 flex-1"
           styles={{
             scrollbar: { background: 'transparent' },
-            thumb: { background: 'var(--color-brand-subtle)' },
+            thumb: { background: 'var(--color-sidebar-highlight)' },
           }}
         >
           <nav className="flex flex-col pb-4">
@@ -127,8 +127,8 @@ export function Sidebar({
                         collapsed ? 'lg:justify-center lg:px-0' : ''
                       } ${
                         isActive
-                          ? 'bg-brand-subtle text-[#259118]'
-                          : 'text-gray-600 hover:bg-brand-subtle hover:text-gray-600'
+                          ? 'bg-sidebar-highlight text-brand-dark'
+                          : 'text-gray-600 hover:bg-sidebar-highlight hover:text-gray-600'
                       }`}
                     >
                       <AppIcon name={item.icon} className="w-4 text-center" />
@@ -138,7 +138,7 @@ export function Sidebar({
                       {isActive && (
                         <span
                           aria-hidden="true"
-                          className="absolute inset-y-0 left-0 w-1 bg-brand"
+                          className="absolute inset-y-0 left-0 w-1 bg-sidebar-indicator"
                         />
                       )}
                     </UnstyledButton>

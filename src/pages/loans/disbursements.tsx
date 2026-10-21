@@ -117,8 +117,8 @@ function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication 
 
       {/* next step */}
       {r.stage === 'PENDING' ? (
-        <div className="rounded-md border border-green-200 bg-green-50/60 p-4">
-          <div className="text-xs font-semibold uppercase tracking-wide text-green-800">Next step</div>
+        <div className="rounded-md border border-brand/20 bg-brand-subtle p-4">
+          <div className="text-xs font-semibold uppercase tracking-wide text-brand-dark">Next step</div>
           <p className="mt-1 text-sm text-gray-700">
             The loan is created and waiting. Send {formatTzs(r.requestedAmount)} to {r.applicantName}, then record
             where it was paid from and where it went.
@@ -297,7 +297,7 @@ export function DisbursementsPage() {
   // here `color` is the icon color
   const stats = [
     { label: 'Pending Disbursement', value: pending.length, icon: 'hourglass', color: '#e08a1e' },
-    { label: 'Disbursed', value: disbursed.length, icon: 'banknote', color: '#39d128' },
+    { label: 'Disbursed', value: disbursed.length, icon: 'banknote', color: 'var(--app-brand)' },
     { label: 'Recorded Today', value: todayRows.length, icon: 'calendar-check', color: '#0077b5' },
     { label: 'Ledger Posting Pending', value: glPending.length, icon: 'arrow-left-right', color: '#8e44ad' },
     { label: `Waiting Over ${LATE_AFTER_DAYS} Days`, value: late.length, icon: 'clock', color: '#ef4444' },

@@ -33,7 +33,7 @@ const STAGES: { key: Stage; label: string; icon: string; color: string; badge: s
   { key: 'READY', label: 'Ready to generate', icon: 'file-text', color: '#8e44ad', badge: 'green' },
   { key: 'GENERATED', label: 'To be sent', icon: 'mail', color: '#45bdfc', badge: 'violet' },
   { key: 'SENT', label: 'Awaiting signature', icon: 'hourglass', color: '#e08a1e', badge: 'blue' },
-  { key: 'SIGNED', label: 'Signed', icon: 'pen-line', color: '#39d128', badge: 'teal' },
+  { key: 'SIGNED', label: 'Signed', icon: 'pen-line', color: 'var(--app-brand)', badge: 'teal' },
   { key: 'LOAN', label: 'Loan created', icon: 'hand-coins', color: '#0077b5', badge: 'brand' },
 ]
 
@@ -202,8 +202,8 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
       </div>
 
       {/* what to do next */}
-      <div className="rounded-md border border-green-200 bg-green-50/60 p-4">
-        <div className="text-xs font-semibold uppercase tracking-wide text-green-800">Next step</div>
+      <div className="rounded-md border border-brand/20 bg-brand-subtle p-4">
+        <div className="text-xs font-semibold uppercase tracking-wide text-brand-dark">Next step</div>
         <p className="mt-1 text-sm text-gray-700">{next.hint}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button

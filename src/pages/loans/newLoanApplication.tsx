@@ -336,7 +336,7 @@ function CardShell({ title, verified, onRemove, children }: CardShellProps) {
           <Text size="sm" fw={600}>
             {title}
           </Text>
-          <Badge variant="light" color={verified ? 'green' : 'gray'} radius="sm" size="sm">
+          <Badge variant="light" color={verified ? 'brand' : 'gray'} radius="sm" size="sm">
             {verified ? 'Verified' : 'Not verified'}
           </Badge>
         </div>
@@ -804,7 +804,7 @@ export function NewLoanApplicationPage() {
         <Stepper
           active={submitted ? steps.length : active}
           size="xs"
-          color="green"
+          color="brand"
           allowNextStepsSelect={false}
           onStepClick={(i) => {
             if (!submitted && i < active) setActive(i)
@@ -1131,7 +1131,7 @@ export function NewLoanApplicationPage() {
               <div>
                 <Button
                   type="button"
-                  color="green"
+                  color="brand"
                   variant={result ? 'default' : 'filled'}
                   disabled={!canRun}
                   leftSection={<AppIcon name="calculator" />}
@@ -1148,7 +1148,7 @@ export function NewLoanApplicationPage() {
 
               {result && (
                 <Alert
-                  color={result.decision === 'APPROVE' ? 'green' : 'red'}
+                  color={result.decision === 'APPROVE' ? 'brand' : 'red'}
                   variant="light"
                   title={result.decision === 'APPROVE' ? 'Approved' : 'Denied'}
                   icon={
@@ -1281,7 +1281,7 @@ export function NewLoanApplicationPage() {
           {submitted && (
             <Stack gap="md">
               <Alert
-                color={outcome === 'REJECTED' ? 'red' : 'green'}
+                color={outcome === 'REJECTED' ? 'red' : 'brand'}
                 variant="light"
                 title={outcome === 'REJECTED' ? 'Application rejected' : 'Application submitted'}
                 icon={
@@ -1308,7 +1308,7 @@ export function NewLoanApplicationPage() {
                 <Button type="button" variant="default" onClick={goBack}>
                   Back to applications
                 </Button>
-                <Button type="button" color="green" onClick={startOver}>
+                <Button type="button" color="brand" onClick={startOver}>
                   Start another
                 </Button>
               </Group>
@@ -1350,7 +1350,7 @@ export function NewLoanApplicationPage() {
                         Save draft and exit
                       </Button>
                     )}
-                    <Button type="submit" color="green">
+                    <Button type="submit" color="brand">
                       {isLast ? 'Submit application' : 'Next'}
                     </Button>
                   </>

@@ -35,7 +35,7 @@ export function ContentCard({
       {hasHeader &&
         (headerColor ? (
           <div
-            className="flex items-center justify-between gap-2 rounded-t-md px-4 py-2.5"
+            className="flex items-center justify-between gap-2 rounded-t-md border-b border-gray-100 px-4 py-2.5"
             style={{ backgroundColor: headerColor, color: headerTextColor }}
           >
             {title && (

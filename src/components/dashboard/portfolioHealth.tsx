@@ -37,7 +37,11 @@ function Metric({ label, hint, value, color }: { label: string; hint: string; va
 
 export function PortfolioHealth({ nplRatio, parRatio, efficiency, writtenOff }: PortfolioHealthProps) {
   return (
-    <ContentCard title="Portfolio Health" headerColor="#f7faf8" headerTextColor='#1f2937'>
+    <ContentCard
+      title="Portfolio Health"
+      headerColor="#fcfdfc"
+      headerTextColor="#1f2937"
+    >
       <div className="space-y-5">
         <Metric label="NPL ratio" hint="Non-performing share of the active book" value={nplRatio} color={riskColor(nplRatio)} />
         <Metric label="Portfolio at risk" hint="Outstanding on overdue loans" value={parRatio} color={riskColor(parRatio)} />

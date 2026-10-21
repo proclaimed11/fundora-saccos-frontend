@@ -18,7 +18,7 @@ const ICON_BTN = 'text-white hover:bg-white/15'
 
 export function Header({ collapsed, breadcrumbs, onMenuClick, onNavigate }: HeaderProps) {
   return (
-    <header className="relative z-30 flex h-12 shrink-0 items-center bg-[#32c524] text-white">
+    <header className="relative z-30 flex h-12 shrink-0 items-center bg-top-header text-white">
       {/* logo block: the same width as the sidebar below it, so the two line up */}
       <div
         className={`relative flex shrink-0 items-center px-3 transition-[width] duration-200 lg:justify-start lg:px-4 ${
@@ -109,7 +109,7 @@ export function Header({ collapsed, breadcrumbs, onMenuClick, onNavigate }: Head
         <ActionIcon variant="subtle" size="lg" className={`relative ${ICON_BTN}`} aria-label="Notifications">
           <AppIcon name="bell" />
           {/* SAMPLE ONLY: show this dot when there are unread notifications */}
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-orange-400 ring-2 ring-[#32c524]" />
+          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-orange-400 ring-2 ring-top-header" />
         </ActionIcon>
 
       </div>

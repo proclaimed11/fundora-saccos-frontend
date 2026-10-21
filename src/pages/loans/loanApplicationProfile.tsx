@@ -136,7 +136,7 @@ export function LoanApplicationProfile() {
         {/* application summary */}
         <div className={`${CARD} p-5`}>
           <div className="flex flex-col items-center border-b border-gray-100 pb-4 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-2xl text-green-700">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-subtle text-2xl text-brand-dark">
               <AppIcon name="file-text" size={28} strokeWidth={1.25} />
             </div>
             <div className="mt-3 text-lg font-medium text-gray-800">
@@ -144,7 +144,7 @@ export function LoanApplicationProfile() {
             </div>
             <button
               type="button"
-              className="text-xs text-green-700 hover:underline"
+              className="text-xs text-brand-dark hover:underline"
               onClick={() => navigate(`/applicants/${application.applicantId}`)}
             >
               {application.applicantName}

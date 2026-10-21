@@ -15,8 +15,6 @@ const HEADER_TEXT = '#1f2937' // gray-800
 
 type ChartCardProps = {
   title: string
-  /** colors the title bar */
-  headerColor?: string
   className?: string
   /** chart body; receives the height to draw at (small in the card, large in the modal) */
   children: (height: number) => ReactNode
@@ -28,7 +26,6 @@ type ChartCardProps = {
 
 export function ChartCard({
   title,
-  headerColor,
   className,
   children,
   footer,
@@ -78,7 +75,7 @@ export function ChartCard({
     <>
       <ContentCard
         title={title}
-        headerColor={headerColor}
+        headerColor="#fcfdfc"
         headerTextColor={HEADER_TEXT}
         action={actions}
         className={className}

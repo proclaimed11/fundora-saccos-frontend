@@ -28,11 +28,11 @@ export function Login({ onLogin }: LoginProps) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-sm rounded-md border border-gray-200 bg-white p-8 shadow-sm">
+    <div className="flex min-h-screen items-center justify-center bg-content-background p-4">
+      <div className="w-full max-w-sm rounded-md border-t-4 border-brand bg-white p-8 shadow-sm">
         <div className="mb-6 text-center">
           <img src={logo} alt="Company logo" className="mx-auto mb-4 h-12 w-auto" />
-          <Text size="xl" fw={700}>
+          <Text size="xl" fw={700} c="brand.8">
             Project-Tracker
           </Text>
           <Text size="sm" c="dimmed">

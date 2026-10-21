@@ -289,7 +289,7 @@ function ReviewDrawer({ row, onClose, onApprove }: DrawerProps) {
               <li
                 key={l.levelNo}
                 className={`flex items-start gap-3 rounded-md border px-3 py-3 ${
-                  r.current?.levelNo === l.levelNo ? 'border-brand bg-green-50/40' : 'border-gray-200'
+                  r.current?.levelNo === l.levelNo ? 'border-brand bg-brand-subtle' : 'border-gray-200'
                 }`}
               >
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-medium text-gray-600">
@@ -397,7 +397,7 @@ export function ApprovalsPage() {
     { label: 'Awaiting Approval', value: awaiting.length, icon: 'hourglass', color: '#e08a1e' },
     { label: 'Needs My Decision', value: mine.length, icon: 'gavel', color: '#8e44ad' },
     { label: `Waiting Over ${LATE_AFTER_DAYS} Days`, value: awaiting.filter((r) => waitingDays(r) > LATE_AFTER_DAYS).length, icon: 'clock', color: '#0077b5' },
-    { label: 'Approved', value: rows.filter((r) => r.approved).length, icon: 'circle-check', color: '#39d128' },
+    { label: 'Approved', value: rows.filter((r) => r.approved).length, icon: 'circle-check', color: 'var(--app-brand)' },
     { label: 'Rejected', value: rows.filter((r) => r.rejected).length, icon: 'circle-x', color: '#ef4444' },
   ]
 

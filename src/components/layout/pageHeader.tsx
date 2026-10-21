@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Text } from '@mantine/core'
 
 export type Crumb = { label: string; to?: string }
@@ -14,19 +14,13 @@ export type PageHeaderProps = {
   actions?: ReactNode
 }
 
-// Keep primary action buttons bright and visible on the green header band.
-const ACTIONS_VARS = {
-  '--mantine-primary-color-filled': '#39d128',
-  '--mantine-primary-color-filled-hover': '#2fb120',
-} as CSSProperties
-
 export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
   const parts = Array.isArray(title) ? title : [title]
 
   return (
     // Same color as the top header, so the two read as one band.
     // Leave space below the title row for the content to overlap.
-    <div className="flex shrink-0 items-start justify-between gap-4 bg-[#32c524] px-4 pb-8 pt-0">
+    <div className="flex shrink-0 items-start justify-between gap-4 bg-page-header px-4 pb-8 pt-0">
       <div className="min-w-0">
         <Text size="md" c="white" className="leading-none">
           {parts.map((part, i) => (
@@ -47,7 +41,7 @@ export function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
       </div>
 
       {actions && (
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2" style={ACTIONS_VARS}>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
           {actions}
         </div>
       )}

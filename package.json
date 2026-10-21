@@ -16,12 +16,13 @@
     "@mantine/hooks": "^9.6.3",
     "@mantine/spotlight": "^9.6.3",
     "dayjs": "^1.11.23",
+    "echarts": "^6.1.0",
+    "echarts-for-react": "^3.0.6",
     "lucide-react": "^1.60.0",
     "mantine-datatable": "^9.4.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.4",
-    "recharts": "^3.10.1"
+    "react-router-dom": "^7.18.4"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

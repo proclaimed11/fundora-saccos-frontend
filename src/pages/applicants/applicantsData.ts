@@ -29,7 +29,7 @@ export const applicants: Applicant[] = [
 export const STATUS: Record<ApplicantStatus, { label: string; color: string; step: number }> = {
   PENDING_OTP: { label: 'Pending OTP', color: 'gray', step: 1 },
   PENDING_KYC: { label: 'Pending KYC', color: 'yellow', step: 2 },
-  KYC_APPROVED: { label: 'KYC Approved', color: 'green', step: 3 },
+  KYC_APPROVED: { label: 'KYC Approved', color: 'brand', step: 3 },
   REJECTED: { label: 'Rejected', color: 'red', step: 2 },
 }
 

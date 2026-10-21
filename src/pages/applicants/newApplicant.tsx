@@ -220,7 +220,7 @@ export function NewApplicantPage() {
         <Stepper
           active={verified ? 4 : active}
           size="xs"
-          color="green"
+          color="brand"
           allowNextStepsSelect={false}
           onStepClick={(i) => {
             if (active < 3 && i < active) setActive(i)
@@ -327,7 +327,7 @@ export function NewApplicantPage() {
           {active === 3 && (
             <Stack gap="md">
               <Alert
-                color="green"
+                color="brand"
                 variant="light"
                 title="Applicant registered"
                 icon={<AppIcon name="circle-check" />}
@@ -375,7 +375,7 @@ export function NewApplicantPage() {
                     <div>
                       <Button
                         type="submit"
-                        color="green"
+                        color="brand"
                         leftSection={<AppIcon name="mail" />}
                       >
                         Send code
@@ -402,7 +402,7 @@ export function NewApplicantPage() {
                         error={codeError}
                       />
                       <Group gap="xs">
-                        <Button type="submit" color="green">
+                        <Button type="submit" color="brand">
                           Verify code
                         </Button>
                         <Button type="button" variant="subtle" color="gray" onClick={sendCode}>
@@ -417,7 +417,7 @@ export function NewApplicantPage() {
               {verified && (
                 <>
                   <Alert
-                    color="green"
+                    color="brand"
                     variant="light"
                     title="Code verified"
                     icon={<AppIcon name="shield" />}
@@ -430,7 +430,7 @@ export function NewApplicantPage() {
                     <Button type="button" variant="default" onClick={goBack}>
                       Back to applicants
                     </Button>
-                    <Button type="button" color="green" onClick={startOver}>
+                    <Button type="button" color="brand" onClick={startOver}>
                       Register another
                     </Button>
                   </Group>
@@ -453,7 +453,7 @@ export function NewApplicantPage() {
               ) : (
                 <span />
               )}
-              <Button type="submit" color="green">
+              <Button type="submit" color="brand">
                 {active === 2 ? 'Register applicant' : 'Next'}
               </Button>
             </Group>

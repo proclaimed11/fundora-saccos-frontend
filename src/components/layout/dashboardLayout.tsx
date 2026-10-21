@@ -64,7 +64,7 @@ export function DashboardLayout({
           onSettings={onSettings}
           onLogout={onLogout ?? logout}
         />
-        <div className="min-w-0 flex-1 overflow-auto bg-brand-subtle">
+        <div className="min-w-0 flex-1 overflow-auto bg-content-background">
           <PageHeader title={title} subtitle={subtitle} actions={actions} />
           <main className={`relative z-10 px-4 pb-4 ${overlap ? '-mt-5' : 'mt-4'}`}>
             {children}

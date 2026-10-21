@@ -4,6 +4,18 @@
 @theme {
   --font-sans: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   --font-heading: var(--font-sans);
-  --color-brand: #39d128;
-  --color-brand-subtle: color-mix(in srgb, var(--color-brand) 10%, white);
+}
+
+@theme inline {
+  --color-brand: var(--app-brand);
+  --color-brand-deep: var(--app-brand-deep);
+  --color-page-header: var(--app-page-header);
+  --color-top-header: var(--app-top-header);
+  --color-brand-dark: var(--app-brand-dark);
+  --color-brand-light: var(--app-brand-light);
+  --color-brand-subtle: var(--app-brand-subtle);
+  --color-sidebar-highlight: var(--app-sidebar-highlight);
+  --color-sidebar-indicator: var(--app-sidebar-indicator);
+  --color-content-background: var(--app-content-background);
+  --color-loader: var(--app-loader);
 }

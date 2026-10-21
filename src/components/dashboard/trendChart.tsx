@@ -1,15 +1,8 @@
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import { ChartCard } from '../chartCard';
+import ReactECharts from 'echarts-for-react'
+import type { EChartsOption } from 'echarts'
+import { ChartCard } from '../chartCard'
 import { formatTzs } from '../../utils/format'
+import { useAppTheme } from '../../theme/themeContext'
 
 export type TrendPoint = { month: string; disbursed: number; collected: number }
 
@@ -19,61 +12,79 @@ const compact = (n: number) =>
 
 type TrendChartProps = {
   data: TrendPoint[]
-  headerColor?: string
 }
 
-export function TrendChart({ data, headerColor = '#f7faf8' }: TrendChartProps) {
+export function TrendChart({ data }: TrendChartProps) {
+  const { surfaceColors } = useAppTheme()
+  const option: EChartsOption = {
+    animationDuration: 350,
+    grid: { top: 12, right: 12, bottom: 48, left: 48 },
+    legend: {
+      bottom: 0,
+      icon: 'circle',
+      itemWidth: 8,
+      itemHeight: 8,
+      textStyle: { fontSize: 12, color: '#495057' },
+    },
+    tooltip: {
+      trigger: 'axis',
+      valueFormatter: (value) => formatTzs(Number(value)),
+    },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: data.map((point) => point.month),
+      axisTick: { show: false },
+      axisLine: { show: false },
+      axisLabel: { fontSize: 11, color: '#868e96' },
+    },
+    yAxis: {
+      type: 'value',
+      min: 0,
+      axisTick: { show: false },
+      axisLine: { show: false },
+      axisLabel: {
+        fontSize: 11,
+        color: '#868e96',
+        formatter: (value: number) => compact(value),
+      },
+      splitLine: { lineStyle: { color: '#e9ecef', type: 'dashed' } },
+    },
+    series: [
+      {
+        name: 'Disbursed',
+        type: 'line',
+        smooth: true,
+        showSymbol: false,
+        data: data.map((point) => point.disbursed),
+        lineStyle: { width: 2, color: '#45bdfc' },
+        itemStyle: { color: '#45bdfc' },
+      },
+      {
+        name: 'Collected',
+        type: 'line',
+        smooth: true,
+        showSymbol: false,
+        data: data.map((point) => point.collected),
+        lineStyle: { width: 2, color: surfaceColors.primary },
+        itemStyle: { color: surfaceColors.primary },
+      },
+    ],
+  }
+
   return (
     <ChartCard
       title="Disbursed vs Collected"
-      headerColor={headerColor}
       className="lg:col-span-2"
       cardHeight={256}
     >
       {(height) => (
-        <div style={{ height }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="fillDisbursed" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#45bdfc" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#45bdfc" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="fillCollected" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#39d128" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#39d128" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e9ecef" />
-              <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#868e96' }} />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                width={40}
-                tickFormatter={compact}
-                tick={{ fontSize: 11, fill: '#868e96' }}
-              />
-              <Tooltip formatter={(v) => formatTzs(Number(v))} />
-              <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
-              <Area
-                type="monotone"
-                dataKey="disbursed"
-                name="Disbursed"
-                stroke="#45bdfc"
-                strokeWidth={2}
-                fill="url(#fillDisbursed)"
-              />
-              <Area
-                type="monotone"
-                dataKey="collected"
-                name="Collected"
-                stroke="#39d128"
-                strokeWidth={2}
-                fill="url(#fillCollected)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+        <ReactECharts
+          option={option}
+          notMerge
+          style={{ height, width: '100%' }}
+          opts={{ renderer: 'canvas' }}
+        />
       )}
     </ChartCard>
   )

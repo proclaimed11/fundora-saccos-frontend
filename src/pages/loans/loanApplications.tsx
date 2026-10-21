@@ -22,7 +22,7 @@ const stats = [
   { label: 'Total Applications', value: applications.length, icon: 'file-text', color: '#45bdfc' },
   { label: 'Drafts', value: count((s) => s === 'DRAFT'), icon: 'pen-line', color: '#868e96' },
   { label: 'In Review', value: count((s) => ['SUBMITTED', 'CREDIT_APPROVED', 'PENDING_APPROVAL'].includes(s)), icon: 'hourglass', color: '#e08a1e' },
-  { label: 'Approved', value: count((s) => s !== 'REJECTED' && RANK[s] >= 3), icon: 'circle-check', color: '#39d128' },
+  { label: 'Approved', value: count((s) => s !== 'REJECTED' && RANK[s] >= 3), icon: 'circle-check', color: 'var(--app-brand)' },
   { label: 'Rejected', value: count((s) => s === 'REJECTED'), icon: 'circle-x', color: '#ef4444' },
 ]
 

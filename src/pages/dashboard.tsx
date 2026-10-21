@@ -6,13 +6,14 @@ import { TrendChart, type TrendPoint } from '../components/dashboard/trendChart'
 import { formatTzs } from '../utils/format'
 import { BucketChart, type Bucket } from '../components/dashboard/bucketChart'
 import { StatWidget } from '../components/statsWidgets'
+import { useAppTheme } from '../theme/themeContext'
 
 // sample numbers, replaced by GET /api/dashboard in a later step
 // here `color` is the icon color
 const stats = [
   { label: 'Active Loans', value: 64, icon: 'hand-coins', color: '#45bdfc' },
   { label: 'Total Outstanding', value: formatTzs(1625000), miniLabel: 'TZS', icon: 'scale', color: '#8e44ad' },
-  { label: 'Collected This Month', value: formatTzs(178525), miniLabel: 'TZS', icon: 'calendar', color: '#39d128' },
+  { label: 'Collected This Month', value: formatTzs(178525), miniLabel: 'TZS', icon: 'calendar', color: 'var(--app-brand)' },
   { label: 'Pending Approvals', value: 9, icon: 'square-check', color: '#0077b5' },
   { label: 'Overdue Loans', value: 7, icon: 'clock', color: '#e08a1e' },
 ]
@@ -28,14 +29,6 @@ const trend: TrendPoint[] = [
 ]
 
 // sample data from /api/reports/npl
-const nplBuckets: Bucket[] = [
-  { label: 'Current', count: 2, amount: 1000000, color: '#39d128' },
-  { label: 'Watch', count: 0, amount: 0, color: '#eab308' },
-  { label: 'Substandard', count: 0, amount: 0, color: '#f97316' },
-  { label: 'Doubtful', count: 1, amount: 250000, color: '#ef4444' },
-  { label: 'Loss', count: 0, amount: 0, color: '#991b1b' },
-]
-
 // sample data from /api/reports/collections-aging
 const agingBuckets: Bucket[] = [
   { label: '1-30 days', count: 1, amount: 120000, color: '#eab308' },
@@ -45,6 +38,14 @@ const agingBuckets: Bucket[] = [
 ]
 
 export function Dashboard() {
+  const { surfaceColors } = useAppTheme()
+  const nplBuckets: Bucket[] = [
+    { label: 'Current', count: 2, amount: 1000000, color: surfaceColors.primary },
+    { label: 'Watch', count: 0, amount: 0, color: '#eab308' },
+    { label: 'Substandard', count: 0, amount: 0, color: '#f97316' },
+    { label: 'Doubtful', count: 1, amount: 250000, color: '#ef4444' },
+    { label: 'Loss', count: 0, amount: 0, color: '#991b1b' },
+  ]
   return (
     <DashboardLayout
       title="Dashboard"
@@ -74,7 +75,6 @@ export function Dashboard() {
         <LoansByStatus data={{ ACTIVE: 3, CLOSED: 1, WRITTEN_OFF: 1 }} />
         <BucketChart
           title="NPL Classification"
-          headerColor="#f7faf8"
           buckets={nplBuckets}
           footer={
             <>
@@ -85,7 +85,6 @@ export function Dashboard() {
         />
         <BucketChart
           title="Collections Aging"
-          headerColor='#f7faf8'
           buckets={agingBuckets}
           footer={
             <>

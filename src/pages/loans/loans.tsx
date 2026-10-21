@@ -61,7 +61,7 @@ export function LoansPage() {
     { label: 'Overdue', value: overdue.length, icon: 'clock', color: '#e08a1e' },
     { label: 'Non-performing', value: npl.length, icon: 'triangle-alert', color: '#ef4444' },
     { label: 'Total Outstanding', value: formatTzs(outstanding), miniLabel: 'TZS', icon: 'banknote', color: '#8e44ad' },
-    { label: 'Collected This Month', value: formatTzs(collected), miniLabel: 'TZS', icon: 'circle-check', color: '#39d128' },
+    { label: 'Collected This Month', value: formatTzs(collected), miniLabel: 'TZS', icon: 'circle-check', color: 'var(--app-brand)' },
   ]
 
   const columns: CustomTableColumn<LoanView>[] = [

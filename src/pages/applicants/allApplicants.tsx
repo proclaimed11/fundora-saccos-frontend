@@ -38,7 +38,7 @@ const stats = [
   { label: 'Total Applicants', value: 6, icon: 'users', color: '#45bdfc' },
   { label: 'Pending OTP', value: 1, icon: 'hourglass', color: '#8e44ad' },
   { label: 'Pending KYC', value: 2, icon: 'contact-round', color: '#e08a1e' },
-  { label: 'KYC Approved', value: 2, icon: 'circle-check', color: '#39d128' },
+  { label: 'KYC Approved', value: 2, icon: 'circle-check', color: 'var(--app-brand)' },
   { label: 'Rejected', value: 1, icon: 'circle-x', color: '#ef4444' },
 ]
 
