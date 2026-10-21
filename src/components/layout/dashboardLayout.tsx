@@ -36,6 +36,14 @@ export function DashboardLayout({
   // the highlighted item comes from the URL, so refresh and back/forward stay correct
   const active = getActiveKey(pathname)
 
+  const handleMenuClick = () => {
+    if (window.matchMedia('(min-width: 1024px)').matches) {
+      setCollapsed((current) => !current)
+      return
+    }
+    setMenuOpen((current) => !current)
+  }
+
   const handleNavigate = (key: string) => {
     const item = navItems.find((i) => i.key === key)
     if (item) navigate(item.path)
@@ -47,10 +55,7 @@ export function DashboardLayout({
       <Header
         collapsed={collapsed}
         breadcrumbs={breadcrumbs}
-        onMenuClick={() => {
-          setMenuOpen((o) => !o)
-          setCollapsed((c) => !c)
-        }}
+        onMenuClick={handleMenuClick}
         onNavigate={handleNavigate}
       />
       <div className="flex min-h-0 flex-1">

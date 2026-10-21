@@ -46,24 +46,28 @@ export function Sidebar({
         />
       )}
 
-      {/* lg:relative + lg:z-20 keeps the sidebar layered above the page content */}
+      {/* Keep an icon rail visible on mobile; open it as a drawer on demand. */}
       <aside
-        className={`fixed bottom-0 left-0 top-12 z-40 flex w-56 shrink-0 flex-col overflow-hidden bg-sidebar-background transition-[width,transform] duration-200 lg:relative lg:inset-auto lg:z-20 lg:h-full lg:translate-x-0 ${
+        className={`${
+          open
+            ? 'fixed bottom-0 left-0 top-12 z-40 w-56'
+            : 'relative z-20 h-full w-14'
+        } flex shrink-0 flex-col overflow-hidden bg-sidebar-background transition-[width,transform] duration-200 lg:relative lg:inset-auto lg:z-20 lg:h-full lg:translate-x-0 ${
           collapsed ? 'lg:w-14' : 'lg:w-56'
-        } ${open ? 'translate-x-0' : '-translate-x-full'}`}
+        }`}
       >
         {/* user */}
         <div
           className={`relative flex shrink-0 flex-col items-center border-b border-sidebar-border px-4 py-5 text-center ${
             collapsed ? 'lg:px-1 lg:py-3' : ''
-          }`}
+          } ${!open ? 'max-lg:px-1 max-lg:py-3' : ''}`}
         >
           <Menu position="bottom-end" shadow="md" width={180} withArrow>
             <Menu.Target>
               <ActionIcon
                 variant="subtle"
                 size="sm"
-                className="absolute right-2 top-2 text-sidebar-text hover:bg-sidebar-highlight hover:text-sidebar-highlight-text"
+                className="absolute right-2 top-2 z-10 text-sidebar-text hover:bg-sidebar-highlight hover:text-sidebar-highlight-text max-lg:right-0 max-lg:top-1 max-lg:h-5 max-lg:w-5"
                 aria-label="Account settings menu"
               >
                 <AppIcon name="settings" />
@@ -82,11 +86,11 @@ export function Sidebar({
           <div
             className={`flex h-16 w-16 items-center justify-center rounded-full bg-sidebar-avatar text-xl font-medium text-sidebar-avatar-text ${
               collapsed ? 'lg:h-9 lg:w-9 lg:text-sm' : ''
-            }`}
+            } ${!open ? 'max-lg:mt-3 max-lg:h-9 max-lg:w-9 max-lg:text-sm' : ''}`}
           >
             {initials(user.name)}
           </div>
-          <div className={collapsed ? 'lg:hidden' : ''}>
+          <div className={`${collapsed ? 'lg:hidden' : ''} ${!open ? 'max-lg:hidden' : ''}`}>
             <div className="mt-3 text-sm font-medium text-white">{user.name}</div>
             <div className="text-xs text-sidebar-muted">{user.role}</div>
           </div>
@@ -107,10 +111,21 @@ export function Sidebar({
             {navSections.map((section) => (
               <div key={section.label} className="mt-3 first:mt-2">
                 {/* group label, replaced by a thin divider when the rail is collapsed */}
-                <Text size="xs" className={`px-5 pb-1 text-sidebar-muted ${collapsed ? 'lg:hidden' : ''}`}>
+                <Text
+                  size="xs"
+                  className={`px-5 pb-1 text-sidebar-muted ${
+                    collapsed ? 'lg:hidden' : ''
+                  } ${!open ? 'max-lg:hidden' : ''}`}
+                >
                   {section.label}
                 </Text>
-                {collapsed && <div className="mx-3 mb-1 hidden border-t border-sidebar-border lg:block" />}
+                {(collapsed || !open) && (
+                  <div
+                    className={`mx-3 mb-1 border-t border-sidebar-border ${
+                      collapsed ? 'hidden lg:block' : 'hidden max-lg:block'
+                    }`}
+                  />
+                )}
 
                 {section.items.map((item) => {
                   const isActive = item.key === active
@@ -122,14 +137,17 @@ export function Sidebar({
                       title={item.label}
                       className={`relative ml-0 flex w-full items-center gap-3 rounded-none px-5 py-2 text-left transition-colors ${
                         collapsed ? 'lg:justify-center lg:px-0' : ''
-                      } ${
+                      } ${!open ? 'max-lg:justify-center max-lg:px-0' : ''} ${
                         isActive
                           ? 'bg-sidebar-highlight text-sidebar-highlight-text'
                           : 'text-sidebar-text hover:bg-sidebar-highlight hover:text-sidebar-highlight-text'
                       }`}
                     >
                       <AppIcon name={item.icon} className="w-4 text-center" />
-                      <Text size="sm" className={collapsed ? 'lg:hidden' : ''}>
+                      <Text
+                        size="sm"
+                        className={`${collapsed ? 'lg:hidden' : ''} ${!open ? 'max-lg:hidden' : ''}`}
+                      >
                         {item.label}
                       </Text>
                       {isActive && (
