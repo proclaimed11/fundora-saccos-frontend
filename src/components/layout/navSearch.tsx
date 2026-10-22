@@ -60,11 +60,11 @@ export function NavSearch({ onNavigate }: { onNavigate: (key: string) => void })
         className="hidden w-72 max-w-[28vw] xl:block"
         classNames={{
           input:
-            'border border-emerald-900/10 bg-white/70 text-slate-700 placeholder:text-slate-500 hover:bg-white focus:bg-white',
+            'border border-emerald-900/10 bg-[#f7faf8] text-slate-700 placeholder:text-slate-500 hover:bg-white focus:bg-white',
           dropdown: 'z-50',
         }}
         styles={{
-          input: { backgroundColor: 'rgba(255, 255, 255, 0.75)', color: '#33443c' },
+          input: { backgroundColor: '#f7faf8', color: '#33443c' },
           section: { color: '#64746b' },
         }}
       />
@@ -96,11 +96,11 @@ export function NavSearch({ onNavigate }: { onNavigate: (key: string) => void })
             className="w-56"
             classNames={{
               input:
-                'border border-emerald-900/10 bg-white/70 text-slate-700 placeholder:text-slate-500 hover:bg-white focus:bg-white',
+                'border border-emerald-900/10 bg-[#f7faf8] text-slate-700 placeholder:text-slate-500 hover:bg-white focus:bg-white',
               dropdown: 'z-50',
             }}
             styles={{
-              input: { backgroundColor: 'rgba(255, 255, 255, 0.75)', color: '#33443c' },
+              input: { backgroundColor: '#f7faf8', color: '#33443c' },
               section: { color: '#64746b' },
             }}
           />
