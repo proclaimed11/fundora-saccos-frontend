@@ -84,14 +84,14 @@ export function Sidebar({
             </Menu.Dropdown>
           </Menu>
           <div
-            className={`flex h-16 w-16 items-center justify-center rounded-full bg-sidebar-avatar text-xl font-medium text-sidebar-avatar-text ${
+            className={`flex h-16 w-16 items-center justify-center rounded-full bg-sidebar-avatar text-xl font-medium text-brand ring-1 ring-brand/30 ${
               collapsed ? 'lg:h-9 lg:w-9 lg:text-sm' : ''
             } ${!open ? 'max-lg:mt-3 max-lg:h-9 max-lg:w-9 max-lg:text-sm' : ''}`}
           >
             {initials(user.name)}
           </div>
           <div className={`${collapsed ? 'lg:hidden' : ''} ${!open ? 'max-lg:hidden' : ''}`}>
-            <div className="mt-3 text-sm font-medium text-white">{user.name}</div>
+            <div className="mt-3 text-sm font-medium text-sidebar-text">{user.name}</div>
             <div className="text-xs text-sidebar-muted">{user.role}</div>
           </div>
         </div>

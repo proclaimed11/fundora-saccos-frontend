@@ -2,11 +2,10 @@ import { useState, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { getActiveKey, navItems } from './navItems'
 import { useAuth } from '../../auth/authContext'
-import { Header } from './header'
 import { Sidebar } from './sidebar'
-import { PageHeader, type PageHeaderProps } from './pageHeader'
+import { DashboardHeader, type DashboardHeaderProps } from './dashboardHeader'
 
-type DashboardLayoutProps = PageHeaderProps & {
+type DashboardLayoutProps = Omit<DashboardHeaderProps, 'collapsed' | 'onMenuClick' | 'onNavigate' | 'sidebar'> & {
   /** pull the page content up over the header, default true */
   overlap?: boolean
   onSettings?: () => void
@@ -51,14 +50,16 @@ export function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen flex-col bg-gray-100">
-      <Header
-        collapsed={collapsed}
-        breadcrumbs={breadcrumbs}
-        onMenuClick={handleMenuClick}
-        onNavigate={handleNavigate}
-      />
-      <div className="flex min-h-0 flex-1">
+    <DashboardHeader
+      title={title}
+      breadcrumbs={breadcrumbs}
+      subtitle={subtitle}
+      actions={actions}
+      collapsed={collapsed}
+      onMenuClick={handleMenuClick}
+      onNavigate={handleNavigate}
+      overlap={overlap}
+      sidebar={
         <Sidebar
           active={active}
           onChange={handleNavigate}
@@ -69,13 +70,9 @@ export function DashboardLayout({
           onSettings={onSettings}
           onLogout={onLogout ?? logout}
         />
-        <div className="min-w-0 flex-1 overflow-auto bg-content-background">
-          <PageHeader title={title} subtitle={subtitle} actions={actions} />
-          <main className={`relative z-10 px-4 pb-4 ${overlap ? '-mt-5' : 'mt-4'}`}>
-            {children}
-          </main>
-        </div>
-      </div>
-    </div>
+      }
+    >
+      {children}
+    </DashboardHeader>
   )
 }

@@ -60,12 +60,12 @@ export function NavSearch({ onNavigate }: { onNavigate: (key: string) => void })
         className="hidden w-72 max-w-[28vw] xl:block"
         classNames={{
           input:
-            'border-0 bg-white/15 text-white placeholder:text-white/70 hover:bg-white/20 focus:bg-white/20',
+            'border border-emerald-900/10 bg-white/70 text-slate-700 placeholder:text-slate-500 hover:bg-white focus:bg-white',
           dropdown: 'z-50',
         }}
         styles={{
-          input: { backgroundColor: 'rgba(255, 255, 255, 0.15)', color: 'white' },
-          section: { color: 'rgba(255, 255, 255, 0.8)' },
+          input: { backgroundColor: 'rgba(255, 255, 255, 0.75)', color: '#33443c' },
+          section: { color: '#64746b' },
         }}
       />
       <div className="flex min-w-0 items-center xl:hidden">
@@ -96,19 +96,19 @@ export function NavSearch({ onNavigate }: { onNavigate: (key: string) => void })
             className="w-56"
             classNames={{
               input:
-                'border-0 bg-white/15 text-white placeholder:text-white/70 hover:bg-white/20 focus:bg-white/20',
+                'border border-emerald-900/10 bg-white/70 text-slate-700 placeholder:text-slate-500 hover:bg-white focus:bg-white',
               dropdown: 'z-50',
             }}
             styles={{
-              input: { backgroundColor: 'rgba(255, 255, 255, 0.15)', color: 'white' },
-              section: { color: 'rgba(255, 255, 255, 0.8)' },
+              input: { backgroundColor: 'rgba(255, 255, 255, 0.75)', color: '#33443c' },
+              section: { color: '#64746b' },
             }}
           />
         </div>
         <ActionIcon
           variant="subtle"
           size="lg"
-          className="shrink-0 text-white hover:bg-white/15"
+          className="shrink-0 text-slate-700 hover:bg-emerald-950/5"
           aria-label={mobileOpen ? 'Close search' : 'Search'}
           onClick={() => {
             setMobileOpen((open) => !open)

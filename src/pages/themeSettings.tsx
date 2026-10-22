@@ -17,13 +17,6 @@ function SurfacePreview({
   color: string
   sidebarAppearance: 'light' | 'dark'
 }) {
-  if (surface === 'topHeader' || surface === 'pageHeader') {
-    return (
-      <div className="rounded p-3 text-xs font-semibold text-white" style={{ backgroundColor: color }}>
-        {surface === 'topHeader' ? 'Navigation header' : 'Page title header'}
-      </div>
-    )
-  }
   if (surface === 'sidebarIndicator') {
     return (
       <div className="flex h-10 items-center gap-3 rounded bg-white text-xs text-gray-700">

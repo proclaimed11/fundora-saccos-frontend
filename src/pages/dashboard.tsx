@@ -53,7 +53,7 @@ export function Dashboard() {
       subtitle={
         <>
           Welcome Back{'  '}
-          <span className="text-sm font-bold" style={{ color: '#ffffff' }}>John Doe</span>!
+          <span className="text-sm font-bold text-brand">John Doe</span>!
         </>
       }
     >

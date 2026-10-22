@@ -28,8 +28,6 @@ const FONT_STACK = '"Geist Variable", Geist, sans-serif'
 type ThemeVariables = CSSProperties & {
   '--app-brand': string
   '--app-brand-deep': string
-  '--app-top-header': string
-  '--app-page-header': string
   '--app-brand-dark': string
   '--app-brand-light': string
   '--app-brand-subtle': string
@@ -145,8 +143,6 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
   )
   const defaultSurfaceColors = useMemo<ThemeSurfaceColors>(
     () => ({
-      topHeader: palette.shades[7],
-      pageHeader: palette.shades[7],
       sidebarIndicator: palette.shades[6],
       sidebarHighlight: sidebarAppearance === 'dark' ? '#374151' : '#fafcfb',
       primary: palette.shades[6],
@@ -206,8 +202,6 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
     () => ({
       '--app-brand': surfaceColors.primary,
       '--app-brand-deep': palette.shades[8],
-      '--app-top-header': surfaceColors.topHeader,
-      '--app-page-header': surfaceColors.pageHeader,
       '--app-brand-dark': palette.shades[8],
       '--app-brand-light': palette.shades[0],
       '--app-brand-subtle': '#fafcfb',
