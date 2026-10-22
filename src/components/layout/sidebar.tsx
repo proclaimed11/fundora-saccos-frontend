@@ -62,33 +62,44 @@ export function Sidebar({
             collapsed ? 'lg:px-1 lg:py-3' : ''
           } ${!open ? 'max-lg:px-1 max-lg:py-3' : ''}`}
         >
-          <Menu position="bottom-end" shadow="md" width={180} withArrow>
-            <Menu.Target>
-              <ActionIcon
-                variant="subtle"
-                size="sm"
-                className="absolute right-2 top-2 z-10 text-sidebar-text hover:bg-sidebar-highlight hover:text-sidebar-highlight-text max-lg:right-0 max-lg:top-1 max-lg:h-5 max-lg:w-5"
-                aria-label="Account settings menu"
-              >
-                <AppIcon name="settings" />
-              </ActionIcon>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Item leftSection={<AppIcon name="settings" />} onClick={onSettings}>
-                Settings
-              </Menu.Item>
-              <Menu.Divider />
-              <Menu.Item color="red" leftSection={<AppIcon name="log-out" />} onClick={onLogout}>
-                Logout
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
-          <div
-            className={`flex h-16 w-16 items-center justify-center rounded-full bg-sidebar-avatar text-xl font-medium text-brand ring-1 ring-brand/30 ${
-              collapsed ? 'lg:h-9 lg:w-9 lg:text-sm' : ''
-            } ${!open ? 'max-lg:mt-3 max-lg:h-9 max-lg:w-9 max-lg:text-sm' : ''}`}
-          >
-            {initials(user.name)}
+          <div className="relative">
+            <div
+              className={`flex h-16 w-16 items-center justify-center rounded-full bg-sidebar-avatar text-xl font-medium text-brand ring-1 ring-brand/30 ${
+                collapsed ? 'lg:h-9 lg:w-9 lg:text-sm' : ''
+              } ${!open ? 'max-lg:mt-3 max-lg:h-9 max-lg:w-9 max-lg:text-sm' : ''}`}
+            >
+              {initials(user.name)}
+            </div>
+            <Menu position="bottom-end" shadow="md" width={180} withArrow>
+              <Menu.Target>
+                <ActionIcon
+                  variant="subtle"
+                  size="sm"
+                  className="absolute -right-1 -top-1 z-10 rounded-full bg-sidebar-background text-sidebar-text ring-1 ring-sidebar-border hover:bg-sidebar-highlight hover:text-sidebar-highlight-text"
+                  aria-label="Account settings menu"
+                >
+                  <AppIcon name="settings" />
+                </ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown className="sidebar-account-menu">
+                <Menu.Item
+                  className="sidebar-account-menu-item"
+                  leftSection={<AppIcon name="settings" />}
+                  onClick={onSettings}
+                >
+                  Settings
+                </Menu.Item>
+                <Menu.Divider className="sidebar-account-menu-divider" />
+                <Menu.Item
+                  className="sidebar-account-menu-item"
+                  color="red"
+                  leftSection={<AppIcon name="log-out" />}
+                  onClick={onLogout}
+                >
+                  Logout
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
           </div>
           <div className={`${collapsed ? 'lg:hidden' : ''} ${!open ? 'max-lg:hidden' : ''}`}>
             <div className="mt-3 text-sm font-medium text-sidebar-text">{user.name}</div>

@@ -109,6 +109,26 @@
   z-index: 1;
 }
 
+.sidebar-account-menu {
+  background-color: var(--color-sidebar-background);
+  border-color: var(--color-sidebar-border);
+  color: var(--color-sidebar-text);
+}
+
+.sidebar-account-menu-item {
+  color: var(--color-sidebar-text);
+}
+
+.sidebar-account-menu-item:hover,
+.sidebar-account-menu-item[data-hovered] {
+  background-color: var(--color-sidebar-highlight);
+  color: var(--app-sidebar-highlight-text);
+}
+
+.sidebar-account-menu-divider {
+  border-color: var(--color-sidebar-border);
+}
+
 @media (max-width: 1023px) {
   .botanical-header-skin::before {
     background-position:
