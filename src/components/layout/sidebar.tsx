@@ -146,7 +146,7 @@ export function Sidebar({
                       onClick={() => onChange(item.key)}
                       aria-current={isActive ? 'page' : undefined}
                       title={item.label}
-                      className={`relative ml-0 flex w-full items-center gap-3 rounded-none px-5 py-2 text-left transition-colors ${
+                      className={`group relative ml-0 flex w-full items-center gap-3 rounded-none px-5 py-2 text-left transition-colors ${
                         collapsed ? 'lg:justify-center lg:px-0' : ''
                       } ${!open ? 'max-lg:justify-center max-lg:px-0' : ''} ${
                         isActive
@@ -154,10 +154,21 @@ export function Sidebar({
                           : 'text-sidebar-text hover:bg-sidebar-highlight hover:text-sidebar-highlight-text'
                       }`}
                     >
-                      <AppIcon name={item.icon} className="w-4 text-center opacity-90" />
+                      <AppIcon
+                        name={item.icon}
+                        className={`w-4 text-center opacity-90 ${
+                          isActive
+                            ? 'text-sidebar-highlight-text'
+                            : 'text-sidebar-text group-hover:text-sidebar-highlight-text'
+                        }`}
+                      />
                       <Text
                         size="sm"
-                        className={`font-light opacity-90 ${collapsed ? 'lg:hidden' : ''} ${!open ? 'max-lg:hidden' : ''}`}
+                        className={`font-light opacity-90 ${
+                          isActive
+                            ? 'text-sidebar-highlight-text'
+                            : 'text-sidebar-text group-hover:text-sidebar-highlight-text'
+                        } ${collapsed ? 'lg:hidden' : ''} ${!open ? 'max-lg:hidden' : ''}`}
                       >
                         {item.label}
                       </Text>
