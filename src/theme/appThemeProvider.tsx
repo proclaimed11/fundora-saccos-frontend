@@ -23,7 +23,8 @@ import type {
 const PALETTE_STORAGE_KEY = 'project-tracker-theme'
 const COLORS_STORAGE_KEY = 'project-tracker-theme-colors'
 const SIDEBAR_APPEARANCE_STORAGE_KEY = 'project-tracker-sidebar-appearance'
-const FONT_STACK = '"Geist Variable", Geist, sans-serif'
+const BODY_FONT = 'Livvic, sans-serif'
+const HEADING_FONT = 'Lato, Livvic, sans-serif'
 
 type ThemeVariables = CSSProperties & {
   '--app-brand': string
@@ -192,8 +193,8 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
         colors: { brand: brandShades },
         primaryShade: 6,
         defaultRadius: 'md',
-        fontFamily: FONT_STACK,
-        headings: { fontFamily: FONT_STACK },
+        fontFamily: BODY_FONT,
+        headings: { fontFamily: HEADING_FONT },
       }),
     [brandShades],
   )
