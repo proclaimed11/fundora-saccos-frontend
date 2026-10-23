@@ -154,10 +154,10 @@ export function Sidebar({
                           : 'text-sidebar-text hover:bg-sidebar-highlight hover:text-sidebar-highlight-text'
                       }`}
                     >
-                      <AppIcon name={item.icon} className="w-4 text-center" />
+                      <AppIcon name={item.icon} className="w-4 text-center opacity-90" />
                       <Text
                         size="sm"
-                        className={`${collapsed ? 'lg:hidden' : ''} ${!open ? 'max-lg:hidden' : ''}`}
+                        className={`font-light opacity-90 ${collapsed ? 'lg:hidden' : ''} ${!open ? 'max-lg:hidden' : ''}`}
                       >
                         {item.label}
                       </Text>
