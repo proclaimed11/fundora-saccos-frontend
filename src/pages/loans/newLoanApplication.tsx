@@ -736,7 +736,7 @@ export function NewLoanApplicationPage() {
       //         (see the collateral-documents record), then its /verify endpoint
       //       POST /api/loan-origination/applications/{id}/credit-assessment (see runAssessment)
       //       POST /api/loan-applications/{id}/finalize
-      setOutcome(values.creditAssessmentRequired && result?.decision === 'APPROVE' ? 'CREDIT_APPROVED' : 'SUBMITTED')
+      setOutcome('CREDIT_APPROVED')
       setApplicationNo(`LA-${Date.now()}`)
       setSubmitted(true)
       return

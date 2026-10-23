@@ -63,7 +63,7 @@ export function ExistingLoansPanel({ applicantName, loans, overridden = false }:
 
       <ul className="space-y-2">
         {unpaid.map((l) => {
-          const paidPct = Math.round(((l.amount - l.outstanding) / l.amount) * 100)
+          const paidPct = l.repaidPct
           const overdue = l.status === 'OVERDUE'
 
           return (

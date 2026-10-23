@@ -13,9 +13,11 @@ import {
   LOAN_STATE,
   METHOD_LABEL,
   NPL_STYLE,
+  SAMPLE_GRACE_PERIODS,
   SAMPLE_PAYMENTS,
   SAMPLE_PENALTIES,
   allocatePayment,
+  graceDaysFor,
   loanActivity,
   methodLabel,
   penaltiesToCharge,
@@ -290,7 +292,12 @@ export function LoanProfile() {
     )
   }
 
-  const toCharge = penaltiesToCharge(view, view.installments, view.penalties)
+  const toCharge = penaltiesToCharge(
+    view,
+    view.installments,
+    view.penalties,
+    graceDaysFor(view.id, SAMPLE_GRACE_PERIODS),
+  )
   const usedReferences = [...SAMPLE_PAYMENTS, ...addedPayments].map((p) => p.reference).filter(Boolean)
 
   const closePay = () => {

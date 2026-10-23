@@ -42,7 +42,7 @@ export const applications: LoanApplication[] = [
   { id: 1, applicationNo: 'LA-1786436800001', applicantId: 1, applicantName: 'John Doe', loanOfficer: 'Asha Mrema', requestedAmount: 5000000, interestMethod: 'REDUCING', interestRate: 24, tenure: 12, penaltyRate: 2, guarantorRequired: true, collateralRequired: false, creditAssessmentRequired: true, status: 'LOAN_CREATED', currentStage: 'SUBMITTED', created: '2026-08-14', submittedAt: '2026-08-14' },
   { id: 2, applicationNo: 'LA-1786436800002', applicantId: 5, applicantName: 'Hassan Said', loanOfficer: 'Asha Mrema', requestedAmount: 2500000, interestMethod: 'FLAT', interestRate: 20, tenure: 6, penaltyRate: 2, guarantorRequired: false, collateralRequired: false, creditAssessmentRequired: false, status: 'CONTRACT_SIGNED', currentStage: 'SUBMITTED', created: '2026-09-03', submittedAt: '2026-09-03' },
   { id: 3, applicationNo: 'LA-1786436800003', applicantId: 2, applicantName: 'Amina Juma', loanOfficer: 'Juma Bakari', requestedAmount: 8000000, interestMethod: 'REDUCING', interestRate: 22, tenure: 18, penaltyRate: 3, guarantorRequired: true, collateralRequired: true, creditAssessmentRequired: true, status: 'PENDING_APPROVAL', currentStage: 'SUBMITTED', created: '2026-09-18', submittedAt: '2026-09-18' },
-  { id: 4, applicationNo: 'LA-1786436800004', applicantId: 6, applicantName: 'Neema Kileo', loanOfficer: 'Juma Bakari', requestedAmount: 1200000, interestMethod: 'FLAT', interestRate: 18, tenure: 6, penaltyRate: 2, guarantorRequired: true, collateralRequired: false, creditAssessmentRequired: true, status: 'SUBMITTED', currentStage: 'SUBMITTED', created: '2026-09-25', submittedAt: '2026-09-25' },
+  { id: 4, applicationNo: 'LA-1786436800004', applicantId: 6, applicantName: 'Neema Kileo', loanOfficer: 'Juma Bakari', requestedAmount: 1200000, interestMethod: 'FLAT', interestRate: 18, tenure: 6, penaltyRate: 2, guarantorRequired: true, collateralRequired: false, creditAssessmentRequired: true, status: 'CREDIT_APPROVED', currentStage: 'SUBMITTED', created: '2026-09-25', submittedAt: '2026-09-25' },
   { id: 5, applicationNo: 'LA-1786436800005', applicantId: 4, applicantName: 'Grace Mushi', loanOfficer: 'Asha Mrema', requestedAmount: 3000000, interestMethod: 'REDUCING', interestRate: 24, tenure: 12, penaltyRate: 2, guarantorRequired: false, collateralRequired: false, creditAssessmentRequired: true, status: 'REJECTED', currentStage: 'SUBMITTED', created: '2026-09-27', submittedAt: '2026-09-27' },
   { id: 6, applicationNo: 'LA-1786436800006', applicantId: 3, applicantName: 'Peter Mwakyusa', loanOfficer: 'Juma Bakari', requestedAmount: 4500000, interestMethod: 'REDUCING', interestRate: 21, tenure: 24, penaltyRate: 2, guarantorRequired: true, collateralRequired: true, creditAssessmentRequired: true, status: 'CREDIT_APPROVED', currentStage: 'SUBMITTED', created: '2026-10-01', submittedAt: '2026-10-01' },
   { id: 7, applicationNo: 'LA-1786436800007', applicantId: 2, applicantName: 'Amina Juma', loanOfficer: 'Asha Mrema', requestedAmount: 6000000, interestMethod: 'FLAT', interestRate: 19, tenure: 12, penaltyRate: 2, guarantorRequired: false, collateralRequired: false, creditAssessmentRequired: false, status: 'APPROVED', currentStage: 'SUBMITTED', created: '2026-10-03', submittedAt: '2026-10-03' },
@@ -50,7 +50,7 @@ export const applications: LoanApplication[] = [
   { id: 9, applicationNo: 'LA-1786436800009', applicantId: 5, applicantName: 'Hassan Said', loanOfficer: 'Juma Bakari', requestedAmount: 3500000, interestMethod: 'FLAT', interestRate: 20, tenure: 12, penaltyRate: 2, guarantorRequired: false, collateralRequired: false, creditAssessmentRequired: false, status: 'CONTRACT_GENERATED', currentStage: 'SUBMITTED', created: '2026-10-04', submittedAt: '2026-10-04', contractSentAt: null },
   { id: 10, applicationNo: 'LA-1786436800010', applicantId: 1, applicantName: 'John Doe', loanOfficer: 'Asha Mrema', requestedAmount: 2200000, interestMethod: 'REDUCING', interestRate: 24, tenure: 10, penaltyRate: 2, guarantorRequired: false, collateralRequired: false, creditAssessmentRequired: false, status: 'CONTRACT_GENERATED', currentStage: 'SUBMITTED', created: '2026-10-02', submittedAt: '2026-10-02', contractSentAt: '2026-10-07' },
   { id: 11, applicationNo: 'LA-1786436800011', applicantId: 5, applicantName: 'Hassan Said', loanOfficer: 'Asha Mrema', requestedAmount: 9000000, interestMethod: 'REDUCING', interestRate: 24, tenure: 18, penaltyRate: 3, guarantorRequired: true, collateralRequired: true, creditAssessmentRequired: true, status: 'REJECTED', currentStage: 'SUBMITTED', created: '2026-10-05', submittedAt: '2026-10-05' },
-    { id: 12, applicationNo: 'LA-1786436800012', applicantId: 6, applicantName: 'Neema Kileo', loanOfficer: 'Juma Bakari', requestedAmount: 4000000, interestMethod: 'FLAT', interestRate: 20, tenure: 12, penaltyRate: 2, guarantorRequired: false, collateralRequired: false, creditAssessmentRequired: false, status: 'LOAN_CREATED', currentStage: 'SUBMITTED', created: '2026-10-08', submittedAt: '2026-10-08' },
+  { id: 12, applicationNo: 'LA-1786436800012', applicantId: 6, applicantName: 'Neema Kileo', loanOfficer: 'Juma Bakari', requestedAmount: 4000000, interestMethod: 'FLAT', interestRate: 20, tenure: 12, penaltyRate: 2, guarantorRequired: false, collateralRequired: false, creditAssessmentRequired: false, status: 'LOAN_CREATED', currentStage: 'SUBMITTED', created: '2026-10-08', submittedAt: '2026-10-08' },
 ]
 
 export const STATUS: Record<ApplicationStatus, { label: string; color: string; step: number }> = {
@@ -399,25 +399,33 @@ export type ExistingLoan = {
   product: string
   amount: number // amount disbursed
   outstanding: number // 0 means fully paid
+  repaidPct: number // share of the total repayable already paid
   installment: number
   nextDue: string | null
   status: 'ACTIVE' | 'OVERDUE' | 'CLOSED'
   daysOverdue: number
 }
 
-const EXISTING_LOANS: Record<number, ExistingLoan[]> = {
-  // John Doe: one loan being repaid and one overdue
-  1: [
-    { id: 1, ref: 'LN-0001', product: 'Personal loan', amount: 5000000, outstanding: 3150000, installment: 471000, nextDue: '2026-11-14', status: 'ACTIVE', daysOverdue: 0 },
-    { id: 2, ref: 'LN-0007', product: 'Emergency loan', amount: 800000, outstanding: 320000, installment: 140000, nextDue: '2026-09-27', status: 'OVERDUE', daysOverdue: 12 },
-  ],
-  // Hassan Said: only a fully paid loan, so nothing blocks him
-  5: [
-    { id: 3, ref: 'LN-0003', product: 'Business loan', amount: 2000000, outstanding: 0, installment: 0, nextDue: null, status: 'CLOSED', daysOverdue: 0 },
-  ],
-}
 
-export const existingLoansFor = (applicantId: number): ExistingLoan[] => EXISTING_LOANS[applicantId] ?? []
+
+// SAMPLE ONLY: built from the sample loans, so it always matches the Loans page
+export const existingLoansFor = (applicantId: number): ExistingLoan[] =>
+  LOANS.filter((l) => l.applicantId === applicantId).map((l) => {
+    const v = viewOf(l, SAMPLE_PAYMENTS, SAMPLE_PENALTIES)
+    const first = v.installments[0]
+    return {
+      id: l.id,
+      ref: l.loanNo,
+      product: 'Loan',
+      amount: l.principal,
+      outstanding: v.outstanding,
+      repaidPct: v.repaidPct,
+      installment: first.principalDue + first.interestDue,
+      nextDue: v.nextDueDate,
+      status: v.state,
+      daysOverdue: v.overdueDays,
+    }
+  })
 
 
 /* ---------- SAMPLE ONLY: disbursement, replaced by API data later ---------- */
@@ -694,12 +702,17 @@ export function allocatePayment(amount: number, states: InstallmentState[]) {
 
 // the penalties POST /api/payments-workflow/loans/{loanId}/accrue-penalties would charge now:
 // one time per late installment, outstanding amount x penalty rate, never charged twice
-export function penaltiesToCharge(loan: Loan, states: InstallmentState[], penalties: PenaltyRecord[]) {
+export function penaltiesToCharge(
+  loan: Loan,
+  states: InstallmentState[],
+  penalties: PenaltyRecord[],
+  graceDays = GRACE_DAYS,
+) {
   return states
     .filter(
       (s) =>
         s.outstanding > 0 &&
-        s.daysOverdue > GRACE_DAYS &&
+        s.daysOverdue > graceDays &&
         !penalties.some((p) => p.installmentNo === s.installmentNo),
     )
     .map((s) => ({
@@ -862,3 +875,26 @@ const penaltyFor = (id: number, l: Loan, n: number): PenaltyRecord => {
 }
 
 export const SAMPLE_PENALTIES: PenaltyRecord[] = [4, 5, 6].map((n, i) => penaltyFor(i + 1, loanById(5), n))
+
+/* ---------- SAMPLE ONLY: grace periods, replaced by API data later ---------- */
+
+export type GracePeriod = {
+  id: number
+  loanId: number
+  graceDays: number
+  reason: string
+  grantedBy: string
+  date: string // when it was granted
+  active: boolean
+}
+
+// the extra days a loan gets before a late installment is charged a penalty
+export const graceDaysFor = (loanId: number, list: GracePeriod[]) =>
+  list.find((g) => g.loanId === loanId && g.active)?.graceDays ?? GRACE_DAYS
+
+export const SAMPLE_GRACE_PERIODS: GracePeriod[] = [
+  // LN-0007 has a late installment, the grace period holds its penalty back
+  { id: 1, loanId: 7, graceDays: 30, reason: 'Salary was paid late this month, the borrower asked for more time', grantedBy: 'Asha Mrema', date: '2026-10-10', active: true },
+  // an old one that already ended
+  { id: 2, loanId: 5, graceDays: 14, reason: 'Hospital bills, agreed a short pause', grantedBy: 'Juma Bakari', date: '2026-07-06', active: false },
+]
