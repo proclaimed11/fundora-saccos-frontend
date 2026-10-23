@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ActionIcon, Text } from '@mantine/core'
+import { ActionIcon, Menu, Text } from '@mantine/core'
 import { Link } from 'react-router-dom'
 import logo from '../../assets/logo.png'
 import { AppIcon } from '../appIcon'
@@ -21,6 +21,12 @@ export type DashboardHeaderProps = {
 }
 
 const ICON_BTN = 'text-slate-700 hover:bg-emerald-950/5'
+
+const SAMPLE_NOTIFICATIONS = [
+  { icon: 'file-text', title: 'New loan application', detail: 'A new application is ready for review.', time: '5 min ago' },
+  { icon: 'circle-check', title: 'Repayment received', detail: 'A borrower payment was recorded.', time: '1 hour ago' },
+  { icon: 'clock', title: 'Approval required', detail: 'Loan applications are waiting for your review.', time: 'Today' },
+]
 
 export function DashboardHeader({
   title,
@@ -128,10 +134,58 @@ export function DashboardHeader({
             <AppIcon name="mail" />
           </ActionIcon>
 
-          <ActionIcon variant="subtle" size="lg" className={`relative ${ICON_BTN}`} aria-label="Notifications">
-            <AppIcon name="bell" />
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-orange-400 ring-2 ring-white" />
-          </ActionIcon>
+          <Menu position="bottom-end" shadow="md" width={320} withArrow>
+            <Menu.Target>
+              <ActionIcon
+                variant="subtle"
+                size="lg"
+                className={`relative ${ICON_BTN}`}
+                aria-label="Notifications, 3 unread"
+              >
+                <AppIcon name="bell" />
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-white">
+                  3
+                </span>
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown className="overflow-hidden border border-brand/20 p-0">
+              <div className="border-b border-brand/15 bg-brand-subtle px-4 py-3">
+                <Text size="sm" fw={600} className="text-brand-dark">
+                  Notifications
+                </Text>
+                <Text size="xs" className="text-brand">
+                  3 new updates
+                </Text>
+              </div>
+              <div className="divide-y divide-brand/10">
+                {SAMPLE_NOTIFICATIONS.map((notification) => (
+                  <div key={notification.title} className="flex gap-3 px-4 py-3">
+                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-subtle text-brand">
+                      <AppIcon name={notification.icon} size={15} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <Text size="xs" fw={600} className="text-slate-800">
+                          {notification.title}
+                        </Text>
+                        <Text size="xs" className="shrink-0 text-slate-400">
+                          {notification.time}
+                        </Text>
+                      </div>
+                      <Text size="xs" className="mt-1 text-slate-600">
+                        {notification.detail}
+                      </Text>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-brand/15 px-4 py-2 text-center">
+                <Text size="xs" fw={500} className="text-brand">
+                  Sample notifications
+                </Text>
+              </div>
+            </Menu.Dropdown>
+          </Menu>
         </div>
       </header>
 

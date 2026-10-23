@@ -54,7 +54,7 @@ export function NavSearch({ onNavigate }: { onNavigate: (key: string) => void })
         maxDropdownHeight={320}
         onOptionSubmit={selectSuggestion}
         renderOption={renderOption}
-        leftSection={<AppIcon name="search" size={14} strokeWidth={1.5} />}
+        leftSection={<AppIcon name="search" size={14} strokeWidth={1.5} className="text-brand" />}
         size="xs"
         radius="md"
         className="hidden w-72 max-w-[28vw] xl:block"
@@ -90,7 +90,7 @@ export function NavSearch({ onNavigate }: { onNavigate: (key: string) => void })
             maxDropdownHeight={320}
             onOptionSubmit={selectSuggestion}
             renderOption={renderOption}
-            leftSection={<AppIcon name="search" size={14} strokeWidth={1.5} />}
+            leftSection={<AppIcon name="search" size={14} strokeWidth={1.5} className="text-brand" />}
             size="xs"
             radius="md"
             className="w-56"
