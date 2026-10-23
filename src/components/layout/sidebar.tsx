@@ -52,7 +52,7 @@ export function Sidebar({
           open
             ? 'fixed bottom-0 left-0 top-12 z-40 w-56'
             : 'relative z-20 h-full w-14'
-        } flex shrink-0 flex-col overflow-hidden bg-sidebar-background transition-[width,transform] duration-200 lg:relative lg:inset-auto lg:z-20 lg:h-full lg:translate-x-0 ${
+        } flex shrink-0 flex-col overflow-hidden bg-sidebar-background shadow-[4px_0_12px_rgba(15,23,42,0.10)] transition-[width,transform] duration-200 lg:relative lg:inset-auto lg:z-20 lg:h-full lg:translate-x-0 ${
           collapsed ? 'lg:w-14' : 'lg:w-56'
         }`}
       >
