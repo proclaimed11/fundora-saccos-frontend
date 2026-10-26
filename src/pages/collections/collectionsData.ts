@@ -1,4 +1,5 @@
-import { LOANS, SAMPLE_PAYMENTS, SAMPLE_PENALTIES, viewOf } from '../loans/loanApplicationsData'
+import { LOANS, SAMPLE_PAYMENTS, SAMPLE_PENALTIES, viewOf, type NplClass } from '../loans/loanApplicationsData'
+
 
 export type CaseStatus = 'OPEN' | 'CLOSED' | 'ESCALATED'
 
@@ -87,4 +88,113 @@ export const SAMPLE_ACTIVITIES: CollectionActivity[] = [
   { id: 7, caseId: 2, type: 'SMS', outcome: 'NO_RESPONSE', description: 'Reminder sent', performedBy: 'Asha Mrema', date: '2026-10-10' },
   { id: 8, caseId: 2, type: 'PHONE_CALL', outcome: 'PROMISED_TO_PAY', description: 'Salary was delayed, will pay by 25 October', performedBy: 'Asha Mrema', date: '2026-10-20' },
   { id: 9, caseId: 3, type: 'PHONE_CALL', outcome: 'PAID', description: 'Borrower paid after the reminder call', performedBy: 'Juma Bakari', date: '2026-05-06' },
+]
+
+/* ---------- recovery cases ---------- */
+
+export type RecoveryStatus = 'OPEN' | 'CLOSED'
+
+export const RECOVERY_STATUS: Record<RecoveryStatus, { label: string; color: string }> = {
+  OPEN: { label: 'Open', color: 'orange' },
+  CLOSED: { label: 'Closed', color: 'gray' },
+}
+
+export type RecoveryCase = {
+  id: number
+  caseNo: string
+  loanId: number
+  sourceCaseId: number | null // the collection case it was escalated from
+  status: RecoveryStatus
+  assignedTo: string // the API takes a user id, joined to a name later
+  opened: string // ISO date
+  closed: string | null
+  remarks: string
+  closeRemarks: string | null
+}
+
+// the API example shows LEGAL_NOTICE, asset seizure and negotiated settlement as examples,
+// the other options are our assumption
+export type RecoveryActionType =
+  | 'LEGAL_NOTICE'
+  | 'COURT_FILING'
+  | 'ASSET_SEIZURE'
+  | 'NEGOTIATED_SETTLEMENT'
+  | 'OTHER'
+
+export const RECOVERY_ACTION_LABEL: Record<RecoveryActionType, string> = {
+  LEGAL_NOTICE: 'Legal notice',
+  COURT_FILING: 'Court filing',
+  ASSET_SEIZURE: 'Asset seizure',
+  NEGOTIATED_SETTLEMENT: 'Negotiated settlement',
+  OTHER: 'Other',
+}
+
+export const RECOVERY_ACTION_ICON: Record<RecoveryActionType, string> = {
+  LEGAL_NOTICE: 'file-text',
+  COURT_FILING: 'scale',
+  ASSET_SEIZURE: 'shield',
+  NEGOTIATED_SETTLEMENT: 'hand-coins',
+  OTHER: 'clipboard',
+}
+
+export type RecoveryAction = {
+  id: number
+  recoveryCaseId: number
+  type: RecoveryActionType
+  description: string
+  amount: number // 0 when the action has no amount
+  documentName: string | null // uploaded file name
+  performedBy: string
+  date: string // ISO date
+}
+
+// a loan written off in this session, the real record comes from POST .../write-off
+export type WriteOffRecord = {
+  loanId: number
+  amount: number
+  reason: string
+  approvedBy: string
+  date: string
+}
+
+// our own rule, the API has no deadline: an open recovery case with no action for this long is flagged
+export const RECOVERY_STALE_AFTER_DAYS = 14
+
+export const recoveryNoFor = (id: number) => `RC-${String(id).padStart(4, '0')}`
+
+// SAMPLE ONLY: replaced with database data later.
+// LN-0005 is the only non-performing loan in the sample loans.
+export const SAMPLE_RECOVERY_CASES: RecoveryCase[] = [
+  { id: 1, caseNo: recoveryNoFor(1), loanId: 5, sourceCaseId: 1, status: 'OPEN', assignedTo: 'Juma Bakari', opened: '2026-10-05', closed: null, remarks: 'Handed to the legal team', closeRemarks: null },
+]
+
+export const SAMPLE_RECOVERY_ACTIONS: RecoveryAction[] = [
+  { id: 1, recoveryCaseId: 1, type: 'LEGAL_NOTICE', description: 'Demand letter sent by courier', amount: 0, documentName: 'demand-letter-ln-0005.pdf', performedBy: 'Juma Bakari', date: '2026-10-08' },
+  { id: 2, recoveryCaseId: 1, type: 'NEGOTIATED_SETTLEMENT', description: 'Borrower offered to settle in two parts, nothing received yet', amount: 1200000, documentName: null, performedBy: 'Juma Bakari', date: '2026-10-15' },
+]
+
+/* ---------- NPL and write-offs ---------- */
+
+// one written-off loan, as shown in the write-off history
+export type WriteOffEntry = {
+  id: number
+  loanId: number | null // null when the loan is not in the sample loans
+  applicantId: number | null
+  loanNo: string
+  borrower: string
+  principal: number
+  interest: number
+  penalty: number
+  amount: number // principal + interest + penalty
+  overdueDays: number // when it was written off
+  classification: NplClass // when it was written off
+  reason: string
+  approvedBy: string
+  date: string // ISO date
+}
+
+// SAMPLE ONLY: replaced with database data later
+export const SAMPLE_WRITE_OFFS: WriteOffEntry[] = [
+  { id: 1, loanId: null, applicantId: 4, loanNo: 'LN-0002', borrower: 'Grace Mushi', principal: 620000, interest: 180000, penalty: 50000, amount: 850000, overdueDays: 214, classification: 'LOSS', reason: 'Borrower untraceable after 200 days overdue', approvedBy: 'Admin User', date: '2026-08-20' },
+  { id: 2, loanId: null, applicantId: 3, loanNo: 'LN-0004', borrower: 'Peter Mwakyusa', principal: 1000000, interest: 330000, penalty: 70000, amount: 1400000, overdueDays: 150, classification: 'DOUBTFUL', reason: 'Business closed and there are no assets to recover', approvedBy: 'Juma Bakari', date: '2026-09-12' },
 ]

@@ -2,8 +2,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: Livvic, sans-serif;
-  --font-heading: Lato, Livvic, sans-serif;
+  --font-sans: 'Source Sans 3', sans-serif;
+  --font-heading: 'Source Sans 3', sans-serif;
 }
 
 @theme inline {

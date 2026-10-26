@@ -485,6 +485,35 @@ export function journalFor(amount: number, source?: CompanyAccount): JournalLine
   ]
 }
 
+// receiving a loan payment: the money comes into our account (debit),
+// and what the borrower owes goes down (credit), split like the payment allocation
+export function paymentJournalFor(
+  split: { penalty: number; interest: number; principal: number },
+  account?: CompanyAccount,
+): JournalLine[] {
+  const total = split.penalty + split.interest + split.principal
+  if (total <= 0) return []
+
+  const lines: JournalLine[] = [
+    {
+      side: 'DEBIT',
+      code: account?.code ?? '—',
+      name: account?.name ?? 'Choose the account received into',
+      amount: total,
+    },
+  ]
+  if (split.principal > 0) {
+    lines.push({ side: 'CREDIT', code: 'LOAN_RECEIVABLE', name: 'Loan receivable', amount: split.principal })
+  }
+  if (split.interest > 0) {
+    lines.push({ side: 'CREDIT', code: 'INTEREST_INCOME', name: 'Interest income', amount: split.interest })
+  }
+  if (split.penalty > 0) {
+    lines.push({ side: 'CREDIT', code: 'PENALTY_INCOME', name: 'Penalty income', amount: split.penalty })
+  }
+  return lines
+}
+
 export type DisbursementRecord = {
   id: number
   applicationId: number

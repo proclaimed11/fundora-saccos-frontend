@@ -23,8 +23,8 @@ import type {
 const PALETTE_STORAGE_KEY = 'project-tracker-theme'
 const COLORS_STORAGE_KEY = 'project-tracker-theme-colors'
 const SIDEBAR_APPEARANCE_STORAGE_KEY = 'project-tracker-sidebar-appearance'
-const BODY_FONT = 'Livvic, sans-serif'
-const HEADING_FONT = 'Lato, Livvic, sans-serif'
+const BODY_FONT = "'Source Sans 3', sans-serif"
+const HEADING_FONT = "'Source Sans 3', sans-serif"
 
 type ThemeVariables = CSSProperties & {
   '--app-brand': string

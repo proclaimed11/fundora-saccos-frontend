@@ -19,6 +19,11 @@ import { ThemeSettingsPage } from './pages/themeSettings'
 import { PaymentsPage } from './pages/loans/payments'
 import { PenaltiesPage } from './pages/loans/penalties'
 import { CollectionCasesPage } from './pages/collections/collectionCases'
+import { RecoveryCasesPage } from './pages/collections/recoveryCases'
+import { NplPage } from './pages/collections/npl'
+import { ChartOfAccountsPage } from './pages/accounting/chartOfAccounts'
+import { GlTransactionsPage } from './pages/accounting/glTransactions'
+import { ReportsPage } from './pages/reports/reports'
 
 // pages inside this route need a logged-in user
 function ProtectedRoute() {
@@ -61,6 +66,15 @@ function App() {
           <Route path="/payments" element={<PaymentsPage />} />
           <Route path="/penalties" element={<PenaltiesPage />} />
           <Route path="/collection-cases" element={<CollectionCasesPage />} />
+          <Route path="/recovery-cases" element={<RecoveryCasesPage />} />
+          <Route path="/npl" element={<NplPage />} />
+
+          {/* accounting */}
+          <Route path="/chart-of-accounts" element={<ChartOfAccountsPage />} />
+          <Route path="/gl-transactions" element={<GlTransactionsPage />} />
+
+          {/* reports */}
+          <Route path="/reports" element={<ReportsPage />} />
 
 
 

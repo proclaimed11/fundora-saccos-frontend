@@ -3,8 +3,15 @@ import { useState } from 'react'
 import dayjs from 'dayjs'
 import { Alert, Button, Modal, NumberInput, Select, SimpleGrid, Text, TextInput } from '@mantine/core'
 import { formatTzs } from '../../utils/format'
-import { CURRENT_USER } from './disbursementDialog'
-import { METHOD_LABEL, allocatePayment, type LoanView, type PaymentMethod } from './loanApplicationsData'
+import { CURRENT_USER, JournalPreview } from './disbursementDialog'
+import {
+  COMPANY_ACCOUNTS,
+  METHOD_LABEL,
+  allocatePayment,
+  paymentJournalFor,
+  type LoanView,
+  type PaymentMethod,
+} from './loanApplicationsData'
 
 export type PaymentInput = { amount: number; method: PaymentMethod; reference: string; receivedBy: string }
 
@@ -17,7 +24,7 @@ type Props = {
   onSubmit: (input: PaymentInput) => void
 }
 
-type Errors = Partial<Record<'amount' | 'reference', string>>
+type Errors = Partial<Record<'amount' | 'reference' | 'account', string>>
 
 const METHOD_OPTIONS = (Object.keys(METHOD_LABEL) as PaymentMethod[]).map((k) => ({
   value: k,
@@ -38,6 +45,7 @@ function Row({ label, value }: { label: string; value: string }) {
 export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubmit }: Props) {
   const [amount, setAmount] = useState<number | ''>('')
   const [method, setMethod] = useState<PaymentMethod>('MOBILE_MONEY')
+  const [accountId, setAccountId] = useState<string | null>(null)
   const [reference, setReference] = useState('')
   const [errors, setErrors] = useState<Errors>({})
 
@@ -47,6 +55,23 @@ export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubm
   const preview = amount !== '' && amount > 0 ? allocatePayment(Math.min(amount, v.outstanding), v.installments) : null
   const allocated = preview ? preview.allocations.reduce((s, a) => s + a.penalty + a.interest + a.principal, 0) : 0
   const remaining = v.outstanding - allocated
+
+  // the company accounts that match the chosen payment method (where the money comes IN)
+  const accountOptions = COMPANY_ACCOUNTS.filter((a) => a.method === method).map((a) => ({
+    value: String(a.id),
+    label: a.name,
+  }))
+  const account = COMPANY_ACCOUNTS.find((a) => String(a.id) === accountId)
+
+  // how the payment splits into penalty, interest and principal, used for the journal entry
+  const split = preview
+    ? {
+        penalty: preview.allocations.reduce((s, a) => s + a.penalty, 0),
+        interest: preview.allocations.reduce((s, a) => s + a.interest, 0),
+        principal: preview.allocations.reduce((s, a) => s + a.principal, 0),
+      }
+    : null
+  const journal = split ? paymentJournalFor(split, account) : []
 
   // quick amounts so the cashier doesn't have to work them out
   const shortcuts = [
@@ -58,6 +83,7 @@ export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubm
   const reset = () => {
     setAmount('')
     setMethod('MOBILE_MONEY')
+    setAccountId(null)
     setReference('')
     setErrors({})
   }
@@ -77,6 +103,8 @@ export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubm
       found.amount = `More than the outstanding balance of ${formatTzs(v.outstanding)}`
     }
 
+    if (!account) found.account = 'Select the account the money was received into'
+
     if (method !== 'CASH' && !ref) found.reference = 'Enter the transaction reference'
     else if (ref && usedReferences.some((r) => r.toLowerCase() === ref.toLowerCase())) {
       found.reference = 'This reference is already recorded'
@@ -85,6 +113,8 @@ export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubm
     setErrors(found)
     if (Object.keys(found).length > 0 || amount === '') return
 
+    // TODO: the "received into" account is not in the payment API yet, the ledger entry for the
+    //       payment would be posted from the response (see the GL posting endpoints)
     onSubmit({ amount, method, reference: ref, receivedBy: CURRENT_USER })
     reset()
   }
@@ -137,8 +167,24 @@ export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubm
               value={method}
               onChange={(val) => {
                 setMethod((val as PaymentMethod) ?? 'MOBILE_MONEY')
-                setErrors((e) => ({ ...e, reference: undefined }))
+                // the accounts depend on the method, so the choice starts again
+                setAccountId(null)
+                setErrors((e) => ({ ...e, reference: undefined, account: undefined }))
               }}
+            />
+            <Select
+              label="Received into"
+              description="The company account the money came into"
+              placeholder="Select account"
+              size="sm"
+              allowDeselect={false}
+              data={accountOptions}
+              value={accountId}
+              onChange={(val) => {
+                setAccountId(val)
+                setErrors((e) => ({ ...e, account: undefined }))
+              }}
+              error={errors.account}
             />
             <TextInput
               label={method === 'CASH' ? 'Reference (optional for cash)' : 'Transaction reference'}
@@ -228,6 +274,26 @@ export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubm
                 })}
                 <div className="border-t border-gray-100 px-3 py-1.5 text-[11px] text-gray-400">Amounts in TZS</div>
               </div>
+            )}
+          </div>
+
+          {/* the ledger entry this payment will create */}
+          <div>
+            <Text size="sm" fw={600} mb={4}>
+              Journal entry
+            </Text>
+            {journal.length === 0 ? (
+              <div className="rounded-md border border-dashed border-gray-200 px-3 py-5 text-center text-xs text-gray-500">
+                Enter an amount to see the ledger entry.
+              </div>
+            ) : (
+              <>
+                <JournalPreview lines={journal} />
+                <Text size="xs" c="dimmed" mt={6}>
+                  The money comes into your account (debit). What the borrower owes goes down (credit): principal
+                  reduces the loan receivable, interest and penalty are recorded as income.
+                </Text>
+              </>
             )}
           </div>
 
