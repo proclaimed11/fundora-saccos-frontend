@@ -1,6 +1,8 @@
 import {
   ArrowLeft,
   ArrowLeftRight,
+  ArrowDown,
+  ArrowUp,
   Banknote,
   Bell,
   Book,
@@ -80,8 +82,10 @@ import {
 } from 'lucide-react'
 
 const icons = {
+  'arrow-down': ArrowDown,
   'arrow-left': ArrowLeft,
   'arrow-left-right': ArrowLeftRight,
+  'arrow-up': ArrowUp,
   banknote: Banknote,
   bell: Bell,
   book: Book,

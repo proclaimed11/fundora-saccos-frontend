@@ -26,6 +26,8 @@ import { GlTransactionsPage } from './pages/accounting/glTransactions'
 import { ReportsPage } from './pages/reports/reports'
 import { UsersPage } from './pages/administration/users/users'
 import { RolesPage } from './pages/administration/roles/roles'
+import { ApprovalHierarchyPage } from './pages/administration/approvalHierarchy/approvalHierarchy'
+import { CompanyProfilePage } from './pages/administration/companyProfile/companyProfile'
 
 // pages inside this route need a logged-in user
 function ProtectedRoute() {
@@ -81,6 +83,8 @@ function App() {
           {/* Administration */}
          <Route path="/users" element={<UsersPage />} />
          <Route path="/roles" element={<RolesPage />} />
+         <Route path="/approval-hierarchy" element={<ApprovalHierarchyPage />} />
+         <Route path="/company-profile" element={<CompanyProfilePage />} />
 
 
 
