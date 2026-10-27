@@ -1,6 +1,6 @@
 import { AppIcon } from '../../../components/appIcon'
 import { useEffect, useState } from 'react'
-import { Alert, Button, Select, SimpleGrid, Text, TextInput } from '@mantine/core'
+import { Alert, Button, Select, SimpleGrid, Text, TextInput, Textarea } from '@mantine/core'
 import { DashboardLayout } from '../../../components/layout/dashboardLayout'
 import logo from '../../../assets/logo.png'
 import { CURRENCIES, EMAIL, LANGUAGES, SAMPLE_PROFILE, isPhone, type CompanyProfile } from './companyProfileData'
@@ -42,7 +42,7 @@ export function CompanyProfilePage() {
     setErrors((e) => ({ ...e, [key]: undefined }))
   }
 
-  const text = (key: 'companyName' | 'email' | 'phone' | 'location') => ({
+  const text = (key: 'companyName' | 'email' | 'phone' | 'location' | 'contractTitle') => ({
     size: 'sm' as const,
     value: values[key],
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => set(key, e.currentTarget.value),
@@ -64,19 +64,23 @@ export function CompanyProfilePage() {
     if (!values.location.trim()) found.location = 'Enter the location'
     if (!values.currency) found.currency = 'Select the currency'
     if (!values.language) found.language = 'Select the language'
+    if (!values.contractTitle.trim()) found.contractTitle = 'Enter the contract title'
+    if (!values.emailMessage.trim()) found.emailMessage = 'Enter the email message'
 
     setErrors(found)
     if (Object.keys(found).length > 0) return
 
     // TODO: PUT /api/company-profiles/{id} { companyName, email, phone, location, currency, language }
     const next: CompanyProfile = {
-      id: saved.id,
-      companyName: values.companyName.trim(),
-      email: values.email.trim(),
-      phone: values.phone.trim(),
-      location: values.location.trim(),
-      currency: values.currency,
-      language: values.language,
+    id: saved.id,
+    companyName: values.companyName.trim(),
+    email: values.email.trim(),
+    phone: values.phone.trim(),
+    location: values.location.trim(),
+    currency: values.currency,
+    language: values.language,
+    contractTitle: values.contractTitle.trim(),
+    emailMessage: values.emailMessage.trim(),
     }
     setSaved(next)
     setValues(toValues(next))
@@ -113,7 +117,7 @@ export function CompanyProfilePage() {
           <div className={`${CARD} p-5`}>
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-subtle text-brand-dark">
-                <AppIcon name="building-2" size={20} strokeWidth={1.5} />
+                <AppIcon name="building-2" size={20} strokeWidth={1.25} />
               </div>
               <div>
                 <div className="text-base font-semibold text-gray-800">{saved.companyName}</div>
@@ -149,6 +153,28 @@ export function CompanyProfilePage() {
                   />
                 </SimpleGrid>
               </div>
+
+              <div>
+                <SectionTitle>Document wording</SectionTitle>
+                <div className="space-y-3">
+                    <TextInput
+                    label="Contract title"
+                    description="The heading printed at the top of every loan contract"
+                    placeholder="LOAN AGREEMENT"
+                    {...text('contractTitle')}
+                    />
+                    <Textarea
+                    label="Email message"
+                    description="The message borrowers get when a contract is sent to them"
+                    size="sm"
+                    autosize
+                    minRows={2}
+                    value={values.emailMessage}
+                    onChange={(e) => set('emailMessage', e.currentTarget.value)}
+                    error={errors.emailMessage}
+                    />
+                </div>
+                </div>
 
               <div>
                 <SectionTitle>Regional settings</SectionTitle>
@@ -211,7 +237,9 @@ export function CompanyProfilePage() {
               <div className="rounded-md border border-gray-200 bg-gray-50 p-3">
                 <div className="bg-white p-4 text-center font-serif shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
                   <div className="text-[11px] uppercase tracking-[0.2em] text-gray-500">{name}</div>
-                  <div className="mt-1 text-base font-bold tracking-wide text-gray-900">LOAN AGREEMENT</div>
+                  <div className="mt-1 text-base font-bold tracking-wide text-gray-900">
+                    {values.contractTitle.trim() || 'LOAN AGREEMENT'}
+                  </div>
                   <div className="mt-1 text-[11px] text-gray-500">Contract No. CT-0000000000000</div>
                   <div className="mt-3 border-t border-gray-200 pt-2 text-[11px] text-gray-500">
                     {location} · {phone} · {email}
@@ -225,7 +253,7 @@ export function CompanyProfilePage() {
               <div className="rounded-md border border-gray-200 bg-gray-50 p-3">
                 <div className="rounded bg-white p-4 text-xs text-gray-700 shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
                   <div className="font-medium text-gray-800">Loan contract ready for download</div>
-                  <p className="mt-2">Your contract is ready. Print it, sign it and return the hard copy to our office.</p>
+                  <p className="mt-2 whitespace-pre-line">{values.emailMessage.trim() || 'Email message'}</p>
                   <div className="mt-3 border-t border-gray-200 pt-2 text-[11px] text-gray-500">
                     <div className="font-medium text-gray-700">{name}</div>
                     <div>{location}</div>

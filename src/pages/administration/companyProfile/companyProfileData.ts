@@ -7,6 +7,8 @@ export type CompanyProfile = {
   location: string
   currency: string
   language: string
+  contractTitle: string
+  emailMessage: string
 }
 
 // SAMPLE ONLY: replaced by GET /api/company-profiles/current later
@@ -18,6 +20,8 @@ export const SAMPLE_PROFILE: CompanyProfile = {
   location: 'Dar es Salaam, Tanzania',
   currency: 'TZS',
   language: 'English',
+  contractTitle: 'LOAN AGREEMENT',
+  emailMessage: 'Your contract is ready. Print it, sign it and return the hard copy to our office.',
 }
 
 export const CURRENCIES = [

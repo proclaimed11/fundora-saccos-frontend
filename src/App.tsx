@@ -15,7 +15,7 @@ import { ContractsPage } from './pages/loans/contracts'
 import { DisbursementsPage } from './pages/loans/disbursements'
 import { LoansPage } from './pages/loans/loans'
 import { LoanProfile } from './pages/loans/loanProfile'
-import { ThemeSettingsPage } from './pages/themeSettings'
+import { ThemeSettingsPage } from './pages/administration/themeSettings'
 import { PaymentsPage } from './pages/loans/payments'
 import { PenaltiesPage } from './pages/loans/penalties'
 import { CollectionCasesPage } from './pages/collections/collectionCases'
@@ -28,6 +28,9 @@ import { UsersPage } from './pages/administration/users/users'
 import { RolesPage } from './pages/administration/roles/roles'
 import { ApprovalHierarchyPage } from './pages/administration/approvalHierarchy/approvalHierarchy'
 import { CompanyProfilePage } from './pages/administration/companyProfile/companyProfile'
+import { SecurityPage } from './pages/administration/security/security'
+import { NotificationsPage } from './pages/administration/notifications/notifications'
+import { AuditPage } from './pages/administration/audit/audit'
 
 // pages inside this route need a logged-in user
 function ProtectedRoute() {
@@ -85,6 +88,9 @@ function App() {
          <Route path="/roles" element={<RolesPage />} />
          <Route path="/approval-hierarchy" element={<ApprovalHierarchyPage />} />
          <Route path="/company-profile" element={<CompanyProfilePage />} />
+         <Route path="/security" element={<SecurityPage />} />
+         <Route path="/notifications" element={<NotificationsPage />} />
+         <Route path="/audit" element={<AuditPage />} />
 
 
 
