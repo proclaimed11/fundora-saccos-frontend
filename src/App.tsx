@@ -24,6 +24,8 @@ import { NplPage } from './pages/collections/npl'
 import { ChartOfAccountsPage } from './pages/accounting/chartOfAccounts'
 import { GlTransactionsPage } from './pages/accounting/glTransactions'
 import { ReportsPage } from './pages/reports/reports'
+import { UsersPage } from './pages/administration/users/users'
+import { RolesPage } from './pages/administration/roles/roles'
 
 // pages inside this route need a logged-in user
 function ProtectedRoute() {
@@ -76,6 +78,9 @@ function App() {
           {/* reports */}
           <Route path="/reports" element={<ReportsPage />} />
 
+          {/* Administration */}
+         <Route path="/users" element={<UsersPage />} />
+         <Route path="/roles" element={<RolesPage />} />
 
 
 

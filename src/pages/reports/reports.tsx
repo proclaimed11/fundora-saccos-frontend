@@ -149,7 +149,6 @@ export function ReportsPage() {
               value={reportKey}
               onChange={pickReport}
               clearable
-              leftSection={<AppIcon name={info?.icon ?? 'chart-column-increasing'} />}
             />
             <Select
               label="Period"
@@ -213,7 +212,7 @@ export function ReportsPage() {
         {!applied && (
           <div className={`${CARD} flex flex-col items-center justify-center px-6 py-16 text-center`}>
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-gray-400">
-              <AppIcon name="chart-column-increasing" size={26} />
+              <AppIcon name="file-chart-column" size={26} strokeWidth={0.75} />
             </div>
             <div className="mt-3 text-base font-medium text-gray-800">No report selected</div>
             <div className="mt-1 max-w-sm text-sm text-gray-500">
@@ -230,7 +229,7 @@ export function ReportsPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex min-w-0 items-start gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-subtle text-brand-dark">
-                    <AppIcon name={appliedInfo.icon} size={20} />
+                    <AppIcon name={appliedInfo.icon} size={20} strokeWidth={1.25} />
                   </div>
                   <div className="min-w-0">
                     <div className="text-base font-semibold text-gray-800">{appliedInfo.label}</div>

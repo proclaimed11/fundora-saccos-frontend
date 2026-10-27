@@ -47,7 +47,7 @@ export const navSections: NavSection[] = [
   },
   {
     label: 'Reports',
-    items: [{ key: 'reports', label: 'Reports', icon: 'chart-column-increasing', path: '/reports' }],
+    items: [{ key: 'reports', label: 'Reports', icon: 'file-chart-column', path: '/reports' }],
   },
   {
     label: 'Administration',
