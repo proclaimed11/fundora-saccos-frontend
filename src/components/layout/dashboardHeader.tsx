@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react'
-import { ActionIcon, Menu, Text } from '@mantine/core'
-import { Link } from 'react-router-dom'
+import { ActionIcon, Button, Menu, Text } from '@mantine/core'
+import { Link, useNavigate } from 'react-router-dom'
+import dayjs from 'dayjs'
 import logo from '../../assets/logo.png'
 import { AppIcon } from '../appIcon'
 import { NavSearch } from './navSearch'
 import { useAppTheme } from '../../theme/themeContext'
+import { EVENT, SAMPLE_NOTIFICATIONS } from '../../pages/administration/notifications/notificationsData'
 
 export type Crumb = { label: string; to?: string }
 
@@ -23,12 +25,6 @@ export type DashboardHeaderProps = {
 
 const ICON_BTN = 'text-slate-700 hover:bg-emerald-950/5'
 
-const SAMPLE_NOTIFICATIONS = [
-  { icon: 'file-text', title: 'New loan application', detail: 'A new application is ready for review.', time: '5 min ago' },
-  { icon: 'circle-check', title: 'Repayment received', detail: 'A borrower payment was recorded.', time: '1 hour ago' },
-  { icon: 'clock', title: 'Approval required', detail: 'Loan applications are waiting for your review.', time: 'Today' },
-]
-
 export function DashboardHeader({
   title,
   subtitle,
@@ -43,13 +39,20 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const parts = Array.isArray(title) ? title : [title]
   const { headerStyle } = useAppTheme()
+  const navigate = useNavigate()
+
+  // the same sample data as the Notifications page, newest first
+  const unread = SAMPLE_NOTIFICATIONS.filter((n) => n.status === 'SENT').sort((a, b) =>
+    b.sentAt.localeCompare(a.sentAt),
+  )
+  const latest = unread.slice(0, 5)
 
   return (
     <div
-        className={`${
-          headerStyle === 'texture' ? 'texture-header-skin' : 'botanical-header-skin'
-        } flex h-screen flex-col bg-gray-100`}
-      >
+      className={`${
+        headerStyle === 'texture' ? 'texture-header-skin' : 'botanical-header-skin'
+      } flex h-screen flex-col bg-gray-100`}
+    >
       <header className="relative z-30 flex h-12 shrink-0 items-center text-slate-700">
         <div
           className={`relative flex shrink-0 items-center px-3 transition-[width] duration-200 lg:justify-start lg:px-4 ${
@@ -136,59 +139,69 @@ export function DashboardHeader({
         </div>
 
         <div className="relative z-10 ml-auto flex shrink-0 items-center gap-1 px-3">
-          <ActionIcon variant="subtle" size="lg" className={ICON_BTN} aria-label="Messages">
-            <AppIcon name="mail" />
-          </ActionIcon>
-
-          <Menu position="bottom-end" shadow="md" width={320} withArrow>
+          <Menu position="bottom-end" shadow="md" width={340} withArrow>
             <Menu.Target>
               <ActionIcon
                 variant="subtle"
                 size="lg"
                 className={`relative ${ICON_BTN}`}
-                aria-label="Notifications, 3 unread"
+                aria-label={`Notifications, ${unread.length} unread`}
               >
                 <AppIcon name="bell" />
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-white">
-                  3
-                </span>
+                {unread.length > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-white">
+                    {unread.length}
+                  </span>
+                )}
               </ActionIcon>
             </Menu.Target>
+
             <Menu.Dropdown className="overflow-hidden border border-brand/20 p-0">
               <div className="border-b border-brand/15 bg-brand-subtle px-4 py-3">
                 <Text size="sm" fw={600} className="text-brand-dark">
                   Notifications
                 </Text>
                 <Text size="xs" className="text-brand">
-                  3 new updates
+                  {unread.length === 0 ? 'You are all caught up' : `${unread.length} unread`}
                 </Text>
               </div>
-              <div className="divide-y divide-brand/10">
-                {SAMPLE_NOTIFICATIONS.map((notification) => (
-                  <div key={notification.title} className="flex gap-3 px-4 py-3">
-                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-subtle text-brand">
-                      <AppIcon name={notification.icon} size={15} />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <Text size="xs" fw={600} className="text-slate-800">
-                          {notification.title}
-                        </Text>
-                        <Text size="xs" className="shrink-0 text-slate-400">
-                          {notification.time}
+
+              {latest.length === 0 ? (
+                <div className="px-4 py-8 text-center text-xs text-slate-500">Nothing new right now.</div>
+              ) : (
+                <div className="max-h-80 divide-y divide-brand/10 overflow-y-auto">
+                  {latest.map((n) => (
+                    <button
+                      key={n.id}
+                      type="button"
+                      onClick={() => navigate(`/notifications?view=${n.id}`)}
+                      className="flex w-full gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50"
+                    >
+                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-subtle text-brand">
+                        <AppIcon name={EVENT[n.eventType].icon} size={15} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <Text size="xs" fw={600} className="text-slate-800">
+                            {EVENT[n.eventType].label}
+                          </Text>
+                          <Text size="xs" className="shrink-0 text-slate-400">
+                            {dayjs(n.sentAt).format('MMM D')}
+                          </Text>
+                        </div>
+                        <Text size="xs" className="mt-1 line-clamp-2 text-slate-600">
+                          {n.message}
                         </Text>
                       </div>
-                      <Text size="xs" className="mt-1 text-slate-600">
-                        {notification.detail}
-                      </Text>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div className="border-t border-brand/15 px-4 py-2 text-center">
-                <Text size="xs" fw={500} className="text-brand">
-                  Sample notifications
-                </Text>
+                <Button component={Link} to="/notifications" size="compact-xs" variant="subtle">
+                  View all notifications
+                </Button>
               </div>
             </Menu.Dropdown>
           </Menu>

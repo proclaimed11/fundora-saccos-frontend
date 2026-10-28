@@ -5,6 +5,9 @@ import { TwoFactor } from './pages/auth/twoFactor'
 import { ForgotPassword } from './pages/auth/forgotPassword'
 import { ResetPassword } from './pages/auth/resetPassword'
 import { MyAccountPage } from './pages/auth/myAccount'
+import { NotFound } from './pages/errors/notFound'
+import { NoAccess } from './pages/errors/noAccess'
+import { SessionExpired } from './pages/errors/sessionExpired'
 import { Dashboard } from './pages/dashboard'
 import { Applicants } from './pages/applicants/allApplicants'
 import { NewApplicantPage } from './pages/applicants/newApplicant'
@@ -90,9 +93,11 @@ function App() {
         <Route path="/two-factor" element={<TwoFactorRoute />} />
         <Route path="/forgot-password" element={<ForgotPasswordRoute />} />
         <Route path="/reset-password" element={<ResetPasswordRoute />} />
+        <Route path="/session-expired" element={<SessionExpired />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/account" element={<MyAccountPage />} />
+          <Route path="/no-access" element={<NoAccess />} />
           <Route path="/" element={<Dashboard />} />
 
           {/* applicants */}
@@ -138,7 +143,7 @@ function App() {
           {/* new pages go here, using the path from navItems.tsx */}
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   )

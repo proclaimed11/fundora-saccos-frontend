@@ -40,3 +40,13 @@ export const ROLE_NAMES = SAMPLE_ROLES.map((r) => r.name)
 
 // SAMPLE ONLY: the same sample users as the Users page
 export const activeUsersWithRole = (role: string) => SAMPLE_USERS.filter((u) => u.role === role && u.active)
+
+// the single level used when the Admin approves everything alone, it is not stored as a hierarchy
+export const ADMIN_ONLY_LEVEL: ApprovalLevel = {
+  id: 0,
+  hierarchyId: 0,
+  levelNo: 1,
+  levelName: 'Admin',
+  requiredRole: 'Admin',
+  isActive: true,
+}

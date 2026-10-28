@@ -84,10 +84,10 @@ export function Sidebar({
               <Menu.Dropdown className="sidebar-account-menu">
                 <Menu.Item
                   className="sidebar-account-menu-item"
-                  leftSection={<AppIcon name="settings" />}
+                  leftSection={<AppIcon name="circle-user-round" />}
                   onClick={onSettings}
                 >
-                  Settings
+                  Account
                 </Menu.Item>
                 <Menu.Divider className="sidebar-account-menu-divider" />
                 <Menu.Item

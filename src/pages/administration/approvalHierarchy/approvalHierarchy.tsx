@@ -2,12 +2,13 @@ import { AppIcon } from '../../../components/appIcon'
 import { Fragment, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
-import { ActionIcon, Alert, Badge, Button, Menu, Text } from '@mantine/core'
+import { ActionIcon, Alert, Badge, Button, Menu, Switch, Text } from '@mantine/core'
 import { DashboardLayout } from '../../../components/layout/dashboardLayout'
 import { StatWidget } from '../../../components/statsWidgets'
 import { ContractConfirmDialog } from '../../loans/contractDialogs'
 import { HierarchyDialog, LevelDialog, type LevelInput } from './approvalHierarchyDialogs'
 import {
+  ADMIN_ONLY_LEVEL,
   SAMPLE_HIERARCHIES,
   SAMPLE_LEVELS,
   activeUsersWithRole,
@@ -20,7 +21,15 @@ const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 type Notice = { text: string; color: 'green' | 'blue' } | null
 
 type DialogState =
-  | { kind: 'hierarchy-create' | 'hierarchy-rename' | 'hierarchy-delete' | 'hierarchy-default' | 'level-create' }
+  | {
+      kind:
+        | 'hierarchy-create'
+        | 'hierarchy-rename'
+        | 'hierarchy-delete'
+        | 'hierarchy-default'
+        | 'level-create'
+        | 'mode'
+    }
   | { kind: 'level-edit' | 'level-delete'; id: number }
   | null
 
@@ -62,6 +71,8 @@ export function ApprovalHierarchyPage() {
   )
   const [dialog, setDialog] = useState<DialogState>(null)
   const [notice, setNotice] = useState<Notice>(null)
+  // UI only: true means the Admin approves everything alone and no hierarchy is used
+  const [adminOnly, setAdminOnly] = useState(false)
 
   // success banners fade away on their own
   useEffect(() => {
@@ -78,14 +89,24 @@ export function ApprovalHierarchyPage() {
   const chain = current.filter((l) => l.isActive)
 
   // what the loan applications really go through
-  const defaultChain = defaultHierarchy ? levelsOf(defaultHierarchy.id).filter((l) => l.isActive) : []
+  const defaultChain = adminOnly
+    ? [ADMIN_ONLY_LEVEL]
+    : defaultHierarchy
+      ? levelsOf(defaultHierarchy.id).filter((l) => l.isActive)
+      : []
   const uncovered = defaultChain.filter((l) => activeUsersWithRole(l.requiredRole).length === 0)
   const approvers = new Set(defaultChain.flatMap((l) => activeUsersWithRole(l.requiredRole).map((u) => u.id))).size
+  const adminApprovers = activeUsersWithRole('Admin')
 
   // here `color` is the icon color
   const stats = [
     { label: 'Hierarchies', value: hierarchies.length, icon: 'network', color: '#45bdfc' },
-    { label: 'Levels In Default Chain', value: defaultChain.length, icon: 'square-check', color: 'var(--app-brand)' },
+    {
+      label: adminOnly ? 'Approval Mode: Admin Only' : 'Levels In Default Chain',
+      value: defaultChain.length,
+      icon: 'square-check',
+      color: 'var(--app-brand)',
+    },
     { label: 'Approvers Available', value: approvers, icon: 'users', color: '#8e44ad' },
     { label: 'Levels Without Approver', value: uncovered.length, icon: 'triangle-alert', color: uncovered.length > 0 ? '#ef4444' : '#0077b5' },
   ]
@@ -113,6 +134,22 @@ export function ApprovalHierarchyPage() {
     setLevels((all) => [...all.filter((l) => l.hierarchyId !== selected.id), ...next])
 
   const renumber = (list: ApprovalLevel[]) => list.map((l, i) => ({ ...l, levelNo: i + 1 }))
+
+  /* ---------- approval mode ---------- */
+
+  const toggleAdminOnly = () => {
+    // TODO: when turning on, PUT /api/approval-hierarchys/{id} on a hierarchy with one active level
+    //       { levelName: 'Admin', requiredRole: 'Admin' } and make it the default.
+    //       When turning off, make the previous default hierarchy the default again.
+    setAdminOnly((on) => !on)
+    setNotice({
+      color: adminOnly ? 'blue' : 'green',
+      text: adminOnly
+        ? `Admin-only approval is off. Applications follow ${defaultHierarchy?.name ?? 'the default hierarchy'} again.`
+        : 'Admin-only approval is on. The Admin now approves every application alone.',
+    })
+    setDialog(null)
+  }
 
   /* ---------- hierarchy actions ---------- */
 
@@ -214,7 +251,12 @@ export function ApprovalHierarchyPage() {
       subtitle="The chain of levels every loan application goes through before it is approved"
       breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Administration' }, { label: 'Approval Hierarchy' }]}
       actions={
-        <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setDialog({ kind: 'hierarchy-create' })}>
+        <Button
+          size="xs"
+          disabled={adminOnly}
+          leftSection={<AppIcon name="plus" />}
+          onClick={() => setDialog({ kind: 'hierarchy-create' })}
+        >
           New hierarchy
         </Button>
       }
@@ -231,6 +273,46 @@ export function ApprovalHierarchyPage() {
             <Text size="sm">{notice.text}</Text>
           </Alert>
         )}
+
+        {/* approval mode: a full hierarchy, or the Admin alone */}
+        <div className={`${CARD} p-4`}>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-subtle text-brand-dark">
+                <AppIcon name="shield" size={20} strokeWidth={1.25} />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-gray-800">Admin approves everything</div>
+                <div className="text-xs text-gray-500">
+                  Skip the approval hierarchy. One decision from an Admin approves or rejects the application, with no
+                  other levels.
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Badge variant="light" color={adminOnly ? 'brand' : 'gray'} radius="sm" size="sm">
+                    {adminOnly ? 'Admin only' : 'Hierarchy'}
+                  </Badge>
+                  {adminOnly && (
+                    <Text size="xs" c="dimmed">
+                      Path: Submitted → Admin → Approved
+                    </Text>
+                  )}
+                </div>
+              </div>
+            </div>
+            <Switch
+              checked={adminOnly}
+              onChange={() => setDialog({ kind: 'mode' })}
+              aria-label="Admin approves everything"
+            />
+          </div>
+
+          {adminOnly && adminApprovers.length > 0 && (
+            <Text size="xs" c="dimmed" mt="sm">
+              {adminApprovers.length} active {adminApprovers.length === 1 ? 'Admin' : 'Admins'} can approve:{' '}
+              {adminApprovers.map((u) => u.name).join(', ')}.
+            </Text>
+          )}
+        </div>
 
         {uncovered.length > 0 && (
           <Alert color="red" variant="light" icon={<AppIcon name="triangle-alert" />}>
@@ -254,253 +336,264 @@ export function ApprovalHierarchyPage() {
           ))}
         </div>
 
-        {/* row 2: the hierarchies and the chain of the selected one */}
-        <div className="grid items-start gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
-          {/* hierarchy list */}
-          <div className={`${CARD} p-4`}>
-            <SectionTitle>Hierarchies</SectionTitle>
-            <ul className="mt-2 space-y-2">
-              {hierarchies.map((h) => {
-                const active = levelsOf(h.id).filter((l) => l.isActive).length
-                return (
-                  <li key={h.id}>
-                    <button
-                      type="button"
-                      aria-pressed={h.id === selected.id}
-                      onClick={() => setSelectedId(h.id)}
-                      className={`w-full rounded-md border bg-white px-3 py-2.5 text-left transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 ${
-                        h.id === selected.id ? 'border-brand ring-2 ring-brand' : 'border-gray-200'
-                      }`}
-                    >
-                      <div className="truncate text-sm font-medium text-gray-800">{h.name}</div>
-                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                        <HierarchyBadges h={h} />
-                      </div>
-                      <div className="mt-1.5 text-xs text-gray-500">
-                        {active} active {active === 1 ? 'level' : 'levels'}
-                      </div>
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-            <p className="mt-3 text-xs text-gray-500">Only the default hierarchy is used for new approvals.</p>
-          </div>
+        {adminOnly && (
+          <Alert color="blue" variant="light" icon={<AppIcon name="info" />}>
+            <Text size="sm">
+              Admin-only approval is on, so the hierarchies below are not used. They are kept as they are and apply
+              again when you turn it off.
+            </Text>
+          </Alert>
+        )}
 
-          {/* selected hierarchy */}
-          <div className={`${CARD} p-5`}>
-            <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="truncate text-base font-semibold text-gray-800">{selected.name}</div>
-                <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                  <HierarchyBadges h={selected} />
-                  <Text size="xs" c="dimmed">
-                    Created {dayjs(selected.created).format('MMM D, YYYY')}
-                  </Text>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {!selected.isDefault && (
-                  <Button
-                    size="xs"
-                    variant="default"
-                    disabled={!!defaultBlock}
-                    leftSection={<AppIcon name="circle-check" />}
-                    onClick={() => setDialog({ kind: 'hierarchy-default' })}
-                  >
-                    Make default
-                  </Button>
-                )}
-                <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setDialog({ kind: 'level-create' })}>
-                  Add level
-                </Button>
-                <Menu position="bottom-end" shadow="md" width={230}>
-                  <Menu.Target>
-                    <ActionIcon variant="default" size={30} aria-label={`Actions for ${selected.name}`}>
-                      <AppIcon name="ellipsis-vertical" />
-                    </ActionIcon>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    <Menu.Item leftSection={<AppIcon name="pencil" />} onClick={() => setDialog({ kind: 'hierarchy-rename' })}>
-                      Rename
-                    </Menu.Item>
-                    <Menu.Item
-                      disabled={selected.isDefault && selected.isActive}
-                      leftSection={<AppIcon name={selected.isActive ? 'circle-x' : 'circle-check'} />}
-                      onClick={toggleHierarchy}
-                    >
-                      {selected.isActive ? 'Deactivate' : 'Activate'}
-                    </Menu.Item>
-                    <Menu.Divider />
-                    <Menu.Item
-                      color="red"
-                      disabled={!!deleteBlock}
-                      leftSection={<AppIcon name="trash" />}
-                      onClick={() => setDialog({ kind: 'hierarchy-delete' })}
-                    >
-                      {deleteBlock ? 'Cannot delete' : 'Delete hierarchy'}
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
-              </div>
-            </div>
-
-            {!selected.isDefault && defaultBlock && (
-              <Alert color="gray" variant="light" icon={<AppIcon name="lock-keyhole" />} mb="md">
-                <Text size="sm">This hierarchy cannot be the default yet. {defaultBlock}</Text>
-              </Alert>
-            )}
-
-            {/* the chain, as an application sees it */}
-            <div className="mb-5">
-              <SectionTitle>The path of an application</SectionTitle>
-              {chain.length === 0 ? (
-                <div className="mt-2 rounded-md border border-dashed border-gray-200 px-4 py-5 text-center text-xs text-gray-500">
-                  No active level yet, so there is no chain. Add a level to start.
-                </div>
-              ) : (
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <Badge variant="outline" color="gray" radius="sm" size="md" tt="none">
-                    Submitted
-                  </Badge>
-                  {chain.map((l) => (
-                    <Fragment key={l.id}>
-                      <AppIcon name="chevron-right" className="text-gray-400" />
-                      <Badge variant="light" color="brand" radius="sm" size="md" tt="none">
-                        {l.levelName} · {l.requiredRole}
-                      </Badge>
-                    </Fragment>
-                  ))}
-                  <AppIcon name="chevron-right" className="text-gray-400" />
-                  <Badge variant="filled" color="green" radius="sm" size="md" tt="none">
-                    Approved
-                  </Badge>
-                </div>
-              )}
-            </div>
-
-            {/* the levels */}
-            <div>
-              <SectionTitle>{`Levels (${current.length})`}</SectionTitle>
-              <p className="mb-3 text-xs text-gray-500">
-                Each level must approve in order. A rejection at any level stops the application. A skipped level is
-                kept but not asked.
-              </p>
-
-              {current.length === 0 ? (
-                <div className="rounded-md border border-dashed border-gray-200 px-4 py-6 text-center text-xs text-gray-500">
-                  This hierarchy has no levels yet.
-                </div>
-              ) : (
-                <ul className="space-y-2">
-                  {current.map((l, i) => {
-                    const users = activeUsersWithRole(l.requiredRole)
-                    const blocked = levelBlock(l)
-                    return (
-                      <li
-                        key={l.id}
-                        className={`flex items-start gap-3 rounded-md border px-3 py-3 ${
-                          l.isActive ? 'border-gray-200' : 'border-dashed border-gray-200 bg-gray-50'
+        {/* row 2: the hierarchies and the chain of the selected one, greyed out in Admin-only mode */}
+        <div aria-disabled={adminOnly} className={adminOnly ? 'pointer-events-none select-none opacity-50' : ''}>
+          <div className="grid items-start gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+            {/* hierarchy list */}
+            <div className={`${CARD} p-4`}>
+              <SectionTitle>Hierarchies</SectionTitle>
+              <ul className="mt-2 space-y-2">
+                {hierarchies.map((h) => {
+                  const active = levelsOf(h.id).filter((l) => l.isActive).length
+                  return (
+                    <li key={h.id}>
+                      <button
+                        type="button"
+                        aria-pressed={h.id === selected.id}
+                        onClick={() => setSelectedId(h.id)}
+                        className={`w-full rounded-md border bg-white px-3 py-2.5 text-left transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 ${
+                          h.id === selected.id ? 'border-brand ring-2 ring-brand' : 'border-gray-200'
                         }`}
                       >
-                        <div
-                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-medium ${
-                            l.isActive ? 'bg-brand-subtle text-brand-dark' : 'bg-gray-100 text-gray-400'
-                          }`}
-                        >
-                          {l.levelNo}
+                        <div className="truncate text-sm font-medium text-gray-800">{h.name}</div>
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          <HierarchyBadges h={h} />
                         </div>
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className={`text-sm font-medium ${l.isActive ? 'text-gray-800' : 'text-gray-400'}`}>
-                              {l.levelName}
-                            </span>
-                            {!l.isActive && (
-                              <Badge variant="light" color="gray" radius="sm" size="sm">
-                                Skipped
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="text-xs text-gray-500">Required role: {l.requiredRole}</div>
-                          <div
-                            className={`mt-1 text-xs ${
-                              users.length === 0 && l.isActive ? 'font-medium text-red-600' : 'text-gray-500'
-                            }`}
-                          >
-                            {users.length === 0
-                              ? 'No active user has this role'
-                              : `${users.length} active ${users.length === 1 ? 'user' : 'users'}: ${users
-                                  .map((u) => u.name)
-                                  .join(', ')}`}
-                          </div>
+                        <div className="mt-1.5 text-xs text-gray-500">
+                          {active} active {active === 1 ? 'level' : 'levels'}
                         </div>
-
-                        <div className="flex shrink-0 items-center gap-1">
-                          <ActionIcon
-                            variant="subtle"
-                            color="gray"
-                            size="sm"
-                            disabled={i === 0}
-                            aria-label={`Move ${l.levelName} up`}
-                            onClick={() => move(l, -1)}
-                          >
-                            <AppIcon name="arrow-up" />
-                          </ActionIcon>
-                          <ActionIcon
-                            variant="subtle"
-                            color="gray"
-                            size="sm"
-                            disabled={i === current.length - 1}
-                            aria-label={`Move ${l.levelName} down`}
-                            onClick={() => move(l, 1)}
-                          >
-                            <AppIcon name="arrow-down" />
-                          </ActionIcon>
-
-                          <Menu position="bottom-end" shadow="md" width={230}>
-                            <Menu.Target>
-                              <ActionIcon variant="subtle" color="gray" size="sm" aria-label={`Actions for ${l.levelName}`}>
-                                <AppIcon name="ellipsis-vertical" />
-                              </ActionIcon>
-                            </Menu.Target>
-                            <Menu.Dropdown>
-                              <Menu.Item fw={500} leftSection={<AppIcon name="pencil" />} onClick={() => setDialog({ kind: 'level-edit', id: l.id })}>
-                                Edit level
-                              </Menu.Item>
-                              <Menu.Item
-                                disabled={!!blocked}
-                                leftSection={<AppIcon name={l.isActive ? 'circle-x' : 'circle-check'} />}
-                                onClick={() => toggleLevel(l)}
-                              >
-                                {l.isActive ? (blocked ? 'Cannot skip' : 'Skip this level') : 'Include this level'}
-                              </Menu.Item>
-                              <Menu.Divider />
-                              <Menu.Item
-                                color="red"
-                                disabled={!!blocked}
-                                leftSection={<AppIcon name="trash" />}
-                                onClick={() => setDialog({ kind: 'level-delete', id: l.id })}
-                              >
-                                {blocked ? 'Cannot delete' : 'Delete level'}
-                              </Menu.Item>
-                            </Menu.Dropdown>
-                          </Menu>
-                        </div>
-                      </li>
-                    )
-                  })}
-                </ul>
-              )}
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+              <p className="mt-3 text-xs text-gray-500">Only the default hierarchy is used for new approvals.</p>
             </div>
 
-            <Alert color="blue" variant="light" icon={<AppIcon name="info" />} mt="md">
-              <Text size="xs">
-                The approver's role must match the level's required role exactly. Roles are managed on the Roles page,
-                and people are given a role on the Users page.
-              </Text>
-            </Alert>
+            {/* selected hierarchy */}
+            <div className={`${CARD} p-5`}>
+              <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="truncate text-base font-semibold text-gray-800">{selected.name}</div>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                    <HierarchyBadges h={selected} />
+                    <Text size="xs" c="dimmed">
+                      Created {dayjs(selected.created).format('MMM D, YYYY')}
+                    </Text>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {!selected.isDefault && (
+                    <Button
+                      size="xs"
+                      variant="default"
+                      disabled={!!defaultBlock}
+                      leftSection={<AppIcon name="circle-check" />}
+                      onClick={() => setDialog({ kind: 'hierarchy-default' })}
+                    >
+                      Make default
+                    </Button>
+                  )}
+                  <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setDialog({ kind: 'level-create' })}>
+                    Add level
+                  </Button>
+                  <Menu position="bottom-end" shadow="md" width={230}>
+                    <Menu.Target>
+                      <ActionIcon variant="default" size={30} aria-label={`Actions for ${selected.name}`}>
+                        <AppIcon name="ellipsis-vertical" />
+                      </ActionIcon>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item leftSection={<AppIcon name="pencil" />} onClick={() => setDialog({ kind: 'hierarchy-rename' })}>
+                        Rename
+                      </Menu.Item>
+                      <Menu.Item
+                        disabled={selected.isDefault && selected.isActive}
+                        leftSection={<AppIcon name={selected.isActive ? 'circle-x' : 'circle-check'} />}
+                        onClick={toggleHierarchy}
+                      >
+                        {selected.isActive ? 'Deactivate' : 'Activate'}
+                      </Menu.Item>
+                      <Menu.Divider />
+                      <Menu.Item
+                        color="red"
+                        disabled={!!deleteBlock}
+                        leftSection={<AppIcon name="trash" />}
+                        onClick={() => setDialog({ kind: 'hierarchy-delete' })}
+                      >
+                        {deleteBlock ? 'Cannot delete' : 'Delete hierarchy'}
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </div>
+              </div>
+
+              {!selected.isDefault && defaultBlock && (
+                <Alert color="gray" variant="light" icon={<AppIcon name="lock-keyhole" />} mb="md">
+                  <Text size="sm">This hierarchy cannot be the default yet. {defaultBlock}</Text>
+                </Alert>
+              )}
+
+              {/* the chain, as an application sees it */}
+              <div className="mb-5">
+                <SectionTitle>The path of an application</SectionTitle>
+                {chain.length === 0 ? (
+                  <div className="mt-2 rounded-md border border-dashed border-gray-200 px-4 py-5 text-center text-xs text-gray-500">
+                    No active level yet, so there is no chain. Add a level to start.
+                  </div>
+                ) : (
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" color="gray" radius="sm" size="md" tt="none">
+                      Submitted
+                    </Badge>
+                    {chain.map((l) => (
+                      <Fragment key={l.id}>
+                        <AppIcon name="chevron-right" className="text-gray-400" />
+                        <Badge variant="light" color="brand" radius="sm" size="md" tt="none">
+                          {l.levelName} · {l.requiredRole}
+                        </Badge>
+                      </Fragment>
+                    ))}
+                    <AppIcon name="chevron-right" className="text-gray-400" />
+                    <Badge variant="filled" color="green" radius="sm" size="md" tt="none">
+                      Approved
+                    </Badge>
+                  </div>
+                )}
+              </div>
+
+              {/* the levels */}
+              <div>
+                <SectionTitle>{`Levels (${current.length})`}</SectionTitle>
+                <p className="mb-3 text-xs text-gray-500">
+                  Each level must approve in order. A rejection at any level stops the application. A skipped level is
+                  kept but not asked.
+                </p>
+
+                {current.length === 0 ? (
+                  <div className="rounded-md border border-dashed border-gray-200 px-4 py-6 text-center text-xs text-gray-500">
+                    This hierarchy has no levels yet.
+                  </div>
+                ) : (
+                  <ul className="space-y-2">
+                    {current.map((l, i) => {
+                      const users = activeUsersWithRole(l.requiredRole)
+                      const blocked = levelBlock(l)
+                      return (
+                        <li
+                          key={l.id}
+                          className={`flex items-start gap-3 rounded-md border px-3 py-3 ${
+                            l.isActive ? 'border-gray-200' : 'border-dashed border-gray-200 bg-gray-50'
+                          }`}
+                        >
+                          <div
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-medium ${
+                              l.isActive ? 'bg-brand-subtle text-brand-dark' : 'bg-gray-100 text-gray-400'
+                            }`}
+                          >
+                            {l.levelNo}
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className={`text-sm font-medium ${l.isActive ? 'text-gray-800' : 'text-gray-400'}`}>
+                                {l.levelName}
+                              </span>
+                              {!l.isActive && (
+                                <Badge variant="light" color="gray" radius="sm" size="sm">
+                                  Skipped
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-xs text-gray-500">Required role: {l.requiredRole}</div>
+                            <div
+                              className={`mt-1 text-xs ${
+                                users.length === 0 && l.isActive ? 'font-medium text-red-600' : 'text-gray-500'
+                              }`}
+                            >
+                              {users.length === 0
+                                ? 'No active user has this role'
+                                : `${users.length} active ${users.length === 1 ? 'user' : 'users'}: ${users
+                                    .map((u) => u.name)
+                                    .join(', ')}`}
+                            </div>
+                          </div>
+
+                          <div className="flex shrink-0 items-center gap-1">
+                            <ActionIcon
+                              variant="subtle"
+                              color="gray"
+                              size="sm"
+                              disabled={i === 0}
+                              aria-label={`Move ${l.levelName} up`}
+                              onClick={() => move(l, -1)}
+                            >
+                              <AppIcon name="arrow-up" />
+                            </ActionIcon>
+                            <ActionIcon
+                              variant="subtle"
+                              color="gray"
+                              size="sm"
+                              disabled={i === current.length - 1}
+                              aria-label={`Move ${l.levelName} down`}
+                              onClick={() => move(l, 1)}
+                            >
+                              <AppIcon name="arrow-down" />
+                            </ActionIcon>
+
+                            <Menu position="bottom-end" shadow="md" width={230}>
+                              <Menu.Target>
+                                <ActionIcon variant="subtle" color="gray" size="sm" aria-label={`Actions for ${l.levelName}`}>
+                                  <AppIcon name="ellipsis-vertical" />
+                                </ActionIcon>
+                              </Menu.Target>
+                              <Menu.Dropdown>
+                                <Menu.Item fw={500} leftSection={<AppIcon name="pencil" />} onClick={() => setDialog({ kind: 'level-edit', id: l.id })}>
+                                  Edit level
+                                </Menu.Item>
+                                <Menu.Item
+                                  disabled={!!blocked}
+                                  leftSection={<AppIcon name={l.isActive ? 'circle-x' : 'circle-check'} />}
+                                  onClick={() => toggleLevel(l)}
+                                >
+                                  {l.isActive ? (blocked ? 'Cannot skip' : 'Skip this level') : 'Include this level'}
+                                </Menu.Item>
+                                <Menu.Divider />
+                                <Menu.Item
+                                  color="red"
+                                  disabled={!!blocked}
+                                  leftSection={<AppIcon name="trash" />}
+                                  onClick={() => setDialog({ kind: 'level-delete', id: l.id })}
+                                >
+                                  {blocked ? 'Cannot delete' : 'Delete level'}
+                                </Menu.Item>
+                              </Menu.Dropdown>
+                            </Menu>
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+              </div>
+
+              <Alert color="blue" variant="light" icon={<AppIcon name="info" />} mt="md">
+                <Text size="xs">
+                  The approver's role must match the level's required role exactly. Roles are managed on the Roles page,
+                  and people are given a role on the Users page.
+                </Text>
+              </Alert>
+            </div>
           </div>
         </div>
       </div>
@@ -520,6 +613,21 @@ export function ApprovalHierarchyPage() {
         existingNames={current.filter((l) => l.id !== dialogLevel?.id || dialog?.kind !== 'level-edit').map((l) => l.levelName)}
         onClose={() => setDialog(null)}
         onSubmit={dialog?.kind === 'level-edit' ? editLevel : addLevel}
+      />
+
+      <ContractConfirmDialog
+        opened={dialog?.kind === 'mode'}
+        title={adminOnly ? 'Use the approval hierarchy' : 'Let the Admin approve everything'}
+        message={
+          adminOnly
+            ? `Go back to ${defaultHierarchy?.name ?? 'the default hierarchy'}? New approvals will go through its ${
+                levelsOf(defaultHierarchy?.id ?? 0).filter((l) => l.isActive).length
+              } levels.`
+            : 'Skip the approval hierarchy? One Admin decision will approve or reject each application, with no other levels. Applications already waiting at a later level are not affected until you review them.'
+        }
+        confirmLabel={adminOnly ? 'Use hierarchy' : 'Turn on'}
+        onClose={() => setDialog(null)}
+        onConfirm={toggleAdminOnly}
       />
 
       <ContractConfirmDialog
