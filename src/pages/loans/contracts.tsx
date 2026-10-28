@@ -374,6 +374,8 @@ export function ContractsPage() {
   const [dialog, setDialog] = useState<DialogState>(null)
   // UI only: the edited wording of contracts, by application id, nothing is saved yet
   const [edits, setEdits] = useState<Record<number, ContractContent>>({})
+  // UI only: contract files uploaded instead of the generated wording, by application id
+  const [uploads, setUploads] = useState<Record<number, File>>({})
   // UI only: actions change the contracts for this session, nothing is saved yet
   const [overrides, setOverrides] = useState<Record<number, Partial<LoanApplication>>>(() =>
     approvedId ? { [approvedId]: { status: 'APPROVED' } } : {},
@@ -402,13 +404,13 @@ export function ContractsPage() {
   }, [items, filter])
 
   const rows = useMemo<Row[]>(
-  () =>
-    visible.map((a) => {
-      const stage = stageOf(a)!
-      return { ...a, stage, since: timelineDate(a, stage) }
-    }),
-  [visible],
-)
+    () =>
+      visible.map((a) => {
+        const stage = stageOf(a)!
+        return { ...a, stage, since: timelineDate(a, stage) }
+      }),
+    [visible],
+  )
 
   // /loan-contracts?contract=9 opens the drawer for application 9
   const openId = params.get('contract')
@@ -439,8 +441,8 @@ export function ContractsPage() {
   }
 
   // Loan created -> open the Loans page with the disburse dialog for this application
-const disburse = (a: LoanApplication) =>
-  navigate(`/loan-disbursements?disburse=${a.id}`, { state: { createdId: a.id } })
+  const disburse = (a: LoanApplication) =>
+    navigate(`/loan-disbursements?disburse=${a.id}`, { state: { createdId: a.id } })
 
   const dialogApp = dialog ? all.find((a) => a.id === dialog.id) : undefined
 
@@ -712,9 +714,9 @@ const disburse = (a: LoanApplication) =>
 
           <CustomTable<Row>
             size="md"
-            data={rows}                       // was `visible`
+            data={rows}
             columns={columns}
-            filters={{ stage: stageOptions, since: 'date' }}   // new
+            filters={{ stage: stageOptions, since: 'date' }}
             searchInput
             searchPlaceholder="Search borrower or application"
             searchKeys={['applicationNo', 'applicantName', 'loanOfficer']}
@@ -758,6 +760,22 @@ const disburse = (a: LoanApplication) =>
         application={dialogApp ?? null}
         canSend={!!dialogApp && stageOf(dialogApp) === 'GENERATED'}
         edited={dialogApp ? (edits[dialogApp.id] ?? null) : null}
+        uploadedName={dialogApp ? (uploads[dialogApp.id]?.name ?? null) : null}
+        onUpload={(file) => {
+          if (!dialogApp) return
+          // TODO: needs a new endpoint, e.g. PUT /api/loan-origination/contracts/{contractId}/document (multipart, part: file),
+          //       allowed only while the contract is GENERATED. The API today only accepts the signed copy.
+          setUploads((u) => ({ ...u, [dialogApp.id]: file }))
+          setNotice({ text: `${file.name} will be sent instead of the generated contract for ${dialogApp.applicantName}.` })
+        }}
+        onRemoveUpload={() => {
+          if (!dialogApp) return
+          setUploads((u) => {
+            const next = { ...u }
+            delete next[dialogApp.id]
+            return next
+          })
+        }}
         onClose={() => setDialog(null)}
         onSend={complete}
         onSaveEdit={(content) => {

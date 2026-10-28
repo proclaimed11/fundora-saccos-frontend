@@ -67,7 +67,7 @@ export function DashboardLayout({
           onClose={() => setMenuOpen(false)}
           collapsed={collapsed}
           user={USER}
-          onSettings={onSettings}
+          onSettings={onSettings ?? (() => navigate('/account'))}
           onLogout={onLogout ?? logout}
         />
       }

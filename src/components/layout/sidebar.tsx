@@ -91,7 +91,7 @@ export function Sidebar({
                 </Menu.Item>
                 <Menu.Divider className="sidebar-account-menu-divider" />
                 <Menu.Item
-                  className="sidebar-account-menu-item"
+                  className="sidebar-account-menu-item sidebar-account-menu-logout"
                   color="red"
                   leftSection={<AppIcon name="log-out" />}
                   onClick={onLogout}

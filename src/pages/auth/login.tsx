@@ -1,15 +1,16 @@
 import { AppIcon } from '../../components/appIcon'
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { Button, PasswordInput, Text, TextInput } from '@mantine/core'
 import logo from '../../assets/logo.png'
 
 type LoginProps = {
   /** called with the entered credentials, throw an Error to show a message */
-  onLogin?: (email: string, password: string) => Promise<void> | void
+  onLogin?: (username: string, password: string) => Promise<void> | void
 }
 
 export function Login({ onLogin }: LoginProps) {
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -17,9 +18,15 @@ export function Login({ onLogin }: LoginProps) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    if (!username.trim() || !password) {
+      setError('Enter your username and password')
+      return
+    }
+
     setLoading(true)
     try {
-      await onLogin?.(email.trim(), password)
+      await onLogin?.(username.trim(), password)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.')
     } finally {
@@ -41,27 +48,40 @@ export function Login({ onLogin }: LoginProps) {
           </Text>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <TextInput
-            label="Email"
-            placeholder="you@company.com"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.currentTarget.value)}
-            leftSection={<AppIcon name="mail" />}
+            label="Username"
+            placeholder="Your username"
+            autoComplete="username"
+            value={username}
+            onChange={(e) => {
+              setUsername(e.currentTarget.value)
+              setError(null)
+            }}
+            leftSection={<AppIcon name="user-round" />}
           />
 
-          <PasswordInput
-            label="Password"
-            placeholder="Your password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.currentTarget.value)}
-            leftSection={<AppIcon name="lock-keyhole" />}
-          />
+          <div>
+            <PasswordInput
+              label="Password"
+              placeholder="Your password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.currentTarget.value)
+                setError(null)
+              }}
+              leftSection={<AppIcon name="lock-keyhole" />}
+            />
+            <div className="mt-1.5 text-right">
+              <Link
+                to="/forgot-password"
+                className="text-xs text-brand-dark no-underline hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          </div>
 
           {error && (
             <Text size="xs" c="red">

@@ -155,6 +155,18 @@
   color: var(--app-sidebar-highlight-text);
 }
 
+.sidebar-account-menu-logout,
+.sidebar-account-menu-logout .mantine-Menu-itemLabel,
+.sidebar-account-menu-logout .mantine-Menu-itemSection {
+  color: #ef4444;
+}
+
+.sidebar-account-menu-logout:hover,
+.sidebar-account-menu-logout[data-hovered] {
+  background-color: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
+
 .sidebar-account-menu-divider {
   border-color: var(--color-sidebar-border);
 }

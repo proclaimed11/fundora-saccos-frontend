@@ -1,6 +1,10 @@
-import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
+import { Navigate, Outlet, Route, Routes, useNavigate } from 'react-router-dom'
 import { useAuth } from './auth/authContext'
 import { Login } from './pages/auth/login'
+import { TwoFactor } from './pages/auth/twoFactor'
+import { ForgotPassword } from './pages/auth/forgotPassword'
+import { ResetPassword } from './pages/auth/resetPassword'
+import { MyAccountPage } from './pages/auth/myAccount'
 import { Dashboard } from './pages/dashboard'
 import { Applicants } from './pages/applicants/allApplicants'
 import { NewApplicantPage } from './pages/applicants/newApplicant'
@@ -40,9 +44,41 @@ function ProtectedRoute() {
 
 function LoginRoute() {
   const { isAuthenticated, login } = useAuth()
+  const navigate = useNavigate()
   // already logged in -> skip the login page
   if (isAuthenticated) return <Navigate to="/" replace />
-  return <Login onLogin={login} />
+
+  return (
+    <Login
+      onLogin={async (username, password) => {
+        // UI only: signing in as "2fa" shows the two-factor step so it can be previewed.
+        // TODO: replace with the real response of POST /api/auth/login (requiresTwoFactor, twoFactorToken)
+        if (username.toLowerCase() === '2fa') {
+          navigate('/two-factor', { state: { username, email: 'ad***@gmail.com' } })
+          return
+        }
+        await login(username, password)
+      }}
+    />
+  )
+}
+
+function TwoFactorRoute() {
+  const { isAuthenticated } = useAuth()
+  if (isAuthenticated) return <Navigate to="/" replace />
+  return <TwoFactor />
+}
+
+function ForgotPasswordRoute() {
+  const { isAuthenticated } = useAuth()
+  if (isAuthenticated) return <Navigate to="/" replace />
+  return <ForgotPassword />
+}
+
+function ResetPasswordRoute() {
+  const { isAuthenticated } = useAuth()
+  if (isAuthenticated) return <Navigate to="/" replace />
+  return <ResetPassword />
 }
 
 function App() {
@@ -51,8 +87,12 @@ function App() {
       <Preloader />
       <Routes>
         <Route path="/login" element={<LoginRoute />} />
+        <Route path="/two-factor" element={<TwoFactorRoute />} />
+        <Route path="/forgot-password" element={<ForgotPasswordRoute />} />
+        <Route path="/reset-password" element={<ResetPasswordRoute />} />
 
         <Route element={<ProtectedRoute />}>
+          <Route path="/account" element={<MyAccountPage />} />
           <Route path="/" element={<Dashboard />} />
 
           {/* applicants */}
