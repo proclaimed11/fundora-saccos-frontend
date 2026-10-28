@@ -171,7 +171,7 @@ export function Sidebar({
                       />
                       <Text
                         size="sm"
-                        className={`font-light opacity-90 ${
+                        className={`font-light opacity-100${
                           isActive
                             ? 'text-sidebar-highlight-text'
                             : 'text-sidebar-text group-hover:text-sidebar-highlight-text'

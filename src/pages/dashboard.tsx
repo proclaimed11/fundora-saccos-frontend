@@ -72,16 +72,18 @@ type DashStat = {
   icon: string
   color: string
   miniLabel?: string
+  change?: number
+  changeLabel?: string
 }
 
 // SAMPLE ONLY: replaced by GET /api/dashboard in a later step
 // here `color` is the icon color
 const stats: DashStat[] = [
-  { widget: 'loan-book', label: 'Total Outstanding', value: formatTzs(totalOutstanding), miniLabel: 'TZS', icon: 'scale', color: '#8e44ad' },
-  { widget: 'cash', label: 'Cash Available', value: formatTzs(cashAvailable), miniLabel: 'TZS', icon: 'landmark', color: '#45bdfc' },
-  { widget: 'collections', label: 'Due This Week', value: formatTzs(dueThisWeek), miniLabel: 'TZS', icon: 'calendar-days', color: '#e08a1e' },
-  { widget: 'collections', label: 'Collected Today', value: formatTzs(collectedToday), miniLabel: 'TZS', icon: 'banknote', color: 'var(--app-brand)' },
-  { widget: 'loan-book', label: 'Portfolio At Risk', value: `${parPercent.toFixed(1)}%`, icon: 'triangle-alert', color: '#ef4444' },
+  { widget: 'loan-book', label: 'Total Outstanding', value: formatTzs(totalOutstanding), miniLabel: 'TZS', icon: 'scale', color: '#8e44ad', change: 3.75, changeLabel: 'vs Sep 1 - Sep 30' },
+  { widget: 'cash', label: 'Cash Available', value: formatTzs(cashAvailable), miniLabel: 'TZS', icon: 'landmark', color: '#45bdfc', change: 0.77, changeLabel: 'vs Sep 1 - Sep 30' },
+  { widget: 'collections', label: 'Due This Week', value: formatTzs(dueThisWeek), miniLabel: 'TZS', icon: 'calendar-days', color: '#e08a1e', change: -0.89, changeLabel: 'vs Sep 1 - Sep 30' },
+  { widget: 'collections', label: 'Collected Today', value: formatTzs(collectedToday), miniLabel: 'TZS', icon: 'banknote', color: 'var(--app-brand)', change: 3.22, changeLabel: 'vs Sep 1 - Sep 30' },
+  { widget: 'loan-book', label: 'Portfolio At Risk', value: `${parPercent.toFixed(1)}%`, icon: 'triangle-alert', color: '#ef4444', change: 0.35, changeLabel: 'vs Sep 1 - Sep 30' },
 ]
 
 // SAMPLE ONLY: no endpoint in the API doc returns this yet
@@ -211,6 +213,8 @@ export function Dashboard() {
               icon={s.icon}
               color={s.color}
               miniLabel={s.miniLabel}
+              change={s.change}
+              changeLabel={s.changeLabel}
             />
           ))}
         </div>

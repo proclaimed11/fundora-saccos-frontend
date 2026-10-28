@@ -12,9 +12,17 @@ type StatWidgetProps = {
   valueColor?: string
   /** optional unit label; overrides the TZS prefix when the value is formatted as currency */
   miniLabel?: string | null
+  /** percent change vs the comparison period; positive is up, negative is down */
+  change?: number
+  /** comparison label shown next to the change, e.g. 'vs Sep 1 - Sep 30' */
+  changeLabel?: string
   /** makes the whole card clickable */
   onClick?: () => void
   loading?: boolean
+}
+
+function formatChange(change: number) {
+  return `${Math.abs(change).toFixed(2)}%`
 }
 
 export function StatWidget({
@@ -24,6 +32,8 @@ export function StatWidget({
   color,
   valueColor,
   miniLabel,
+  change,
+  changeLabel = 'vs last period',
   onClick,
   loading = false,
 }: StatWidgetProps) {
@@ -32,6 +42,8 @@ export function StatWidget({
   const hasCustomCurrencyLabel = hasTzsPrefix && miniLabel !== undefined
   const displayUnit = miniLabel && !hasTzsPrefix ? miniLabel : null
   const formattedLabel = label.toLowerCase().replace(/\b\w/g, (character) => character.toUpperCase())
+  const isUp = change !== undefined && change >= 0
+  const showChange = change !== undefined
 
   return (
     <Card
@@ -39,14 +51,14 @@ export function StatWidget({
       radius="md"
       withBorder
       shadow="none"
-      className={`overflow-hidden border-gray-200 ${
+      className={`overflow-hidden border-gray-200/80 shadow-[0_8px_24px_rgba(76,87,125,0.08)] ${
         onClick ? 'transition-colors hover:border-gray-300' : ''
       }`}
     >
       <Tag
         type={onClick ? 'button' : undefined}
         onClick={onClick}
-        className={`flex w-full items-center justify-between gap-3 px-4 py-4 text-left ${
+        className={`flex w-full items-start gap-2 px-2.5 py-2 text-left ${
           onClick
             ? 'cursor-pointer transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-300'
             : ''
@@ -54,26 +66,36 @@ export function StatWidget({
       >
         {loading ? (
           <>
+            <Skeleton height={36} width={36} circle className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1">
               <Skeleton height={10} width={90} mb={8} />
-              <Skeleton height={20} width={70} />
+              <Skeleton height={22} width={110} mb={8} />
+              <Skeleton height={10} width={140} />
             </div>
-            <Skeleton height={40} width={40} circle className="shrink-0" />
           </>
         ) : (
           <>
+            <span
+              className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+              style={{
+                color,
+                backgroundColor: `color-mix(in srgb, ${color} 16%, white)`,
+              }}
+              aria-hidden="true"
+            >
+              <AppIcon name={icon} className="text-center leading-none" size={18} strokeWidth={1.75} />
+            </span>
+
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[11px] font-semibold tracking-wide text-slate-500">
-                {formattedLabel}
-              </div>
+              <div className="truncate text-[13px] font-medium leading-5 text-slate-500">{formattedLabel}</div>
               <div
-                className="truncate text-lg font-semibold leading-tight text-gray-800"
+                className="mt-0.5 truncate text-[22px] font-semibold leading-tight tracking-tight text-slate-900"
                 style={valueColor ? { color: valueColor } : undefined}
               >
                 {hasCustomCurrencyLabel ? (
                   <>
                     {miniLabel && (
-                      <span className="mr-1 text-xs font-extrabold text-brand">{miniLabel}</span>
+                      <span className="mr-1 text-sm font-semibold text-slate-900">{miniLabel}</span>
                     )}
                     {value.slice(4)}
                   </>
@@ -81,23 +103,26 @@ export function StatWidget({
                   value
                 )}
                 {displayUnit && (
-                  <span className="ml-1 text-xs font-extrabold text-brand">{displayUnit}</span>
+                  <span className="ml-1 text-sm font-semibold text-slate-900">{displayUnit}</span>
                 )}
               </div>
-            </div>
 
-            <span
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-              style={{ backgroundColor: color }}
-              aria-hidden="true"
-            >
-              <AppIcon
-                name={icon}
-                className="text-center leading-none text-white"
-                size={26}
-                strokeWidth={1.25}
-              />
-            </span>
+              {showChange && (
+                <div className="mt-1.5 flex min-w-0 items-center gap-1.5 text-[12px] leading-none">
+                  <span
+                    className={`inline-flex items-center gap-1 font-semibold ${
+                      isUp ? 'text-emerald-500' : 'text-red-500'
+                    }`}
+                  >
+                    <span aria-hidden="true" className="text-[9px]">
+                      {isUp ? '▲' : '▼'}
+                    </span>
+                    {formatChange(change)}
+                  </span>
+                  <span className="truncate text-slate-400">{changeLabel}</span>
+                </div>
+              )}
+            </div>
           </>
         )}
       </Tag>
