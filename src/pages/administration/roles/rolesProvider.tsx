@@ -4,7 +4,7 @@ import { ADMIN_ROLE, RolesContext, type RolesContextValue } from './rolesContext
 import { SAMPLE_ROLES, permits, type Role } from './rolesData'
 
 // bump the version if the shape of a role changes, old saved data is then ignored
-const ROLES_KEY = 'fundora-roles-v1'
+const ROLES_KEY = 'fundora-roles-v2'
 
 const clone = (list: Role[]): Role[] =>
   list.map((r) => ({

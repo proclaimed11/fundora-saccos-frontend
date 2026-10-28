@@ -252,7 +252,7 @@ export function RoleDialog({ opened, role, existingNames, onClose, onSubmit }: P
                               tt="none"
                               className="shrink-0"
                             >
-                              {reachable} of {m.pages!.length} pages
+                              {reachable} of {m.pages!.length} {m.unit ?? 'pages'}
                             </Badge>
                           )}
                         </div>

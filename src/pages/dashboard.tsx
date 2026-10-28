@@ -9,6 +9,7 @@ import { StatWidget } from '../components/statsWidgets'
 import { formatTzs } from '../utils/format'
 import { useAppTheme } from '../theme/themeContext'
 import { useAuth } from '../auth/authContext'
+import { useRoles } from './administration/roles/rolesContext'
 import {
   LOANS,
   SAMPLE_PAYMENTS,
@@ -19,7 +20,7 @@ import {
 import { applicants } from './applicants/applicantsData'
 import { SAMPLE_ACCOUNTS } from './accounting/accountingData'
 
-const { user } = useAuth()
+const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
 /* ---------- key numbers, built from the same sample data as their pages ---------- */
 
@@ -47,14 +48,24 @@ const cashAvailable = SAMPLE_ACCOUNTS.filter((a) =>
   ['CASH', 'BANK_CRDB', 'BANK_NMB', 'MPESA'].includes(a.accountCode),
 ).reduce((s, a) => s + a.currentBalance, 0)
 
+// each number belongs to a dashboard widget, the Roles page decides who sees which widget
+type DashStat = {
+  widget: string
+  label: string
+  value: string | number
+  icon: string
+  color: string
+  miniLabel?: string
+}
+
 // SAMPLE ONLY: replaced by GET /api/dashboard in a later step
 // here `color` is the icon color
-const stats = [
-  { label: 'Total Outstanding', value: formatTzs(totalOutstanding), miniLabel: 'TZS', icon: 'scale', color: '#8e44ad' },
-  { label: 'Cash Available', value: formatTzs(cashAvailable), miniLabel: 'TZS', icon: 'landmark', color: '#45bdfc' },
-  { label: 'Due This Week', value: formatTzs(dueThisWeek), miniLabel: 'TZS', icon: 'calendar-days', color: '#e08a1e' },
-  { label: 'Collected Today', value: formatTzs(collectedToday), miniLabel: 'TZS', icon: 'banknote', color: 'var(--app-brand)' },
-  { label: 'Portfolio At Risk', value: `${parPercent.toFixed(1)}%`, icon: 'triangle-alert', color: '#ef4444' },
+const stats: DashStat[] = [
+  { widget: 'loan-book', label: 'Total Outstanding', value: formatTzs(totalOutstanding), miniLabel: 'TZS', icon: 'scale', color: '#8e44ad' },
+  { widget: 'cash', label: 'Cash Available', value: formatTzs(cashAvailable), miniLabel: 'TZS', icon: 'landmark', color: '#45bdfc' },
+  { widget: 'collections', label: 'Due This Week', value: formatTzs(dueThisWeek), miniLabel: 'TZS', icon: 'calendar-days', color: '#e08a1e' },
+  { widget: 'collections', label: 'Collected Today', value: formatTzs(collectedToday), miniLabel: 'TZS', icon: 'banknote', color: 'var(--app-brand)' },
+  { widget: 'loan-book', label: 'Portfolio At Risk', value: `${parPercent.toFixed(1)}%`, icon: 'triangle-alert', color: '#ef4444' },
 ]
 
 // SAMPLE ONLY: no endpoint in the API doc returns this yet
@@ -127,6 +138,11 @@ const kycQueue: Queue[] = applicants
 
 export function Dashboard() {
   const { surfaceColors } = useAppTheme()
+  const { user } = useAuth()
+  const { can } = useRoles()
+
+  // the dashboard is open to everyone, each widget needs its own permission (set on the Roles page)
+  const show = (widget: string) => can('dashboard', 'view', widget)
 
   const approvalRows = oldestFirst(approvalQueue)
   const kycRows = oldestFirst(kycQueue)
@@ -140,6 +156,19 @@ export function Dashboard() {
     { label: 'Loss', count: 0, amount: 0, color: '#991b1b' },
   ]
 
+  const visibleStats = stats.filter((s) => show(s.widget))
+
+  const showTrend = show('trend')
+  const showStatus = show('status')
+  const showNpl = show('npl')
+  const showApprovals = show('approvals')
+  const showKyc = show('kyc')
+  const showAging = show('aging')
+
+  const leftVisible = showTrend || showStatus || showNpl
+  const rightVisible = showApprovals || showKyc || showAging
+  const nothing = visibleStats.length === 0 && !leftVisible && !rightVisible
+
   return (
     <DashboardLayout
       title="Dashboard"
@@ -151,64 +180,102 @@ export function Dashboard() {
         </>
       }
     >
+      {/* a role with no dashboard widgets */}
+      {nothing && (
+        <div className={`${CARD} flex flex-col items-center px-6 py-14 text-center`}>
+          <div className="text-base font-medium text-gray-800">Nothing to show on your dashboard yet</div>
+          <Text size="sm" c="dimmed" mt={4} maw={420}>
+            Your role has no dashboard widgets. You can still use the pages in the menu. Ask an Admin to give your role
+            dashboard access on the Roles page.
+          </Text>
+        </div>
+      )}
+
       {/* row 1: key numbers */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        {stats.map((s) => (
-          <StatWidget key={s.label} {...s} />
-        ))}
-      </div>
+      {visibleStats.length > 0 && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          {visibleStats.map((s) => (
+            <StatWidget
+              key={s.label}
+              label={s.label}
+              value={s.value}
+              icon={s.icon}
+              color={s.color}
+              miniLabel={s.miniLabel}
+            />
+          ))}
+        </div>
+      )}
 
       {/* row 2: charts on the left (2/3), queues and aging stacked on the right (1/3) */}
-      <div className="mt-4 grid items-start gap-4 lg:grid-cols-3">
-        {/* left column: the big chart, then two smaller charts side by side */}
-        <div className="space-y-4 lg:col-span-2">
-          <TrendChart data={trend} />
+      {(leftVisible || rightVisible) && (
+        <div
+          className={`grid items-start gap-4 ${visibleStats.length > 0 ? 'mt-4' : ''} ${
+            leftVisible && rightVisible ? 'lg:grid-cols-3' : ''
+          }`}
+        >
+          {leftVisible && (
+            <div className={`space-y-4 ${rightVisible ? 'lg:col-span-2' : ''}`}>
+              {showTrend && <TrendChart data={trend} />}
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <LoansByStatus data={{ ACTIVE: 3, CLOSED: 1, WRITTEN_OFF: 1 }} />
-            <BucketChart
-              title="NPL Classification"
-              buckets={nplBuckets}
-              footer={
-                <>
-                  <Text size="sm" c="dimmed">NPL ratio</Text>
-                  <Text size="sm" fw={600}>20.0%</Text>
-                </>
-              }
-            />
-          </div>
-        </div>
+              {(showStatus || showNpl) && (
+                <div className={`grid gap-4 ${showStatus && showNpl ? 'md:grid-cols-2' : ''}`}>
+                  {showStatus && <LoansByStatus data={{ ACTIVE: 3, CLOSED: 1, WRITTEN_OFF: 1 }} />}
+                  {showNpl && (
+                    <BucketChart
+                      title="NPL Classification"
+                      buckets={nplBuckets}
+                      footer={
+                        <>
+                          <Text size="sm" c="dimmed">NPL ratio</Text>
+                          <Text size="sm" fw={600}>20.0%</Text>
+                        </>
+                      }
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
-        {/* right column: the most urgent queue, KYC, then the aging chart */}
-        <div className="space-y-4">
-          <QueueCard
-            title="Pending Approvals"
-            count={approvalRows.length}
-            rows={approvalRows}
-            viewAllTo="/loan-approvals"
-            emptyText="Nothing is waiting for approval"
-          />
-          <QueueCard
-            title="KYC To Review"
-            count={kycRows.length}
-            rows={kycRows}
-            viewAllTo="/kyc-review"
-            emptyText="No applicants are waiting for KYC review"
-            titleHeader="Applicant"
-            valueHeader="Type"
-          />
-          <BucketChart
-            title="Collections Aging"
-            buckets={agingBuckets}
-            footer={
-              <>
-                <Text size="sm" c="dimmed">Total overdue</Text>
-                <Text size="sm" fw={600}>{formatTzs(370000)}</Text>
-              </>
-            }
-          />
+          {rightVisible && (
+            <div className={leftVisible ? 'space-y-4' : 'grid items-start gap-4 lg:grid-cols-2'}>
+              {showApprovals && (
+                <QueueCard
+                  title="Pending Approvals"
+                  count={approvalRows.length}
+                  rows={approvalRows}
+                  viewAllTo="/loan-approvals"
+                  emptyText="Nothing is waiting for approval"
+                />
+              )}
+              {showKyc && (
+                <QueueCard
+                  title="KYC To Review"
+                  count={kycRows.length}
+                  rows={kycRows}
+                  viewAllTo="/kyc-review"
+                  emptyText="No applicants are waiting for KYC review"
+                  titleHeader="Applicant"
+                  valueHeader="Type"
+                />
+              )}
+              {showAging && (
+                <BucketChart
+                  title="Collections Aging"
+                  buckets={agingBuckets}
+                  footer={
+                    <>
+                      <Text size="sm" c="dimmed">Total overdue</Text>
+                      <Text size="sm" fw={600}>{formatTzs(370000)}</Text>
+                    </>
+                  }
+                />
+              )}
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </DashboardLayout>
   )
 }

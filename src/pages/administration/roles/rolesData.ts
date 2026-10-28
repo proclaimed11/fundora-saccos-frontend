@@ -2,7 +2,8 @@
 export type PageDef = { key: string; label: string; actions: string[] }
 
 // an area of the system. Areas with pages can be given out page by page
-export type Module = { key: string; label: string; actions: string[]; pages?: PageDef[] }
+export type Module = { key: string; label: string; actions: string[]; pages?: PageDef[]; unit?: 'pages' | 'widgets' }
+
 
 export const ACTIONS = [
   { key: 'view', label: 'View' },
@@ -18,13 +19,30 @@ export const actionLabel = (key: string) => ACTIONS.find((a) => a.key === key)?.
 const order = (list: string[]) => ACTIONS.map((a) => a.key).filter((k) => list.includes(k))
 
 // the area's own actions are the actions of its pages put together
-function areaWithPages(key: string, label: string, pages: PageDef[]): Module {
-  return { key, label, pages, actions: order(pages.flatMap((p) => p.actions)) }
+function areaWithPages(key: string, label: string, pages: PageDef[], unit?: Module['unit']): Module {
+  return { key, label, pages, unit, actions: order(pages.flatMap((p) => p.actions)) }
 }
 
 // the areas of the system a role can touch, they follow the sidebar
 // (Notifications is left out on purpose, it is open to every role)
-export const MODULES: Module[] = [
+ export const MODULES: Module[] = [
+  // the dashboard is open to everyone, this decides which widgets each role sees on it
+  areaWithPages(
+    'dashboard',
+    'Dashboard',
+    [
+      { key: 'cash', label: 'Cash available', actions: ['view'] },
+      { key: 'loan-book', label: 'Loan book figures (outstanding, portfolio at risk)', actions: ['view'] },
+      { key: 'collections', label: 'Collection figures (due this week, collected today)', actions: ['view'] },
+      { key: 'trend', label: 'Disbursed vs collected chart', actions: ['view'] },
+      { key: 'status', label: 'Loans by status chart', actions: ['view'] },
+      { key: 'npl', label: 'NPL classification chart', actions: ['view'] },
+      { key: 'aging', label: 'Collections aging chart', actions: ['view'] },
+      { key: 'approvals', label: 'Pending approvals list', actions: ['view'] },
+      { key: 'kyc', label: 'KYC to review list', actions: ['view'] },
+    ],
+    'widgets',
+  ),
   areaWithPages('applicants', 'Applicants', [
     { key: 'applicants', label: 'Applicants', actions: ['view', 'create', 'edit', 'delete'] },
     { key: 'kyc-review', label: 'KYC Review', actions: ['view', 'approve'] },
@@ -228,6 +246,10 @@ export function togglePage(p: Permissions, m: Module, pageKeyName: string, actio
 
 const everything: Permissions = Object.fromEntries(MODULES.map((m) => [m.key, [...m.actions]]))
 
+// the dashboard widgets a role sees, one grant per widget
+const widgets = (...keys: string[]): Permissions =>
+  Object.fromEntries(keys.map((k) => [`dashboard.${k}`, ['view']]))
+
 // SAMPLE ONLY: replaced by GET /api/roles later
 export const SAMPLE_ROLES: Role[] = [
   { id: 1, name: 'Admin', description: 'Full access to the whole system', level: LEVELS[0], system: true, permissions: everything, created: '2026-01-05' },
@@ -238,6 +260,7 @@ export const SAMPLE_ROLES: Role[] = [
     level: LEVELS[1],
     system: true,
     permissions: {
+      ...widgets('loan-book', 'collections', 'status', 'approvals', 'kyc'),
       applicants: ['view', 'create', 'edit'],
       loans: ['view', 'create', 'edit'],
       repayments: ['view', 'create'],
@@ -252,7 +275,12 @@ export const SAMPLE_ROLES: Role[] = [
     description: 'Decides loan applications as part of the credit committee',
     level: LEVELS[2],
     system: true,
-    permissions: { applicants: ['view'], loans: ['view', 'approve'], reports: ['view'] },
+    permissions: {
+      ...widgets('loan-book', 'status', 'approvals'),
+      applicants: ['view'],
+      loans: ['view', 'approve'],
+      reports: ['view'],
+    },
     created: '2026-01-05',
   },
   {
@@ -261,7 +289,12 @@ export const SAMPLE_ROLES: Role[] = [
     description: 'Follows up overdue loans and logs contact with borrowers',
     level: null,
     system: false,
-    permissions: { applicants: ['view'], repayments: ['view'], collections: ['view', 'create', 'edit'] },
+    permissions: {
+      ...widgets('collections', 'aging', 'npl'),
+      applicants: ['view'],
+      repayments: ['view'],
+      collections: ['view', 'create', 'edit'],
+    },
     created: '2026-04-18',
   },
 ]
