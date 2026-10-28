@@ -8,8 +8,34 @@ import { SAMPLE_NOTIFICATIONS } from '../../pages/administration/notifications/n
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
-// Dashboard is where the user already is, and Notifications is shown on its own line
+// Dashboard is where the user already is, and Notifications is shown on its own button
 const HIDDEN = ['dashboard', 'notifications']
+
+// an icon for each sidebar section
+const SECTION_ICON: Record<string, string> = {
+  Applicants: 'users',
+  Loans: 'hand-coins',
+  Repayments: 'credit-card',
+  Collections: 'phone',
+  Accounting: 'book',
+  Reports: 'file-chart-column',
+  Administration: 'settings',
+}
+
+const initials = (name: string) =>
+  name
+    .split(' ')
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+
+function greeting() {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Good morning'
+  if (hour < 18) return 'Good afternoon'
+  return 'Good evening'
+}
 
 // shown when a role has no dashboard widgets
 export function HomeFallback() {
@@ -30,19 +56,24 @@ export function HomeFallback() {
   if (sections.length === 0) {
     const noRole = !currentRole
     return (
-      <div className={`${CARD} flex flex-col items-center px-6 py-14 text-center`}>
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-subtle text-brand-dark">
-          <AppIcon name="lock-keyhole" size={26} strokeWidth={1.5} />
+      <div className={`${CARD} mx-auto flex max-w-xl flex-col items-center px-6 py-14 text-center`}>
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-subtle text-brand-dark">
+          <AppIcon name="lock-keyhole" size={30} strokeWidth={1.25} />
         </div>
-        <div className="mt-3 text-base font-medium text-gray-800">
-          {noRole ? 'Your account has no role assigned' : 'Your role has no access yet'}
+        <div className="mt-4 text-lg font-semibold text-gray-800">
+          {noRole ? 'Your account has no role yet' : 'Your role has no access yet'}
         </div>
-        <Text size="sm" c="dimmed" mt={4} maw={420}>
+        <Text size="sm" c="dimmed" mt={6} maw={420}>
           {noRole
             ? 'You are signed in, but you cannot open any page until you are given a role.'
-            : `The ${currentRole.name} role has no pages or dashboard widgets yet.`}{' '}
-          Ask an Admin to check your role on the Users page.
+            : `The ${currentRole.name} role has no pages or dashboard widgets yet.`}
         </Text>
+        <div className="mt-4 flex items-start gap-2 rounded-md bg-gray-50 px-4 py-3 text-left">
+          <AppIcon name="info" className="mt-0.5 shrink-0 text-gray-400" />
+          <Text size="xs" c="dimmed">
+            Ask an Admin to check your role on the Users page. Once it is set, sign in again or refresh this page.
+          </Text>
+        </div>
         <div className="mt-5 flex flex-wrap justify-center gap-2">
           <Button size="xs" variant="default" leftSection={<AppIcon name="circle-user-round" />} onClick={() => navigate('/account')}>
             My account
@@ -57,16 +88,33 @@ export function HomeFallback() {
 
   /* ---------- has pages but no dashboard widgets ---------- */
 
+  const pageCount = sections.reduce((n, s) => n + s.items.length, 0)
+
   return (
     <div className="space-y-4">
-      <div className={`${CARD} flex flex-wrap items-center justify-between gap-3 p-4`}>
-        <div className="min-w-0">
-          <div className="text-base font-semibold text-gray-800">Where would you like to start?</div>
-          <Text size="xs" c="dimmed">
-            Signed in as {user?.name} · {currentRole?.name}. Your role has no dashboard widgets, so here are the pages
-            you can open.
-          </Text>
+      {/* welcome */}
+      <div className={`${CARD} flex flex-wrap items-center justify-between gap-4 p-5`}>
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-subtle text-lg font-medium text-brand-dark">
+            {initials(user?.name ?? 'U')}
+          </div>
+          <div className="min-w-0">
+            <div className="truncate text-lg font-semibold text-gray-800">
+              {greeting()}, {user?.name?.split(' ')[0] ?? 'there'}
+            </div>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              {currentRole && (
+                <Badge variant="light" color="brand" radius="sm" size="sm">
+                  {currentRole.name}
+                </Badge>
+              )}
+              <Text size="xs" c="dimmed">
+                You can open {pageCount} {pageCount === 1 ? 'page' : 'pages'}. Pick one to get started.
+              </Text>
+            </div>
+          </div>
         </div>
+
         <Button
           size="xs"
           variant="default"
@@ -84,29 +132,50 @@ export function HomeFallback() {
         </Button>
       </div>
 
-      {sections.map((section) => (
-        <div key={section.label} className={`${CARD} p-4`}>
-          <Text size="sm" fw={600} mb="sm">
-            {section.label}
-          </Text>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {section.items.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                onClick={() => navigate(item.path)}
-                className="flex items-center gap-3 rounded-md border border-gray-200 bg-white px-3 py-3 text-left transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-subtle text-brand-dark">
-                  <AppIcon name={item.icon} />
-                </span>
-                <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-800">{item.label}</span>
-                <AppIcon name="chevron-right" className="shrink-0 text-gray-400" />
-              </button>
-            ))}
-          </div>
-        </div>
-      ))}
+      {/* the pages this role can open */}
+      <div className="grid items-start gap-4 lg:grid-cols-2">
+        {sections.map((section) => (
+          <section key={section.label} className={`${CARD} p-4`}>
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-subtle text-brand-dark">
+                <AppIcon name={SECTION_ICON[section.label] ?? 'file'} size={20} strokeWidth={1.25} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <Text size="sm" fw={600}>
+                  {section.label}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  {section.items.length} {section.items.length === 1 ? 'page' : 'pages'}
+                </Text>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {section.items.map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => navigate(item.path)}
+                  className="group flex items-center gap-3 rounded-md border border-gray-200 bg-white px-3 py-2.5 text-left transition-colors hover:border-brand hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors group-hover:bg-brand group-hover:text-white">
+                    <AppIcon name={item.icon} />
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-800">{item.label}</span>
+                  <AppIcon
+                    name="chevron-right"
+                    className="shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:text-brand"
+                  />
+                </button>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <Text size="xs" c="dimmed" ta="center">
+        Missing a page you need? Ask an Admin to update your role on the Users page.
+      </Text>
     </div>
   )
 }
