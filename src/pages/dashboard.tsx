@@ -19,8 +19,24 @@ import {
 } from './loans/loanApplicationsData'
 import { applicants } from './applicants/applicantsData'
 import { SAMPLE_ACCOUNTS } from './accounting/accountingData'
+import { HomeFallback } from '../components/dashboard/homeFallback'
 
-const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
+// the grid classes for however many stat cards a role can see, so the row always fills the width
+// (full class names, so Tailwind can find them)
+const STAT_COLS: Record<number, string> = {
+  1: '',
+  2: 'sm:grid-cols-2',
+  3: 'sm:grid-cols-2 lg:grid-cols-3',
+  4: 'sm:grid-cols-2 xl:grid-cols-4',
+  5: 'sm:grid-cols-2 xl:grid-cols-5',
+}
+
+// the same for the right-hand cards when there is no left column
+const SIDE_COLS: Record<number, string> = {
+  1: '',
+  2: 'lg:grid-cols-2',
+  3: 'lg:grid-cols-3',
+}
 
 /* ---------- key numbers, built from the same sample data as their pages ---------- */
 
@@ -167,6 +183,7 @@ export function Dashboard() {
 
   const leftVisible = showTrend || showStatus || showNpl
   const rightVisible = showApprovals || showKyc || showAging
+  const sideCount = [showApprovals, showKyc, showAging].filter(Boolean).length
   const nothing = visibleStats.length === 0 && !leftVisible && !rightVisible
 
   return (
@@ -181,20 +198,12 @@ export function Dashboard() {
       }
     >
       {/* a role with no dashboard widgets */}
-      {nothing && (
-        <div className={`${CARD} flex flex-col items-center px-6 py-14 text-center`}>
-          <div className="text-base font-medium text-gray-800">Nothing to show on your dashboard yet</div>
-          <Text size="sm" c="dimmed" mt={4} maw={420}>
-            Your role has no dashboard widgets. You can still use the pages in the menu. Ask an Admin to give your role
-            dashboard access on the Roles page.
-          </Text>
-        </div>
-      )}
+      {nothing && <HomeFallback />}
 
       {/* row 1: key numbers */}
       {visibleStats.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          {visibleStats.map((s) => (
+      <div className={`grid grid-cols-1 gap-4 ${STAT_COLS[visibleStats.length]}`}>
+        {visibleStats.map((s) => (
             <StatWidget
               key={s.label}
               label={s.label}
@@ -239,7 +248,7 @@ export function Dashboard() {
           )}
 
           {rightVisible && (
-            <div className={leftVisible ? 'space-y-4' : 'grid items-start gap-4 lg:grid-cols-2'}>
+            <div className={leftVisible ? 'space-y-4' : `grid items-start gap-4 ${SIDE_COLS[sideCount]}`}>
               {showApprovals && (
                 <QueueCard
                   title="Pending Approvals"

@@ -1,5 +1,15 @@
 // a page inside an area, with the actions that make sense for it
-export type PageDef = { key: string; label: string; actions: string[] }
+export type PageKind = 'stat' | 'chart' | 'list'
+
+// the tag shown next to a dashboard item in the role forms
+export const KIND: Record<PageKind, { label: string; color: string }> = {
+  stat: { label: 'Stat card', color: 'blue' },
+  chart: { label: 'Chart', color: 'grape' },
+  list: { label: 'List', color: 'orange' },
+}
+
+// a page inside an area, with the actions that make sense for it
+export type PageDef = { key: string; label: string; actions: string[]; kind?: PageKind }
 
 // an area of the system. Areas with pages can be given out page by page
 export type Module = { key: string; label: string; actions: string[]; pages?: PageDef[]; unit?: 'pages' | 'widgets' }
@@ -27,19 +37,19 @@ function areaWithPages(key: string, label: string, pages: PageDef[], unit?: Modu
 // (Notifications is left out on purpose, it is open to every role)
  export const MODULES: Module[] = [
   // the dashboard is open to everyone, this decides which widgets each role sees on it
-  areaWithPages(
+    areaWithPages(
     'dashboard',
     'Dashboard',
     [
-      { key: 'cash', label: 'Cash available', actions: ['view'] },
-      { key: 'loan-book', label: 'Loan book figures (outstanding, portfolio at risk)', actions: ['view'] },
-      { key: 'collections', label: 'Collection figures (due this week, collected today)', actions: ['view'] },
-      { key: 'trend', label: 'Disbursed vs collected chart', actions: ['view'] },
-      { key: 'status', label: 'Loans by status chart', actions: ['view'] },
-      { key: 'npl', label: 'NPL classification chart', actions: ['view'] },
-      { key: 'aging', label: 'Collections aging chart', actions: ['view'] },
-      { key: 'approvals', label: 'Pending approvals list', actions: ['view'] },
-      { key: 'kyc', label: 'KYC to review list', actions: ['view'] },
+      { key: 'cash', label: 'Cash available', actions: ['view'], kind: 'stat' },
+      { key: 'loan-book', label: 'Loan book figures (outstanding, portfolio at risk)', actions: ['view'], kind: 'stat' },
+      { key: 'collections', label: 'Collection figures (due this week, collected today)', actions: ['view'], kind: 'stat' },
+      { key: 'trend', label: 'Disbursed vs collected', actions: ['view'], kind: 'chart' },
+      { key: 'status', label: 'Loans by status', actions: ['view'], kind: 'chart' },
+      { key: 'npl', label: 'NPL classification', actions: ['view'], kind: 'chart' },
+      { key: 'aging', label: 'Collections aging', actions: ['view'], kind: 'chart' },
+      { key: 'approvals', label: 'Pending approvals', actions: ['view'], kind: 'list' },
+      { key: 'kyc', label: 'KYC to review', actions: ['view'], kind: 'list' },
     ],
     'widgets',
   ),

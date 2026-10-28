@@ -8,7 +8,7 @@ import { StatWidget } from '../../../components/statsWidgets'
 import { CustomTable, type CustomTableColumn } from '../../../components/customTable/customTable'
 import { ContractConfirmDialog } from '../../loans/contractDialogs'
 import { RoleDialog, type RoleInput } from './roleDialogs'
-import { MODULES, actionLabel, areaCount, hasPages, isSplit, pageActions, permissionCount, type Role } from './rolesData'
+import { KIND, MODULES, actionLabel, areaCount, hasPages, isSplit, pageActions, permissionCount, type Role } from './rolesData'
 import { useRoles } from './rolesContext'
 import { SAMPLE_USERS } from '../users/usersData'
 
@@ -140,7 +140,14 @@ function RoleDrawerBody({ row: r, onEdit, onDelete }: DrawerProps) {
                       const acts = pageActions(r.permissions, m, p)
                       return (
                         <li key={p.key} className="flex items-start justify-between gap-3">
-                          <span className="text-xs text-gray-600">{p.label}</span>
+                          <span className="flex min-w-0 items-center gap-2">
+                            <span className="text-xs text-gray-600">{p.label}</span>
+                            {p.kind && (
+                              <Badge variant="light" color={KIND[p.kind].color} radius="sm" size="xs" tt="none">
+                                {KIND[p.kind].label}
+                              </Badge>
+                            )}
+                          </span>
                           <div className="flex flex-wrap justify-end gap-1.5">
                             {acts.length === 0 ? (
                               <span className="text-xs text-gray-400">No access</span>

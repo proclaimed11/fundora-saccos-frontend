@@ -4,6 +4,7 @@ import { ActionIcon, Alert, Badge, Button, Checkbox, Modal, Select, Text, TextIn
 import {
   ACTIONS,
   LEVELS,
+  KIND,
   MODULES,
   areaCell,
   hasPages,
@@ -272,7 +273,14 @@ export function RoleDialog({ opened, role, existingNames, onClose, onSubmit }: P
                         open &&
                         m.pages!.map((page) => (
                           <div key={page.key} className={`${GRID} border-t border-gray-100 bg-gray-50 px-3 py-2`}>
-                            <span className="truncate pl-9 text-sm text-gray-700">{page.label}</span>
+                            <span className="flex min-w-0 items-center gap-2 pl-9">
+                              <span className="truncate text-sm text-gray-700">{page.label}</span>
+                              {page.kind && (
+                                <Badge variant="light" color={KIND[page.kind].color} radius="sm" size="xs" tt="none" className="shrink-0">
+                                  {KIND[page.kind].label}
+                                </Badge>
+                              )}
+                            </span>
                             {ACTIONS.map((a) => (
                               <div key={a.key} className="flex justify-center">
                                 <Cell
