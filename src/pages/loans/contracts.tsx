@@ -18,6 +18,7 @@ import {
   type ContractRow,
   type LoanApplication,
 } from './loanApplicationsData'
+import type { ContractContent } from './contractTemplate'
 
 // our own rule, the API has no deadline: warn when a contract waits longer than this at one stage
 const LATE_AFTER_DAYS = 7
@@ -371,6 +372,8 @@ export function ContractsPage() {
 
   const [filter, setFilter] = useState<Stage | 'ALL'>('ALL')
   const [dialog, setDialog] = useState<DialogState>(null)
+  // UI only: the edited wording of contracts, by application id, nothing is saved yet
+  const [edits, setEdits] = useState<Record<number, ContractContent>>({})
   // UI only: actions change the contracts for this session, nothing is saved yet
   const [overrides, setOverrides] = useState<Record<number, Partial<LoanApplication>>>(() =>
     approvedId ? { [approvedId]: { status: 'APPROVED' } } : {},
@@ -754,8 +757,22 @@ const disburse = (a: LoanApplication) =>
         opened={dialog?.kind === 'review'}
         application={dialogApp ?? null}
         canSend={!!dialogApp && stageOf(dialogApp) === 'GENERATED'}
+        edited={dialogApp ? (edits[dialogApp.id] ?? null) : null}
         onClose={() => setDialog(null)}
         onSend={complete}
+        onSaveEdit={(content) => {
+          if (!dialogApp) return
+          setEdits((e) => ({ ...e, [dialogApp.id]: content }))
+          setNotice({ text: `The wording of ${dialogApp.applicantName}'s contract was updated.` })
+        }}
+        onResetEdit={() => {
+          if (!dialogApp) return
+          setEdits((e) => {
+            const next = { ...e }
+            delete next[dialogApp.id]
+            return next
+          })
+        }}
       />
 
       <SignedContractDialog
