@@ -18,6 +18,7 @@ import type {
   ThemeSurfaceColors,
   ThemeSurfaceOverrides,
   SidebarAppearance,
+  HeaderStyle,
 } from './themeContext'
 
 const PALETTE_STORAGE_KEY = 'project-tracker-theme'
@@ -25,6 +26,7 @@ const COLORS_STORAGE_KEY = 'project-tracker-theme-colors'
 const SIDEBAR_APPEARANCE_STORAGE_KEY = 'project-tracker-sidebar-appearance'
 const BODY_FONT = "'Source Sans 3', sans-serif"
 const HEADING_FONT = "'Source Sans 3', sans-serif"
+const HEADER_STYLE_STORAGE_KEY = 'project-tracker-header-style'
 
 type ThemeVariables = CSSProperties & {
   '--app-brand': string
@@ -52,6 +54,10 @@ function getInitialPaletteId(): PaletteId {
 
 function getInitialSidebarAppearance(): SidebarAppearance {
   return window.localStorage.getItem(SIDEBAR_APPEARANCE_STORAGE_KEY) === 'light' ? 'light' : 'dark'
+}
+
+function getInitialHeaderStyle(): HeaderStyle {
+  return window.localStorage.getItem(HEADER_STYLE_STORAGE_KEY) === 'texture' ? 'texture' : 'botanical'
 }
 
 function isHexColor(value: unknown): value is string {
@@ -121,6 +127,7 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
   const [paletteId, setPaletteIdState] = useState<PaletteId>(getInitialPaletteId)
   const [sidebarAppearance, setSidebarAppearanceState] =
     useState<SidebarAppearance>(getInitialSidebarAppearance)
+  const [headerStyle, setHeaderStyleState] = useState<HeaderStyle>(getInitialHeaderStyle)
   const [overrides, setOverrides] = useState<ThemeSurfaceOverrides>(getInitialOverrides)
   const palette = themePalettes.find((item) => item.id === paletteId)
   if (!palette) {
@@ -135,6 +142,11 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
   const setSidebarAppearance = (appearance: SidebarAppearance) => {
     window.localStorage.setItem(SIDEBAR_APPEARANCE_STORAGE_KEY, appearance)
     setSidebarAppearanceState(appearance)
+  }
+
+  const setHeaderStyle = (style: HeaderStyle) => {
+  window.localStorage.setItem(HEADER_STYLE_STORAGE_KEY, style)
+  setHeaderStyleState(style)
   }
 
   const baseBrand = overrides.primary ?? palette.shades[6]
@@ -181,6 +193,8 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
     window.localStorage.removeItem(COLORS_STORAGE_KEY)
     window.localStorage.removeItem(SIDEBAR_APPEARANCE_STORAGE_KEY)
     window.localStorage.setItem(PALETTE_STORAGE_KEY, 'green')
+    window.localStorage.removeItem(HEADER_STYLE_STORAGE_KEY)
+    setHeaderStyleState('botanical')
     setPaletteIdState('green')
     setOverrides({})
     setSidebarAppearanceState('dark')
@@ -240,6 +254,8 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
         setSurfaceColor,
         resetSurfaceColor,
         resetThemeCustomization,
+        headerStyle,
+        setHeaderStyle,
       }}
     >
       <MantineProvider theme={theme} forceColorScheme="light">

@@ -5,6 +5,7 @@ import { DashboardLayout } from '../../components/layout/dashboardLayout'
 import {
   useAppTheme,
   themeSurfaces,
+  type HeaderStyle,
   type SidebarAppearance,
   type ThemeSurfaceColors,
 } from '../../theme/themeContext'
@@ -13,6 +14,12 @@ import { themePalettes } from '../../theme/themePalettes'
 const CARD = 'rounded-md bg-white p-4 shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
 const isHexColor = (value: string) => /^#[\da-f]{6}$/i.test(value)
+
+// the header looks the user can switch between
+const HEADER_OPTIONS: { id: HeaderStyle; name: string; description: string }[] = [
+  { id: 'botanical', name: 'Botanical', description: 'The current header with the leaf pattern in your brand color.' },
+  { id: 'texture', name: 'Soft texture', description: 'A calm, light texture with flowing lines.' },
+]
 
 /* ---------- a color field that can be typed in ---------- */
 
@@ -132,6 +139,8 @@ export function ThemeSettingsPage() {
     setPaletteId,
     sidebarAppearance,
     setSidebarAppearance,
+    headerStyle,
+    setHeaderStyle,
     surfaceColors,
     surfaceOverrides,
     setSurfaceColor,
@@ -140,7 +149,10 @@ export function ThemeSettingsPage() {
   } = useAppTheme()
 
   const hasCustomColors =
-    Object.keys(surfaceOverrides).length > 0 || palette.id !== 'green' || sidebarAppearance !== 'dark'
+    Object.keys(surfaceOverrides).length > 0 ||
+    palette.id !== 'green' ||
+    sidebarAppearance !== 'dark' ||
+    headerStyle !== 'botanical'
 
   return (
     <DashboardLayout
@@ -163,19 +175,19 @@ export function ThemeSettingsPage() {
         <div className="space-y-4">
           {/* palettes */}
           <section aria-labelledby="theme-presets-heading" className={CARD}>
-           <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-subtle text-brand-dark">
-              <AppIcon name="palette" size={20} strokeWidth={1.25} />
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-subtle text-brand-dark">
+                <AppIcon name="palette" size={20} strokeWidth={1.25} />
+              </div>
+              <div>
+                <Text id="theme-presets-heading" size="md" fw={600}>
+                  Theme palettes
+                </Text>
+                <Text size="xs" c="dimmed">
+                  Pick a ready-made palette for the whole workspace.
+                </Text>
+              </div>
             </div>
-            <div>
-              <Text id="theme-presets-heading" size="md" fw={600}>
-                Theme palettes
-              </Text>
-              <Text size="xs" c="dimmed">
-                Pick a ready-made palette for the whole workspace.
-              </Text>
-            </div>
-          </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
               {themePalettes.map((option) => {
@@ -217,6 +229,56 @@ export function ThemeSettingsPage() {
                 </div>
               </Alert>
             )}
+          </section>
+
+          {/* header background */}
+          <section aria-labelledby="theme-header-heading" className={CARD}>
+            <div className="mb-4">
+              <Text id="theme-header-heading" size="md" fw={600}>
+                Header background
+              </Text>
+              <Text size="xs" c="dimmed">
+                Choose the look of the band at the top of every page.
+              </Text>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {HEADER_OPTIONS.map((option) => {
+                const isSelected = headerStyle === option.id
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => setHeaderStyle(option.id)}
+                    className={`rounded-md border bg-white p-3 text-left transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 ${
+                      isSelected ? 'border-brand ring-2 ring-brand' : 'border-gray-200'
+                    }`}
+                  >
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-semibold text-gray-800">{option.name}</span>
+                      {isSelected && <AppIcon name="circle-check" className="text-brand" />}
+                    </span>
+                    <span className="mt-0.5 block text-xs text-gray-500">{option.description}</span>
+
+                    {/* small preview of the header band */}
+                    <span
+                      className={`mt-3 block h-14 rounded border border-gray-200 ${
+                        option.id === 'texture' ? 'texture-pattern' : ''
+                      }`}
+                      style={
+                        option.id === 'texture'
+                          ? undefined
+                          : {
+                              backgroundColor: '#ffffff',
+                              backgroundImage: `radial-gradient(ellipse 90px 24px at 15% 100%, color-mix(in srgb, ${surfaceColors.primary} 18%, white) 0 60%, transparent 64%), radial-gradient(ellipse 90px 24px at 85% 100%, color-mix(in srgb, ${surfaceColors.primary} 18%, white) 0 60%, transparent 64%)`,
+                            }
+                      }
+                    />
+                  </button>
+                )
+              })}
+            </div>
           </section>
 
           {/* individual colors */}
@@ -302,7 +364,8 @@ export function ThemeSettingsPage() {
           </Text>
           <LivePreview colors={surfaceColors} sidebarAppearance={sidebarAppearance} />
           <Text size="xs" c="dimmed" mt="sm">
-            Palette: {palette.name} · Sidebar: {sidebarAppearance === 'dark' ? 'Dark' : 'Light'}
+            Palette: {palette.name} · Sidebar: {sidebarAppearance === 'dark' ? 'Dark' : 'Light'} · Header:{' '}
+            {headerStyle === 'texture' ? 'Soft texture' : 'Botanical'}
           </Text>
         </aside>
       </div>

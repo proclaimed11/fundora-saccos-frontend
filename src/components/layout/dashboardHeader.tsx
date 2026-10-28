@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import logo from '../../assets/logo.png'
 import { AppIcon } from '../appIcon'
 import { NavSearch } from './navSearch'
+import { useAppTheme } from '../../theme/themeContext'
 
 export type Crumb = { label: string; to?: string }
 
@@ -41,9 +42,14 @@ export function DashboardHeader({
   children,
 }: DashboardHeaderProps) {
   const parts = Array.isArray(title) ? title : [title]
+  const { headerStyle } = useAppTheme()
 
   return (
-    <div className="botanical-header-skin flex h-screen flex-col bg-gray-100">
+    <div
+        className={`${
+          headerStyle === 'texture' ? 'texture-header-skin' : 'botanical-header-skin'
+        } flex h-screen flex-col bg-gray-100`}
+      >
       <header className="relative z-30 flex h-12 shrink-0 items-center text-slate-700">
         <div
           className={`relative flex shrink-0 items-center px-3 transition-[width] duration-200 lg:justify-start lg:px-4 ${
