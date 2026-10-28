@@ -58,7 +58,7 @@ export function StatWidget({
       <Tag
         type={onClick ? 'button' : undefined}
         onClick={onClick}
-        className={`flex w-full items-start gap-2 px-2.5 py-2 text-left ${
+        className={`flex w-full items-start gap-2.5 px-2.5 py-2 text-left ${
           onClick
             ? 'cursor-pointer transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-300'
             : ''
@@ -66,7 +66,7 @@ export function StatWidget({
       >
         {loading ? (
           <>
-            <Skeleton height={36} width={36} circle className="mt-0.5 shrink-0" />
+            <Skeleton height={20} width={20} className="mt-1 shrink-0" />
             <div className="min-w-0 flex-1">
               <Skeleton height={10} width={90} mb={8} />
               <Skeleton height={22} width={110} mb={8} />
@@ -76,18 +76,21 @@ export function StatWidget({
         ) : (
           <>
             <span
-              className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-              style={{
-                color,
-                backgroundColor: `color-mix(in srgb, ${color} 16%, white)`,
-              }}
+              className="mt-1 flex shrink-0 items-center justify-center"
+              style={{ color }}
               aria-hidden="true"
             >
-              <AppIcon name={icon} className="text-center leading-none" size={18} strokeWidth={1.75} />
+              <AppIcon
+                name={icon}
+                size={20}
+                strokeWidth={1.75}
+              />
             </span>
 
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[13px] font-medium leading-5 text-slate-500">{formattedLabel}</div>
+              <div className="truncate text-[13px] font-medium leading-5 text-slate-500">
+                {formattedLabel}
+              </div>
               <div
                 className="mt-0.5 truncate text-[22px] font-semibold leading-tight tracking-tight text-slate-900"
                 style={valueColor ? { color: valueColor } : undefined}
@@ -95,7 +98,9 @@ export function StatWidget({
                 {hasCustomCurrencyLabel ? (
                   <>
                     {miniLabel && (
-                      <span className="mr-1 text-sm font-semibold text-slate-900">{miniLabel}</span>
+                      <span className="mr-1 text-sm font-semibold text-slate-900">
+                        {miniLabel}
+                      </span>
                     )}
                     {value.slice(4)}
                   </>
@@ -103,7 +108,9 @@ export function StatWidget({
                   value
                 )}
                 {displayUnit && (
-                  <span className="ml-1 text-sm font-semibold text-slate-900">{displayUnit}</span>
+                  <span className="ml-1 text-sm font-semibold text-slate-900">
+                    {displayUnit}
+                  </span>
                 )}
               </div>
 
