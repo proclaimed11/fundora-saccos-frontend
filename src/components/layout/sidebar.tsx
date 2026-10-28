@@ -93,7 +93,7 @@ export function Sidebar({
                   leftSection={<AppIcon name="circle-user-round" />}
                   onClick={onSettings}
                 >
-                  Account
+                  Profile
                 </Menu.Item>
 
                 <Menu.Divider className="sidebar-account-menu-divider" />
