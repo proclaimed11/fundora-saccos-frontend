@@ -1,15 +1,19 @@
 import { AppIcon } from '../appIcon'
 import { ActionIcon, Autocomplete } from '@mantine/core'
 import { useEffect, useRef, useState } from 'react'
-import { navSections } from './navItems'
+import { visibleSections } from './navItems'
+import { useRoles } from '../../pages/administration/roles/rolesContext'
 
 export function NavSearch({ onNavigate }: { onNavigate: (key: string) => void }) {
   const [query, setQuery] = useState('')
   const [mobileOpen, setMobileOpen] = useState(false)
   const mobileInputRef = useRef<HTMLInputElement>(null)
-  const searchItems = navSections.flatMap((section) =>
+  const { can } = useRoles()
+  // search only offers the pages the current role may open
+  const searchItems = visibleSections(can).flatMap((section) =>
     section.items.map((item) => ({ ...item, section: section.label })),
   )
+  
   const suggestions = searchItems.map((item) => ({
     value: item.label,
     label: item.label,

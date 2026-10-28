@@ -1,7 +1,24 @@
 import { AppIcon } from '../../../components/appIcon'
 import { useEffect, useState } from 'react'
-import { Alert, Button, Checkbox, Modal, Select, Text, TextInput, Textarea } from '@mantine/core'
-import { ACTIONS, LEVELS, MODULES, permissionCount, type Permissions, type Role } from './rolesData'
+import { ActionIcon, Alert, Badge, Button, Checkbox, Modal, Select, Text, TextInput, Textarea } from '@mantine/core'
+import {
+  ACTIONS,
+  LEVELS,
+  MODULES,
+  areaCell,
+  hasPages,
+  isSplit,
+  pageCell,
+  pagesWithAccess,
+  permissionCount,
+  toggleArea,
+  togglePage,
+  type Module,
+  type PageDef,
+  type Permissions,
+  type Role,
+  type Tri,
+} from './rolesData'
 
 const NO_LEVEL = 'No approval level'
 
@@ -25,6 +42,23 @@ type Errors = Partial<Record<'name' | 'description' | 'permissions', string>>
 
 const GRID = 'grid grid-cols-[minmax(0,1fr)_repeat(5,64px)] items-center gap-2'
 
+const copyOf = (p: Permissions): Permissions =>
+  Object.fromEntries(Object.entries(p).map(([k, v]) => [k, [...v]]))
+
+// one box of the matrix: ticked, dashed (some pages have it), empty, or not available
+function Cell({ state, label, onChange }: { state: Tri; label: string; onChange: (on: boolean) => void }) {
+  if (state === 'na') return <span className="text-gray-300">—</span>
+  return (
+    <Checkbox
+      size="xs"
+      aria-label={label}
+      checked={state === 'all'}
+      indeterminate={state === 'some'}
+      onChange={() => onChange(state !== 'all')}
+    />
+  )
+}
+
 export function RoleDialog({ opened, role, existingNames, onClose, onSubmit }: Props) {
   const editing = role !== null
   const system = role?.system ?? false
@@ -33,6 +67,8 @@ export function RoleDialog({ opened, role, existingNames, onClose, onSubmit }: P
   const [description, setDescription] = useState('')
   const [level, setLevel] = useState<string>(NO_LEVEL)
   const [perms, setPerms] = useState<Permissions>({})
+  // which areas are open to show their pages
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [errors, setErrors] = useState<Errors>({})
 
   useEffect(() => {
@@ -40,20 +76,27 @@ export function RoleDialog({ opened, role, existingNames, onClose, onSubmit }: P
     setName(role?.name ?? '')
     setDescription(role?.description ?? '')
     setLevel(role?.level ?? NO_LEVEL)
-    setPerms(role ? Object.fromEntries(Object.entries(role.permissions).map(([k, v]) => [k, [...v]])) : {})
+    setPerms(role ? copyOf(role.permissions) : {})
+    // an area that was given out page by page starts open, so you see what was chosen
+    setExpanded(
+      role ? Object.fromEntries(MODULES.filter((m) => isSplit(role.permissions, m)).map((m) => [m.key, true])) : {},
+    )
     setErrors({})
   }, [opened, role])
 
   const clear = (key: keyof Errors) => setErrors((e) => ({ ...e, [key]: undefined }))
 
-  const toggle = (module: string, action: string) => {
-    setPerms((prev) => {
-      const current = prev[module] ?? []
-      const next = current.includes(action) ? current.filter((a) => a !== action) : [...current, action]
-      return { ...prev, [module]: next }
-    })
+  const changeArea = (m: Module, action: string, on: boolean) => {
+    setPerms((p) => toggleArea(p, m, action, on))
     clear('permissions')
   }
+
+  const changePage = (m: Module, page: PageDef, action: string, on: boolean) => {
+    setPerms((p) => togglePage(p, m, page.key, action, on))
+    clear('permissions')
+  }
+
+  const toggleOpen = (key: string) => setExpanded((e) => ({ ...e, [key]: !e[key] }))
 
   const selectAll = () => {
     setPerms(Object.fromEntries(MODULES.map((m) => [m.key, [...m.actions]])))
@@ -86,7 +129,7 @@ export function RoleDialog({ opened, role, existingNames, onClose, onSubmit }: P
   }
 
   return (
-    <Modal opened={opened} onClose={onClose} title={editing ? 'Edit role' : 'New role'} size={760} centered>
+    <Modal opened={opened} onClose={onClose} title={editing ? 'Edit role' : 'New role'} size={780} centered>
       <div className="space-y-4">
         {system && (
           <Alert color="yellow" variant="light" icon={<AppIcon name="lock-keyhole" />}>
@@ -158,8 +201,13 @@ export function RoleDialog({ opened, role, existingNames, onClose, onSubmit }: P
             </div>
           </div>
 
+          <Text size="xs" c="dimmed" mb={8}>
+            Tick an area to give access to all its pages, or open it with the arrow to choose pages one by one. A dash
+            means only some pages have that permission. View is needed for anything else, so it is ticked for you.
+          </Text>
+
           <div className="overflow-x-auto">
-            <div className="min-w-[560px] rounded-md border border-gray-200">
+            <div className="min-w-[580px] rounded-md border border-gray-200">
               <div className={`${GRID} border-b border-gray-100 bg-gray-50 px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-gray-500`}>
                 <span>Area</span>
                 {ACTIONS.map((a) => (
@@ -169,25 +217,77 @@ export function RoleDialog({ opened, role, existingNames, onClose, onSubmit }: P
                 ))}
               </div>
 
-              {MODULES.map((m) => (
-                <div key={m.key} className={`${GRID} border-b border-gray-100 px-3 py-2.5 last:border-b-0`}>
-                  <span className="text-sm font-medium text-gray-800">{m.label}</span>
-                  {ACTIONS.map((a) => (
-                    <div key={a.key} className="flex justify-center">
-                      {m.actions.includes(a.key) ? (
-                        <Checkbox
-                          size="xs"
-                          aria-label={`${a.label} ${m.label}`}
-                          checked={(perms[m.key] ?? []).includes(a.key)}
-                          onChange={() => toggle(m.key, a.key)}
-                        />
-                      ) : (
-                        <span className="text-gray-300">—</span>
-                      )}
+              <div className="max-h-[46vh] overflow-y-auto">
+                {MODULES.map((m) => {
+                  const paged = hasPages(m)
+                  const open = !!expanded[m.key]
+                  const reachable = pagesWithAccess(perms, m)
+
+                  return (
+                    <div key={m.key} className="border-b border-gray-100 last:border-b-0">
+                      {/* the area row: the choice for the whole area */}
+                      <div className={`${GRID} px-3 py-2.5`}>
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          {paged ? (
+                            <ActionIcon
+                              variant="subtle"
+                              color="gray"
+                              size="sm"
+                              aria-expanded={open}
+                              aria-label={`${open ? 'Hide' : 'Show'} the pages of ${m.label}`}
+                              onClick={() => toggleOpen(m.key)}
+                            >
+                              <AppIcon name={open ? 'chevron-down' : 'chevron-right'} />
+                            </ActionIcon>
+                          ) : (
+                            <span className="w-[22px] shrink-0" />
+                          )}
+                          <span className="truncate text-sm font-medium text-gray-800">{m.label}</span>
+                          {paged && (
+                            <Badge
+                              variant="light"
+                              color={reachable === 0 ? 'gray' : reachable === m.pages!.length ? 'green' : 'yellow'}
+                              radius="sm"
+                              size="sm"
+                              tt="none"
+                              className="shrink-0"
+                            >
+                              {reachable} of {m.pages!.length} pages
+                            </Badge>
+                          )}
+                        </div>
+                        {ACTIONS.map((a) => (
+                          <div key={a.key} className="flex justify-center">
+                            <Cell
+                              state={areaCell(perms, m, a.key)}
+                              label={`${a.label} ${m.label}`}
+                              onChange={(on) => changeArea(m, a.key, on)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* the pages of the area, shown when it is open */}
+                      {paged &&
+                        open &&
+                        m.pages!.map((page) => (
+                          <div key={page.key} className={`${GRID} border-t border-gray-100 bg-gray-50 px-3 py-2`}>
+                            <span className="truncate pl-9 text-sm text-gray-700">{page.label}</span>
+                            {ACTIONS.map((a) => (
+                              <div key={a.key} className="flex justify-center">
+                                <Cell
+                                  state={pageCell(perms, m, page, a.key)}
+                                  label={`${a.label} ${page.label}`}
+                                  onChange={(on) => changePage(m, page, a.key, on)}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        ))}
                     </div>
-                  ))}
-                </div>
-              ))}
+                  )
+                })}
+              </div>
             </div>
           </div>
           {errors.permissions && (

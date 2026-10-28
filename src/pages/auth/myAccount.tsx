@@ -8,14 +8,6 @@ import { initials } from '../applicants/applicantsData'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
-// SAMPLE ONLY: comes from the login response (userId, username, role) and the users API later
-const SAMPLE_ACCOUNT = {
-  name: 'John Doe',
-  username: 'johndoe',
-  email: 'john@fundora.co.tz',
-  role: 'Loan Officer',
-}
-
 // the session limits from the API (GET /api/security/settings)
 const IDLE_MINUTES = 30
 const ABSOLUTE_HOURS = 12
@@ -40,7 +32,13 @@ function SectionTitle({ children }: { children: string }) {
 }
 
 export function MyAccountPage() {
-  const { logout } = useAuth()
+const { logout, user } = useAuth()
+  const account = {
+    name: user?.name ?? '',
+    username: user?.email.split('@')[0] ?? '',
+    email: user?.email ?? '',
+    role: user?.role ?? 'No role',
+  }
 
   // UI only: the switch changes for this session, nothing is saved yet
   const [twoFactor, setTwoFactor] = useState(false)
@@ -104,13 +102,13 @@ export function MyAccountPage() {
           <div className={`${CARD} p-5`}>
             <div className="flex flex-col items-center text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-subtle text-xl font-medium text-brand-dark">
-                {initials(SAMPLE_ACCOUNT.name)}
+                {initials(account.name)}
               </div>
-              <div className="mt-3 text-base font-medium text-gray-800">{SAMPLE_ACCOUNT.name}</div>
-              <div className="text-xs text-gray-500">@{SAMPLE_ACCOUNT.username}</div>
+              <div className="mt-3 text-base font-medium text-gray-800">{account.name}</div>
+              <div className="text-xs text-gray-500">@{account.username}</div>
               <div className="mt-3 flex gap-2">
                 <Badge variant="light" color="blue" radius="sm" size="sm">
-                  {SAMPLE_ACCOUNT.role}
+                  {account.role}
                 </Badge>
                 <Badge variant="outline" color={twoFactor ? 'green' : 'gray'} radius="sm" size="sm">
                   2FA {twoFactor ? 'on' : 'off'}
@@ -123,10 +121,10 @@ export function MyAccountPage() {
             {/* details */}
             <div className={`${CARD} p-5`}>
               <SectionTitle>Account details</SectionTitle>
-              <Field label="Full name" value={SAMPLE_ACCOUNT.name} />
-              <Field label="Username" value={SAMPLE_ACCOUNT.username} />
-              <Field label="Email" value={SAMPLE_ACCOUNT.email} />
-              <Field label="Role" value={SAMPLE_ACCOUNT.role} />
+              <Field label="Full name" value={account.name} />
+              <Field label="Username" value={account.username} />
+              <Field label="Email" value={account.email} />
+              <Field label="Role" value={account.role} />
               <p className="mt-2 text-xs text-gray-500">
                 These details are managed by an administrator on the Users page.
               </p>
@@ -143,7 +141,7 @@ export function MyAccountPage() {
                   <div className="min-w-0">
                     <div className="text-sm font-medium text-gray-800">Emailed sign-in code</div>
                     <div className="text-xs text-gray-500">
-                      After your password you enter a 6-digit code sent to {SAMPLE_ACCOUNT.email}. The code expires in 5
+                      After your password you enter a 6-digit code sent to {account.email}. The code expires in 5
                       minutes and works once.
                     </div>
                   </div>

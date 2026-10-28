@@ -20,7 +20,7 @@ export function Login({ onLogin }: LoginProps) {
     setError(null)
 
     if (!username.trim() || !password) {
-      setError('Enter your username and password')
+      setError('Enter your email and password')
       return
     }
 
@@ -50,15 +50,15 @@ export function Login({ onLogin }: LoginProps) {
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <TextInput
-            label="Username"
-            placeholder="Your username"
+            label="Email"
+            placeholder="admin@saccos.com"
             autoComplete="username"
             value={username}
             onChange={(e) => {
               setUsername(e.currentTarget.value)
               setError(null)
             }}
-            leftSection={<AppIcon name="user-round" />}
+            leftSection={<AppIcon name="mail" />}
           />
 
           <div>

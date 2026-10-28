@@ -1,6 +1,7 @@
 import { AppIcon } from '../appIcon'
 import { ActionIcon, Menu, ScrollArea, Text, UnstyledButton } from '@mantine/core'
-import { navSections } from './navItems'
+import { visibleSections } from './navItems'
+import { useRoles } from '../../pages/administration/roles/rolesContext'
 
 type SidebarUser = { name: string; role: string }
 
@@ -35,6 +36,11 @@ export function Sidebar({
   onSettings,
   onLogout,
 }: SidebarProps) {
+    const { can } = useRoles()
+
+  // only the sections and items the current role may see
+  const sections = visibleSections(can)
+
   return (
     <>
       {/* backdrop, small screens only */}
@@ -70,7 +76,7 @@ export function Sidebar({
             >
               {initials(user.name)}
             </div>
-            <Menu position="bottom-end" shadow="md" width={180} withArrow>
+            <Menu position="bottom-end" shadow="md" width={220} withArrow>
               <Menu.Target>
                 <ActionIcon
                   variant="subtle"
@@ -89,6 +95,7 @@ export function Sidebar({
                 >
                   Account
                 </Menu.Item>
+
                 <Menu.Divider className="sidebar-account-menu-divider" />
                 <Menu.Item
                   className="sidebar-account-menu-item sidebar-account-menu-logout"
@@ -119,7 +126,7 @@ export function Sidebar({
           }}
         >
           <nav className="flex flex-col pb-4">
-            {navSections.map((section) => (
+            {sections.map((section) => (
               <div key={section.label} className="mt-3 first:mt-2">
                 {/* group label, replaced by a thin divider when the rail is collapsed */}
                 <Text

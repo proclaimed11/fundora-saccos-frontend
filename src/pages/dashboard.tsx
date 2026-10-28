@@ -8,6 +8,7 @@ import { BucketChart, type Bucket } from '../components/dashboard/bucketChart'
 import { StatWidget } from '../components/statsWidgets'
 import { formatTzs } from '../utils/format'
 import { useAppTheme } from '../theme/themeContext'
+import { useAuth } from '../auth/authContext'
 import {
   LOANS,
   SAMPLE_PAYMENTS,
@@ -17,6 +18,8 @@ import {
 } from './loans/loanApplicationsData'
 import { applicants } from './applicants/applicantsData'
 import { SAMPLE_ACCOUNTS } from './accounting/accountingData'
+
+const { user } = useAuth()
 
 /* ---------- key numbers, built from the same sample data as their pages ---------- */
 
@@ -144,7 +147,7 @@ export function Dashboard() {
       subtitle={
         <>
           Welcome Back{'  '}
-          <span className="text-sm font-bold text-brand">John Doe</span>!
+          <span className="text-sm font-bold text-brand">{user?.name}</span>!
         </>
       }
     >

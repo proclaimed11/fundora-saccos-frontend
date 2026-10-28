@@ -13,9 +13,6 @@ type DashboardLayoutProps = Omit<DashboardHeaderProps, 'collapsed' | 'onMenuClic
   children: ReactNode
 }
 
-// SAMPLE ONLY: comes from the logged-in user once real login is connected
-const USER = { name: 'John Doe', role: 'Loan Officer' }
-
 export function DashboardLayout({
   title,
   breadcrumbs,
@@ -26,7 +23,7 @@ export function DashboardLayout({
   onLogout,
   children,
 }: DashboardLayoutProps) {
-  const { logout } = useAuth()
+    const { logout, user } = useAuth()
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false) // mobile drawer
@@ -66,7 +63,7 @@ export function DashboardLayout({
           open={menuOpen}
           onClose={() => setMenuOpen(false)}
           collapsed={collapsed}
-          user={USER}
+          user={{ name: user?.name ?? 'User', role: user?.role ?? 'No role' }}
           onSettings={onSettings ?? (() => navigate('/account'))}
           onLogout={onLogout ?? logout}
         />

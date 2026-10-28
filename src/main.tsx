@@ -15,13 +15,16 @@ import App from './App.tsx'
 import { AuthProvider } from './auth/authContext.tsx'
 import { BrowserRouter } from 'react-router-dom'
 import { AppThemeProvider } from './theme/appThemeProvider'
+import { RolesProvider } from './pages/administration/roles/rolesProvider'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AppThemeProvider>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <RolesProvider>
+            <App />
+          </RolesProvider>
         </AuthProvider>
       </BrowserRouter>
     </AppThemeProvider>

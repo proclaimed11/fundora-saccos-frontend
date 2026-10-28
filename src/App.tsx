@@ -1,5 +1,6 @@
 import { Navigate, Outlet, Route, Routes, useNavigate } from 'react-router-dom'
 import { useAuth } from './auth/authContext'
+import { RequirePermission } from './pages/auth/requirePermission'
 import { Login } from './pages/auth/login'
 import { TwoFactor } from './pages/auth/twoFactor'
 import { ForgotPassword } from './pages/auth/forgotPassword'
@@ -57,7 +58,7 @@ function LoginRoute() {
         // UI only: signing in as "2fa" shows the two-factor step so it can be previewed.
         // TODO: replace with the real response of POST /api/auth/login (requiresTwoFactor, twoFactorToken)
         if (username.toLowerCase() === '2fa') {
-          navigate('/two-factor', { state: { username, email: 'ad***@gmail.com' } })
+          navigate('/two-factor', { state: { username: 'admin@saccos.com', email: 'ad***@gmail.com' } })
           return
         }
         await login(username, password)
@@ -95,52 +96,103 @@ function App() {
         <Route path="/reset-password" element={<ResetPasswordRoute />} />
         <Route path="/session-expired" element={<SessionExpired />} />
 
-        <Route element={<ProtectedRoute />}>
+               <Route element={<ProtectedRoute />}>
+          {/* open to every signed-in user, whatever the role (the 403 page must stay here or it would redirect forever) */}
+          <Route path="/" element={<Dashboard />} />
           <Route path="/account" element={<MyAccountPage />} />
           <Route path="/no-access" element={<NoAccess />} />
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
 
           {/* applicants */}
-          <Route path="/applicants" element={<Applicants />} />
-          <Route path="/applicants/new" element={<NewApplicantPage />} />
-          <Route path="/applicants/:id" element={<ApplicantProfile />} />
-          <Route path="/kyc-review" element={<KycReview />} />
+          <Route element={<RequirePermission area="applicants" page="applicants" />}>
+            <Route path="/applicants" element={<Applicants />} />
+            <Route path="/applicants/:id" element={<ApplicantProfile />} />
+            <Route element={<RequirePermission area="applicants" page="applicants" action="create" />}>
+              <Route path="/applicants/new" element={<NewApplicantPage />} />
+            </Route>
+          </Route>
+          <Route element={<RequirePermission area="applicants" page="kyc-review" />}>
+            <Route path="/kyc-review" element={<KycReview />} />
+          </Route>
 
-           {/* loans */}
-          <Route path="/loan-applications" element={<LoanApplications />} />
-          <Route path="/loan-applications/new" element={<NewLoanApplicationPage />} />
-          <Route path="/loan-applications/:id" element={<LoanApplicationProfile />} />
-          <Route path="/loan-approvals" element={<ApprovalsPage />} />
-          <Route path="/loan-contracts" element={<ContractsPage />} />
-          <Route path="/loan-disbursements" element={<DisbursementsPage />} />
-          <Route path="/loans" element={<LoansPage />} />
-          <Route path="/loans/:id" element={<LoanProfile />} />
-          <Route path="/payments" element={<PaymentsPage />} />
-          <Route path="/penalties" element={<PenaltiesPage />} />
-          <Route path="/collection-cases" element={<CollectionCasesPage />} />
-          <Route path="/recovery-cases" element={<RecoveryCasesPage />} />
-          <Route path="/npl" element={<NplPage />} />
+          {/* loans */}
+          <Route element={<RequirePermission area="loans" page="applications" />}>
+            <Route path="/loan-applications" element={<LoanApplications />} />
+            <Route path="/loan-applications/:id" element={<LoanApplicationProfile />} />
+            <Route element={<RequirePermission area="loans" page="applications" action="create" />}>
+              <Route path="/loan-applications/new" element={<NewLoanApplicationPage />} />
+            </Route>
+          </Route>
+          <Route element={<RequirePermission area="loans" page="approvals" />}>
+            <Route path="/loan-approvals" element={<ApprovalsPage />} />
+          </Route>
+          <Route element={<RequirePermission area="loans" page="contracts" />}>
+            <Route path="/loan-contracts" element={<ContractsPage />} />
+          </Route>
+          <Route element={<RequirePermission area="loans" page="disbursements" />}>
+            <Route path="/loan-disbursements" element={<DisbursementsPage />} />
+          </Route>
+          <Route element={<RequirePermission area="loans" page="loans" />}>
+            <Route path="/loans" element={<LoansPage />} />
+            <Route path="/loans/:id" element={<LoanProfile />} />
+          </Route>
+
+          {/* repayments */}
+          <Route element={<RequirePermission area="repayments" page="payments" />}>
+            <Route path="/payments" element={<PaymentsPage />} />
+          </Route>
+          <Route element={<RequirePermission area="repayments" page="penalties" />}>
+            <Route path="/penalties" element={<PenaltiesPage />} />
+          </Route>
+
+          {/* collections */}
+          <Route element={<RequirePermission area="collections" page="collection-cases" />}>
+            <Route path="/collection-cases" element={<CollectionCasesPage />} />
+          </Route>
+          <Route element={<RequirePermission area="collections" page="recovery-cases" />}>
+            <Route path="/recovery-cases" element={<RecoveryCasesPage />} />
+          </Route>
+          <Route element={<RequirePermission area="collections" page="npl" />}>
+            <Route path="/npl" element={<NplPage />} />
+          </Route>
 
           {/* accounting */}
-          <Route path="/chart-of-accounts" element={<ChartOfAccountsPage />} />
-          <Route path="/gl-transactions" element={<GlTransactionsPage />} />
+          <Route element={<RequirePermission area="accounting" page="chart-of-accounts" />}>
+            <Route path="/chart-of-accounts" element={<ChartOfAccountsPage />} />
+          </Route>
+          <Route element={<RequirePermission area="accounting" page="gl-transactions" />}>
+            <Route path="/gl-transactions" element={<GlTransactionsPage />} />
+          </Route>
 
-          {/* reports */}
-          <Route path="/reports" element={<ReportsPage />} />
+          {/* reports: one page, so the guard asks about the area */}
+          <Route element={<RequirePermission area="reports" />}>
+            <Route path="/reports" element={<ReportsPage />} />
+          </Route>
 
-          {/* Administration */}
-         <Route path="/users" element={<UsersPage />} />
-         <Route path="/roles" element={<RolesPage />} />
-         <Route path="/approval-hierarchy" element={<ApprovalHierarchyPage />} />
-         <Route path="/company-profile" element={<CompanyProfilePage />} />
-         <Route path="/security" element={<SecurityPage />} />
-         <Route path="/notifications" element={<NotificationsPage />} />
-         <Route path="/audit" element={<AuditPage />} />
+          {/* administration */}
+          <Route element={<RequirePermission area="administration" page="users" />}>
+            <Route path="/users" element={<UsersPage />} />
+          </Route>
+          <Route element={<RequirePermission area="administration" page="roles" />}>
+            <Route path="/roles" element={<RolesPage />} />
+          </Route>
+          <Route element={<RequirePermission area="administration" page="approval-hierarchy" />}>
+            <Route path="/approval-hierarchy" element={<ApprovalHierarchyPage />} />
+          </Route>
+          <Route element={<RequirePermission area="administration" page="company-profile" />}>
+            <Route path="/company-profile" element={<CompanyProfilePage />} />
+          </Route>
+          <Route element={<RequirePermission area="administration" page="security" />}>
+            <Route path="/security" element={<SecurityPage />} />
+          </Route>
+          <Route element={<RequirePermission area="administration" page="audit" />}>
+            <Route path="/audit" element={<AuditPage />} />
+          </Route>
+          <Route element={<RequirePermission area="administration" page="theme-settings" />}>
+            <Route path="/theme-settings" element={<ThemeSettingsPage />} />
+          </Route>
 
-
-
-          <Route path="/theme-settings" element={<ThemeSettingsPage />} />
-          {/* new pages go here, using the path from navItems.tsx */}
+          {/* new pages go here: add the page to rolesData.ts, then wrap its route in its own guard */}
         </Route>
 
         <Route path="*" element={<NotFound />} />

@@ -8,14 +8,15 @@ import { StatWidget } from '../../../components/statsWidgets'
 import { CustomTable, type CustomTableColumn } from '../../../components/customTable/customTable'
 import { ContractConfirmDialog } from '../../loans/contractDialogs'
 import { RoleDialog, type RoleInput } from './roleDialogs'
-import { MODULES, SAMPLE_ROLES, actionLabel, permissionCount, type Role } from './rolesData'
+import { MODULES, actionLabel, areaCount, hasPages, isSplit, pageActions, permissionCount, type Role } from './rolesData'
+import { useRoles } from './rolesContext'
 import { SAMPLE_USERS } from '../users/usersData'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
 type TabKey = 'all' | 'system' | 'custom'
 type Notice = { text: string; color: 'green' | 'blue' } | null
-type DialogState = { kind: 'create' } | { kind: 'edit' | 'delete'; id: number } | null
+type DialogState = { kind: 'create' } | { kind: 'reset' } | { kind: 'edit' | 'delete'; id: number } | null
 
 type Row = Role & { userCount: number; permissionCount: number }
 
@@ -107,21 +108,55 @@ function RoleDrawerBody({ row: r, onEdit, onDelete }: DrawerProps) {
         <SectionTitle>What this role can do</SectionTitle>
         <ul className="mt-2 space-y-2">
           {MODULES.map((m) => {
+            // an area given out page by page lists each page, otherwise one line covers the whole area
+            const split = hasPages(m) && isSplit(r.permissions, m)
             const granted = r.permissions[m.key] ?? []
             return (
-              <li key={m.key} className="flex items-start justify-between gap-3 rounded-md border border-gray-200 px-3 py-2.5">
-                <span className="text-sm font-medium text-gray-800">{m.label}</span>
-                <div className="flex flex-wrap justify-end gap-1.5">
-                  {granted.length === 0 ? (
-                    <span className="text-xs text-gray-400">No access</span>
+              <li key={m.key} className="rounded-md border border-gray-200 px-3 py-2.5">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-sm font-medium text-gray-800">{m.label}</span>
+                  {split ? (
+                    <Badge variant="light" color="yellow" radius="sm" size="sm" tt="none">
+                      Chosen pages
+                    </Badge>
                   ) : (
-                    granted.map((a) => (
-                      <Badge key={a} variant="light" color="brand" radius="sm" size="sm">
-                        {actionLabel(a)}
-                      </Badge>
-                    ))
+                    <div className="flex flex-wrap justify-end gap-1.5">
+                      {granted.length === 0 ? (
+                        <span className="text-xs text-gray-400">No access</span>
+                      ) : (
+                        granted.map((a) => (
+                          <Badge key={a} variant="light" color="brand" radius="sm" size="sm">
+                            {actionLabel(a)}
+                          </Badge>
+                        ))
+                      )}
+                    </div>
                   )}
                 </div>
+
+                {split && (
+                  <ul className="mt-2 space-y-1.5 border-t border-gray-100 pt-2">
+                    {m.pages!.map((p) => {
+                      const acts = pageActions(r.permissions, m, p)
+                      return (
+                        <li key={p.key} className="flex items-start justify-between gap-3">
+                          <span className="text-xs text-gray-600">{p.label}</span>
+                          <div className="flex flex-wrap justify-end gap-1.5">
+                            {acts.length === 0 ? (
+                              <span className="text-xs text-gray-400">No access</span>
+                            ) : (
+                              acts.map((a) => (
+                                <Badge key={a} variant="light" color="brand" radius="sm" size="sm">
+                                  {actionLabel(a)}
+                                </Badge>
+                              ))
+                            )}
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
               </li>
             )
           })}
@@ -192,7 +227,7 @@ export function RolesPage() {
   const [params, setParams] = useSearchParams()
 
   // UI only: changes made in this session, nothing is saved yet
-  const [roles, setRoles] = useState<Role[]>(SAMPLE_ROLES)
+    const { roles, setRoles, resetRoles } = useRoles()
   const [tab, setTab] = useState<TabKey>('all')
   const [dialog, setDialog] = useState<DialogState>(null)
   const [notice, setNotice] = useState<Notice>(null)
@@ -229,7 +264,8 @@ export function RolesPage() {
   const openView = (id: number) => setParams({ role: String(id) }, { replace: true })
   const closeView = () => setParams({}, { replace: true })
 
-  const dialogRow = dialog && dialog.kind !== 'create' ? rows.find((r) => r.id === dialog.id) : undefined
+    const dialogRow =
+    dialog && (dialog.kind === 'edit' || dialog.kind === 'delete') ? rows.find((r) => r.id === dialog.id) : undefined
 
   /* ---------- actions ---------- */
 
@@ -258,6 +294,13 @@ export function RolesPage() {
     setRoles((list) => list.filter((r) => r.id !== dialogRow.id))
     setNotice({ color: 'blue', text: `Role ${dialogRow.name} was deleted.` })
     if (selected?.id === dialogRow.id) closeView()
+    setDialog(null)
+  }
+
+  const resetToDefaults = () => {
+    resetRoles()
+    closeView()
+    setNotice({ color: 'blue', text: 'The roles were reset to the default set.' })
     setDialog(null)
   }
 
@@ -301,7 +344,7 @@ export function RolesPage() {
             {r.permissionCount} {r.permissionCount === 1 ? 'permission' : 'permissions'}
           </div>
           <div className="whitespace-nowrap text-xs text-gray-500">
-            {Object.keys(r.permissions).length} of {MODULES.length} areas
+            {areaCount(r.permissions)} of {MODULES.length} areas
           </div>
         </div>
       ),
@@ -370,9 +413,19 @@ export function RolesPage() {
       subtitle="What each kind of user is allowed to do"
       breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Administration' }, { label: 'Roles' }]}
       actions={
-        <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setDialog({ kind: 'create' })}>
-          New role
-        </Button>
+        <>
+          <Button
+            size="xs"
+            variant="default"
+            leftSection={<AppIcon name="refresh-cw" />}
+            onClick={() => setDialog({ kind: 'reset' })}
+          >
+            Reset to defaults
+          </Button>
+          <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setDialog({ kind: 'create' })}>
+            New role
+          </Button>
+        </>
       }
     >
       <div className="space-y-4">
@@ -460,6 +513,15 @@ export function RolesPage() {
         confirmLabel="Delete role"
         onClose={() => setDialog(null)}
         onConfirm={remove}
+      />
+
+      <ContractConfirmDialog
+        opened={dialog?.kind === 'reset'}
+        title="Reset roles"
+        message="Put every role back to the default set? Roles you created and permission changes are lost."
+        confirmLabel="Reset roles"
+        onClose={() => setDialog(null)}
+        onConfirm={resetToDefaults}
       />
     </DashboardLayout>
   )
