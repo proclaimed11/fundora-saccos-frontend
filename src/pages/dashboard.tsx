@@ -195,7 +195,7 @@ export function Dashboard() {
       subtitle={
         <>
           Welcome Back{'  '}
-          <span className="text-sm font-bold text-brand">{user?.name}</span>!
+          <span className="text-sm font-medium text-brand">{user?.name}</span>!
         </>
       }
     >
