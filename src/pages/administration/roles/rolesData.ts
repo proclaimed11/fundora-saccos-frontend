@@ -61,6 +61,7 @@ function areaWithPages(key: string, label: string, pages: PageDef[], unit?: Modu
     { key: 'applications', label: 'Applications', actions: ['view', 'create', 'edit', 'delete'] },
     { key: 'approvals', label: 'Approvals', actions: ['view', 'approve'] },
     { key: 'contracts', label: 'Contracts', actions: ['view', 'create', 'edit'] },
+     { key: 'securities', label: 'Collateral & Guarantors', actions: ['view', 'edit'] },
     { key: 'disbursements', label: 'Disbursements', actions: ['view', 'create'] },
     { key: 'loans', label: 'Loans', actions: ['view'] },
   ]),

@@ -39,6 +39,7 @@ import { CompanyProfilePage } from './pages/administration/companyProfile/compan
 import { SecurityPage } from './pages/administration/security/security'
 import { NotificationsPage } from './pages/administration/notifications/notifications'
 import { AuditPage } from './pages/administration/audit/audit'
+import { SecuritiesPage } from './pages/loans/securities'
 
 // pages inside this route need a logged-in user
 function ProtectedRoute() {
@@ -96,7 +97,7 @@ function App() {
         <Route path="/reset-password" element={<ResetPasswordRoute />} />
         <Route path="/session-expired" element={<SessionExpired />} />
 
-               <Route element={<ProtectedRoute />}>
+          <Route element={<ProtectedRoute />}>
           {/* open to every signed-in user, whatever the role (the 403 page must stay here or it would redirect forever) */}
           <Route path="/" element={<Dashboard />} />
           <Route path="/account" element={<MyAccountPage />} />
@@ -128,6 +129,9 @@ function App() {
           </Route>
           <Route element={<RequirePermission area="loans" page="contracts" />}>
             <Route path="/loan-contracts" element={<ContractsPage />} />
+          </Route>
+          <Route element={<RequirePermission area="loans" page="securities" />}>
+            <Route path="/collateral-guarantors" element={<SecuritiesPage />} />
           </Route>
           <Route element={<RequirePermission area="loans" page="disbursements" />}>
             <Route path="/loan-disbursements" element={<DisbursementsPage />} />
