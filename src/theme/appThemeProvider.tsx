@@ -24,8 +24,8 @@ import type {
 const PALETTE_STORAGE_KEY = 'project-tracker-theme'
 const COLORS_STORAGE_KEY = 'project-tracker-theme-colors'
 const SIDEBAR_APPEARANCE_STORAGE_KEY = 'project-tracker-sidebar-appearance'
-const BODY_FONT = "'Plus Jakarta Sans', sans-serif"
-const HEADING_FONT = "'Plus Jakarta Sans', sans-serif"
+const BODY_FONT = "'Livvic', sans-serif"
+const HEADING_FONT = "'Livvic', sans-serif"
 const HEADER_STYLE_STORAGE_KEY = 'project-tracker-header-style'
 
 type ThemeVariables = CSSProperties & {

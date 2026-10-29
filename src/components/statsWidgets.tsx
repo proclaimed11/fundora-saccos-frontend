@@ -57,7 +57,7 @@ export function StatWidget({
       <Tag
         type={onClick ? 'button' : undefined}
         onClick={onClick}
-        className={`flex w-full flex-col px-2.5 py-1.5 text-left ${
+        className={`flex w-full flex-col px-3 py-2.5 text-left ${
           onClick
             ? 'cursor-pointer transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-300'
             : ''
@@ -90,7 +90,7 @@ export function StatWidget({
 
             {/* Value */}
             <div
-              className="truncate text-[19px] font-medium leading-tight tracking-tight text-slate-800"
+              className="my-1 truncate text-[18px] font-medium leading-tight tracking-tight text-slate-800"
               style={valueColor ? { color: valueColor } : undefined}
             >
               {hasCustomCurrencyLabel ? (
@@ -114,7 +114,7 @@ export function StatWidget({
 
             {/* Change indicator */}
             {showChange && (
-              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[12px] leading-none">
+              <div className="flex min-w-0 items-center gap-1.5 text-[12px] leading-none">
                 <span
                   className={`inline-flex items-center gap-1 font-semibold ${
                     isUp ? 'text-emerald-500' : 'text-red-500'
