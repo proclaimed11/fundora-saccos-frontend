@@ -2,7 +2,7 @@ import { AppIcon } from '../../components/appIcon'
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import dayjs from 'dayjs'
-import { ActionIcon, Alert, Badge, Button, Drawer, Menu, SegmentedControl, Text, Textarea } from '@mantine/core'
+import { ActionIcon, Alert, Badge, Button, Drawer, Menu, Modal, SegmentedControl, Text, Textarea } from '@mantine/core'
 import { DashboardLayout } from '../../components/layout/dashboardLayout'
 import { StatWidget } from '../../components/statsWidgets'
 import { CustomTable, type CustomTableColumn } from '../../components/customTable/customTable'
@@ -46,13 +46,19 @@ type Row = LoanApplication & {
   approved: boolean
 }
 
-// `extra` is the number of approvals made in this session, they fill the next pending levels
-function toRow(a: LoanApplication, extra: number): Row {
-  let left = extra
+// a decision made in this session; each one fills the next pending level
+type Made = { decision: 'APPROVED' | 'REJECTED'; comments: string }
+
+// a rejection must explain itself, the API keeps the comment with the decision
+const MIN_REJECT_COMMENT = 5
+const MAX_COMMENT = 500
+
+function toRow(a: LoanApplication, made: Made[]): Row {
+  const queue = [...made]
   const levels: ApprovalRow[] = approvalsFor(a).map((l) => {
-    if (l.decision === 'PENDING' && left > 0) {
-      left -= 1
-      return { ...l, decision: 'APPROVED' as const, by: 'You', comments: null }
+    if (l.decision === 'PENDING' && queue.length > 0) {
+      const m = queue.shift()!
+      return { ...l, decision: m.decision, by: 'You', comments: m.comments || null }
     }
     return l
   })
@@ -64,8 +70,9 @@ function toRow(a: LoanApplication, extra: number): Row {
   const approved = (a.status !== 'REJECTED' && RANK[a.status] >= 3) || (inStage && !awaiting && !rejected)
 
   let status: ApplicationStatus = a.status
-  if (inStage && approved) status = 'APPROVED'
-  else if (inStage && extra > 0) status = 'PENDING_APPROVAL'
+  if (inStage && rejected) status = 'REJECTED'
+  else if (inStage && approved) status = 'APPROVED'
+  else if (inStage && made.length > 0) status = 'PENDING_APPROVAL'
 
   return {
     ...a,
@@ -201,9 +208,106 @@ function LevelBar({ r }: { r: Row }) {
 
 /* ---------- decision drawer ---------- */
 
-type DrawerProps = { row: Row | null; onClose: () => void; onApprove: (r: Row) => void }
+type DrawerProps = {
+  row: Row | null
+  onClose: () => void
+  onApprove: (r: Row, comments: string) => void
+  onReject: (r: Row, comments: string) => void
+}
 
-function ReviewDrawer({ row, onClose, onApprove }: DrawerProps) {
+// the comment box with the Approve and Reject buttons. The drawer gives it a new key for every level,
+// so the text starts empty each time
+function DecisionForm({
+  row: r,
+  onApprove,
+  onReject,
+}: {
+  row: Row
+  onApprove: (comments: string) => void
+  onReject: (comments: string) => void
+}) {
+  const [comments, setComments] = useState('')
+  const [error, setError] = useState<string>()
+  const [confirming, setConfirming] = useState(false)
+
+  const text = comments.trim()
+  const isLast = r.current?.levelNo === r.levels.length
+
+  // rejecting needs a reason, so check it before asking "are you sure"
+  const askReject = () => {
+    if (text.length < MIN_REJECT_COMMENT) {
+      setError(`Explain why you are rejecting this application (at least ${MIN_REJECT_COMMENT} characters)`)
+      return
+    }
+    setConfirming(true)
+  }
+
+  return (
+    <>
+      <Textarea
+        label="Comments"
+        description="Required when rejecting, optional when approving"
+        placeholder="Add a note for this decision"
+        minRows={3}
+        autosize
+        maxLength={MAX_COMMENT}
+        value={comments}
+        onChange={(e) => {
+          setComments(e.currentTarget.value)
+          setError(undefined)
+        }}
+        error={error}
+      />
+      <div className="-mt-1 text-right text-[11px] text-gray-400">
+        {comments.length}/{MAX_COMMENT}
+      </div>
+      {isLast && (
+        <Text size="xs" c="dimmed">
+          This is the last level. Approving it takes you straight to Contracts.
+        </Text>
+      )}
+      <div className="flex justify-end gap-2">
+        <Button size="xs" color="red" variant="light" leftSection={<AppIcon name="x" />} onClick={askReject}>
+          Reject
+        </Button>
+        <Button size="xs" leftSection={<AppIcon name="check" />} onClick={() => onApprove(text)}>
+          Approve
+        </Button>
+      </div>
+
+      <Modal opened={confirming} onClose={() => setConfirming(false)} title="Reject this application?" centered>
+        <div className="space-y-4">
+          <Text size="sm">
+            {r.applicantName} · {r.applicationNo} will be stopped at the {r.current?.levelName} level. This cannot be
+            undone, a new application has to be started.
+          </Text>
+          <div className="rounded-md bg-gray-50 px-3 py-2">
+            <div className="text-xs text-gray-500">Your comment</div>
+            <div className="whitespace-pre-wrap text-sm text-gray-800">{text}</div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button size="xs" variant="default" onClick={() => setConfirming(false)}>
+              Go back
+            </Button>
+            <Button
+              size="xs"
+              color="red"
+              leftSection={<AppIcon name="x" />}
+              onClick={() => {
+                setConfirming(false)
+                onReject(text)
+              }}
+            >
+              Reject application
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
+  )
+}
+
+function ReviewDrawer({ row, onClose, onApprove, onReject }: DrawerProps) {
   const navigate = useNavigate()
   if (!row) {
     return <Drawer opened={false} onClose={onClose} />
@@ -316,38 +420,12 @@ function ReviewDrawer({ row, onClose, onApprove }: DrawerProps) {
           <div className="space-y-3 border-t border-gray-200 pt-5">
             <SectionTitle>{`Your decision · Level ${r.current.levelNo}: ${r.current.levelName}`}</SectionTitle>
             {r.mine ? (
-              <>
-                <Textarea
-                  label="Comments"
-                  description="Required when rejecting"
-                  placeholder="Add a note for this decision"
-                  minRows={3}
-                  autosize
-                />
-                {r.current.levelNo === r.levels.length && (
-                  <Text size="xs" c="dimmed">
-                    This is the last level. Approving it takes you straight to Contracts.
-                  </Text>
-                )}
-                <div className="flex justify-end gap-2">
-                  {/* TODO: POST /api/loan-origination/applications/{applicationId}/reject { approverId, comments } */}
-                  <Button
-                    size="xs"
-                    color="red"
-                    variant="light"
-                    leftSection={<AppIcon name="x" />}
-                  >
-                    Reject
-                  </Button>
-                  <Button
-                    size="xs"
-                    leftSection={<AppIcon name="check" />}
-                    onClick={() => onApprove(r)}
-                  >
-                    Approve
-                  </Button>
-                </div>
-              </>
+              <DecisionForm
+                key={`${r.id}-${r.current.levelNo}`}
+                row={r}
+                onApprove={(c) => onApprove(r, c)}
+                onReject={(c) => onReject(r, c)}
+              />
             ) : (
               <Alert color="yellow" variant="light" icon={<AppIcon name="lock-keyhole" />}>
                 <Text size="sm">
@@ -377,11 +455,11 @@ function ReviewDrawer({ row, onClose, onApprove }: DrawerProps) {
 export function ApprovalsPage() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
-  // UI only: approvals made in this session, nothing is saved yet
-  const [decisions, setDecisions] = useState<Record<number, number>>({})
-  const [notice, setNotice] = useState<string | null>(null)
+  // UI only: decisions made in this session, nothing is saved yet
+  const [decisions, setDecisions] = useState<Record<number, Made[]>>({})
+  const [notice, setNotice] = useState<{ text: string; color: 'green' | 'red' } | null>(null)
 
-  const rows = useMemo(() => applications.map((a) => toRow(a, decisions[a.id] ?? 0)), [decisions])
+  const rows = useMemo(() => applications.map((a) => toRow(a, decisions[a.id] ?? [])), [decisions])
   const awaiting = rows.filter((r) => r.awaiting)
   const mine = awaiting.filter((r) => r.mine)
   const decided = rows.filter((r) => r.approved || r.rejected)
@@ -408,9 +486,9 @@ export function ApprovalsPage() {
   const open = (r: Row) => setParams({ review: String(r.id) }, { replace: true })
   const close = () => setParams({}, { replace: true })
 
-  const approve = (r: Row) => {
+  const approve = (r: Row, comments: string) => {
     // TODO: POST /api/loan-origination/applications/{applicationId}/approve { approverId, comments }
-    setDecisions((d) => ({ ...d, [r.id]: (d[r.id] ?? 0) + 1 }))
+    setDecisions((d) => ({ ...d, [r.id]: [...(d[r.id] ?? []), { decision: 'APPROVED', comments }] }))
 
     // the final level approved: go straight to Contracts with this contract's panel open
     if (r.current?.levelNo === r.levels.length) {
@@ -421,11 +499,24 @@ export function ApprovalsPage() {
     // an earlier level approved: it moves on to the next level
     const nextLevel = r.levels.find((l) => l.levelNo === (r.current?.levelNo ?? 0) + 1)
     close()
-    setNotice(
-      `${r.applicantName} approved at the ${r.current?.levelName} level.${
+    setNotice({
+      text: `${r.applicantName} approved at the ${r.current?.levelName} level.${
         nextLevel ? ` It now waits for ${nextLevel.levelName}.` : ''
       }`,
-    )
+      color: 'green',
+    })
+  }
+
+  const reject = (r: Row, comments: string) => {
+    // TODO: POST /api/loan-origination/applications/{applicationId}/reject { approverId, comments }
+    //       a rejection at any level halts the application as REJECTED
+    setDecisions((d) => ({ ...d, [r.id]: [...(d[r.id] ?? []), { decision: 'REJECTED', comments }] }))
+    close()
+    setTab('decided')
+    setNotice({
+      text: `${r.applicantName} was rejected at the ${r.current?.levelName} level. The application is stopped.`,
+      color: 'red',
+    })
   }
 
   const columns: CustomTableColumn<Row>[] = [
@@ -553,13 +644,13 @@ export function ApprovalsPage() {
       <div className="space-y-4">
         {notice && (
           <Alert
-            color="green"
+            color={notice.color}
             variant="light"
             withCloseButton
             onClose={() => setNotice(null)}
-            icon={<AppIcon name="circle-check" />}
+            icon={<AppIcon name={notice.color === 'green' ? 'circle-check' : 'circle-x'} />}
           >
-            <Text size="sm">{notice}</Text>
+            <Text size="sm">{notice.text}</Text>
           </Alert>
         )}
 
@@ -606,7 +697,7 @@ export function ApprovalsPage() {
         </div>
       </div>
 
-      <ReviewDrawer row={selected} onClose={close} onApprove={approve} />
+      <ReviewDrawer row={selected} onClose={close} onApprove={approve} onReject={reject} />
     </DashboardLayout>
   )
 }
