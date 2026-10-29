@@ -58,78 +58,81 @@ export function StatWidget({
       <Tag
         type={onClick ? 'button' : undefined}
         onClick={onClick}
-        className={`flex w-full items-start gap-2.5 px-2.5 py-2 text-left ${
+        className={`flex w-full flex-col px-3 py-2.5 text-left ${
           onClick
             ? 'cursor-pointer transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-300'
             : ''
         }`}
       >
         {loading ? (
-          <>
-            <Skeleton height={20} width={20} className="mt-1 shrink-0" />
-            <div className="min-w-0 flex-1">
-              <Skeleton height={10} width={90} mb={8} />
-              <Skeleton height={22} width={110} mb={8} />
-              <Skeleton height={10} width={140} />
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex items-center gap-2">
+              <Skeleton height={18} width={18} className="shrink-0 rounded" />
+              <Skeleton height={12} width={90} />
             </div>
-          </>
+            <Skeleton height={24} width={110} mb={8} />
+            <Skeleton height={12} width={140} />
+          </div>
         ) : (
           <>
-            <span
-              className="mt-1 flex shrink-0 items-center justify-center"
-              style={{ color }}
-              aria-hidden="true"
-            >
-              <AppIcon
-                name={icon}
-                size={20}
-                strokeWidth={1.75}
-              />
-            </span>
-
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[13px] font-medium leading-5 text-slate-500">
+            {/* Icon + Heading on the same row */}
+            <div className="mb-1 flex items-center gap-2">
+              <span
+                className="flex shrink-0 items-center justify-center"
+                style={{ color }}
+                aria-hidden="true"
+              >
+                <AppIcon
+                  name={icon}
+                  size={16}
+                  strokeWidth={1.25}   // ← reduced from 1.75
+                />
+              </span>
+              <div className="truncate text-[13px] font-medium leading-none text-slate-500">
                 {formattedLabel}
               </div>
-              <div
-                className="mt-0.5 truncate text-[22px] font-semibold leading-tight tracking-tight text-slate-900"
-                style={valueColor ? { color: valueColor } : undefined}
-              >
-                {hasCustomCurrencyLabel ? (
-                  <>
-                    {miniLabel && (
-                      <span className="mr-1 text-sm font-semibold text-slate-900">
-                        {miniLabel}
-                      </span>
-                    )}
-                    {value.slice(4)}
-                  </>
-                ) : (
-                  value
-                )}
-                {displayUnit && (
-                  <span className="ml-1 text-sm font-semibold text-slate-900">
-                    {displayUnit}
-                  </span>
-                )}
-              </div>
+            </div>
 
-              {showChange && (
-                <div className="mt-1.5 flex min-w-0 items-center gap-1.5 text-[12px] leading-none">
-                  <span
-                    className={`inline-flex items-center gap-1 font-semibold ${
-                      isUp ? 'text-emerald-500' : 'text-red-500'
-                    }`}
-                  >
-                    <span aria-hidden="true" className="text-[9px]">
-                      {isUp ? '▲' : '▼'}
+            {/* Value */}
+            <div
+              className="truncate text-[22px] font-semibold leading-tight tracking-tight text-slate-900"
+              style={valueColor ? { color: valueColor } : undefined}
+            >
+              {hasCustomCurrencyLabel ? (
+                <>
+                  {miniLabel && (
+                    <span className="mr-1 text-sm font-semibold text-slate-900">
+                      {miniLabel}
                     </span>
-                    {formatChange(change)}
-                  </span>
-                  <span className="truncate text-slate-400">{changeLabel}</span>
-                </div>
+                  )}
+                  {value.slice(4)}
+                </>
+              ) : (
+                value
+              )}
+              {displayUnit && (
+                <span className="ml-1 text-sm font-semibold text-slate-900">
+                  {displayUnit}
+                </span>
               )}
             </div>
+
+            {/* Change indicator */}
+            {showChange && (
+              <div className="mt-1.5 flex min-w-0 items-center gap-1.5 text-[12px] leading-none">
+                <span
+                  className={`inline-flex items-center gap-1 font-semibold ${
+                    isUp ? 'text-emerald-500' : 'text-red-500'
+                  }`}
+                >
+                  <span aria-hidden="true" className="text-[9px]">
+                    {isUp ? '▲' : '▼'}
+                  </span>
+                  {formatChange(change)}
+                </span>
+                <span className="truncate text-slate-400">{changeLabel}</span>
+              </div>
+            )}
           </>
         )}
       </Tag>
