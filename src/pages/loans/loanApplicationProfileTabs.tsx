@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import { CustomTable, type CustomTableColumn } from '../../components/customTable/customTable'
 import { formatTzs } from '../../utils/format'
 import {
+  LOANS,
   RANK,
   STATUS,
   activityFor,
@@ -16,6 +17,7 @@ import {
   methodLabel,
   scheduleFor,
   totalRepayable,
+  type ApplicationStatus,
   type InstallmentRow,
   type LoanApplication,
 } from './loanApplicationsData'
@@ -509,4 +511,239 @@ export function ScheduleTab({ application }: { application: LoanApplication }) {
 
 export function ActivityTab({ application }: { application: LoanApplication }) {
   return <Timeline application={application} />
+}
+
+/* ---------- workflow ---------- */
+
+// the path an application takes, in order (the API keeps one status history row per move)
+const WORKFLOW_PATH: { status: ApplicationStatus; offset: number; by: string }[] = [
+  { status: 'SUBMITTED', offset: 0, by: 'Loan officer' },
+  { status: 'CREDIT_APPROVED', offset: 1, by: 'Credit analyst' },
+  { status: 'PENDING_APPROVAL', offset: 1, by: 'System' },
+  { status: 'APPROVED', offset: 2, by: 'Approval committee' },
+  { status: 'CONTRACT_GENERATED', offset: 3, by: 'Loan officer' },
+  { status: 'CONTRACT_SIGNED', offset: 6, by: 'Loan officer' },
+  { status: 'LOAN_CREATED', offset: 7, by: 'Loan officer' },
+]
+
+type HistoryRow = { from: ApplicationStatus | null; to: ApplicationStatus; date: string; by: string }
+
+// SAMPLE ONLY: replaced by the statusHistory of GET /api/loan-origination/applications/{id}/workflow
+function historyFor(a: LoanApplication): HistoryRow[] {
+  const day = (n: number) => dayjs(a.created).add(n, 'day').format('YYYY-MM-DD')
+  const rows: HistoryRow[] = []
+  let previous: ApplicationStatus | null = null
+
+  const push = (to: ApplicationStatus, offset: number, by: string) => {
+    rows.push({ from: previous, to, date: day(offset), by })
+    previous = to
+  }
+
+  if (a.status === 'DRAFT') {
+    push('DRAFT', 0, a.loanOfficer)
+    return rows
+  }
+
+  const stopped = a.status === 'REJECTED' || a.status === 'CANCELLED'
+  const reached = stopped ? 0 : WORKFLOW_PATH.findIndex((p) => p.status === a.status)
+
+  WORKFLOW_PATH.slice(0, reached + 1).forEach((p) => push(p.status, p.offset, p.by))
+
+  if (stopped) {
+    // a stopped application only ever got as far as submission
+    if (rows.length === 0) push('SUBMITTED', 0, 'Loan officer')
+    push(a.status, 1, a.status === 'CANCELLED' ? 'Staff' : 'System')
+  }
+  return rows
+}
+
+function SummaryCard({
+  icon,
+  title,
+  value,
+  sub,
+  tone = 'gray',
+}: {
+  icon: string
+  title: string
+  value: string
+  sub: string
+  tone?: 'gray' | 'green' | 'yellow' | 'red'
+}) {
+  const ring = { gray: 'bg-gray-100 text-gray-500', green: 'bg-green-50 text-green-600', yellow: 'bg-yellow-50 text-yellow-600', red: 'bg-red-50 text-red-600' }[tone]
+  return (
+    <div className="flex items-start gap-3 rounded-md border border-gray-200 px-3 py-3">
+      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${ring}`}>
+        <AppIcon name={icon} />
+      </div>
+      <div className="min-w-0">
+        <div className="text-xs text-gray-500">{title}</div>
+        <div className="text-sm font-medium text-gray-800">{value}</div>
+        <div className="truncate text-xs text-gray-500">{sub}</div>
+      </div>
+    </div>
+  )
+}
+
+type WorkflowProps = {
+  application: LoanApplication
+  /** ids verified in this session */
+  verifiedGuarantors?: number[]
+  verifiedCollaterals?: number[]
+}
+
+export function WorkflowTab({ application: a, verifiedGuarantors = [], verifiedCollaterals = [] }: WorkflowProps) {
+  const navigate = useNavigate()
+
+  const guarantors = guarantorsFor(a)
+  const collaterals = collateralsFor(a)
+  const credit = creditFor(a)
+  const approvals = approvalsFor(a)
+  const contract = contractFor(a)
+  const loan = LOANS.find((l) => l.applicationId === a.id) ?? null
+  const history = historyFor(a)
+
+  const gVerified = guarantors.filter((g) => g.status === 'VERIFIED' || verifiedGuarantors.includes(g.id)).length
+  const cVerified = collaterals.filter((c) => c.status === 'VERIFIED' || verifiedCollaterals.includes(c.id)).length
+  const approved = approvals.filter((x) => x.decision === 'APPROVED').length
+  const rejectedLevel = approvals.find((x) => x.decision === 'REJECTED')
+  const inApproval = RANK[a.status] >= 2 && a.status !== 'REJECTED' && a.status !== 'CANCELLED'
+
+  return (
+    <div className="space-y-6">
+      {/* one card per part of the origination */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <SummaryCard
+          icon="user-round"
+          title="Guarantors"
+          value={a.guarantorRequired ? `${gVerified} of ${guarantors.length} verified` : 'Not required'}
+          sub={a.guarantorRequired ? (guarantors.map((g) => g.name).join(', ') || 'None added yet') : 'Skipped for this application'}
+          tone={!a.guarantorRequired ? 'gray' : guarantors.length > 0 && gVerified === guarantors.length ? 'green' : 'yellow'}
+        />
+        <SummaryCard
+          icon="shield"
+          title="Collateral"
+          value={a.collateralRequired ? `${cVerified} of ${collaterals.length} verified` : 'Not required'}
+          sub={a.collateralRequired ? (collaterals.map((c) => c.type).join(', ') || 'None added yet') : 'Skipped for this application'}
+          tone={!a.collateralRequired ? 'gray' : collaterals.length > 0 && cVerified === collaterals.length ? 'green' : 'yellow'}
+        />
+        <SummaryCard
+          icon="calculator"
+          title="Credit assessment"
+          value={!a.creditAssessmentRequired ? 'Switched off' : credit ? (credit.decision === 'APPROVE' ? 'Approved' : 'Denied') : 'Not run yet'}
+          sub={credit ? `Cash flow ${formatTzs(credit.cashFlow)} · by ${credit.assessedBy}` : 'Runs after every check is verified'}
+          tone={credit ? (credit.decision === 'APPROVE' ? 'green' : 'red') : 'gray'}
+        />
+        <SummaryCard
+          icon="square-check"
+          title="Approvals"
+          value={rejectedLevel ? `Rejected at level ${rejectedLevel.levelNo}` : inApproval ? `${approved} of ${approvals.length} levels` : 'Not started'}
+          sub={rejectedLevel?.comments ?? approvals.map((x) => x.levelName).join(' → ')}
+          tone={rejectedLevel ? 'red' : approved === approvals.length ? 'green' : inApproval ? 'yellow' : 'gray'}
+        />
+        <SummaryCard
+          icon="pen-line"
+          title="Contract"
+          value={contract ? contract.status.charAt(0) + contract.status.slice(1).toLowerCase() : 'Not created'}
+          sub={contract ? contract.contractNo : 'Created after approval'}
+          tone={contract ? (contract.status === 'SIGNED' ? 'green' : 'yellow') : 'gray'}
+        />
+        <SummaryCard
+          icon="hand-coins"
+          title="Loan"
+          value={loan ? loan.loanNo : 'Not created'}
+          sub={loan ? `${formatTzs(loan.principal)} · disbursed ${dayjs(loan.disbursed).format('MMM D, YYYY')}` : 'Created from the signed contract'}
+          tone={loan ? 'green' : 'gray'}
+        />
+      </div>
+
+      {/* the application itself */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div>
+          <SectionTitle>Application</SectionTitle>
+          <div className="flex items-center justify-between border-b border-gray-100 py-2.5 text-sm">
+            <span className="text-gray-500">Status</span>
+            <Badge variant="light" color={STATUS[a.status].color} radius="sm" size="sm">
+              {STATUS[a.status].label}
+            </Badge>
+          </div>
+          <Field label="Application number" value={a.applicationNo} />
+          <Field label="Applicant" value={a.applicantName} />
+          <Field label="Loan officer" value={a.loanOfficer} />
+          <Field label="Requested amount" value={formatTzs(a.requestedAmount)} />
+          <Field label="Terms" value={`${a.interestRate}% p.a. · ${methodLabel(a.interestMethod)} · ${a.tenure} months`} />
+        </div>
+
+        <div>
+          <SectionTitle>Approval levels</SectionTitle>
+          <ul className="mt-1 space-y-2">
+            {approvals.map((x) => (
+              <li key={x.levelNo} className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-medium text-gray-600">
+                  {x.levelNo}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-gray-800">{x.levelName}</div>
+                  <div className="truncate text-xs text-gray-500">{x.by ? `${x.by} · ` : ''}{x.role}</div>
+                </div>
+                <Pill value={x.decision} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* the full status history */}
+      <div>
+        <SectionTitle>{`Status history (${history.length})`}</SectionTitle>
+        <p className="mb-3 text-xs text-gray-500">Every move the application made, oldest first.</p>
+        <ol>
+          {history.map((h, i) => (
+            <li key={`${h.to}-${i}`} className="flex gap-3">
+              <div className="flex flex-col items-center">
+                <span
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] ${
+                    h.to === 'REJECTED' || h.to === 'CANCELLED' ? 'bg-red-100 text-red-600' : 'bg-brand text-white'
+                  }`}
+                >
+                  {h.to === 'REJECTED' || h.to === 'CANCELLED' ? <AppIcon name="x" /> : <AppIcon name="check" />}
+                </span>
+                {i < history.length - 1 && <span className="my-1 w-px flex-1 bg-gray-200" />}
+              </div>
+              <div className="flex flex-1 items-start justify-between gap-3 pb-4">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5 text-sm text-gray-800">
+                    {h.from && (
+                      <>
+                        <Badge variant="outline" color="gray" radius="sm" size="xs">
+                          {STATUS[h.from].label}
+                        </Badge>
+                        <AppIcon name="chevron-right" className="text-gray-400" size={12} />
+                      </>
+                    )}
+                    <Badge variant="light" color={STATUS[h.to].color} radius="sm" size="sm">
+                      {STATUS[h.to].label}
+                    </Badge>
+                  </div>
+                  <div className="mt-0.5 text-xs text-gray-500">By {h.by}</div>
+                </div>
+                <span className="shrink-0 text-xs text-gray-400">{dayjs(h.date).format('MMM D, YYYY')}</span>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {loan && (
+          <Button size="xs" variant="default" leftSection={<AppIcon name="hand-coins" />} onClick={() => navigate(`/loans/${loan.id}`)}>
+            View loan
+          </Button>
+        )}
+        <Button size="xs" variant="default" leftSection={<AppIcon name="user-round" />} onClick={() => navigate(`/applicants/${a.applicantId}`)}>
+          View applicant
+        </Button>
+      </div>
+    </div>
+  )
 }

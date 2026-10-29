@@ -24,6 +24,7 @@ import {
   OverviewTab,
   RequirementsTab,
   ScheduleTab,
+  WorkflowTab,
 } from './loanApplicationProfileTabs'
 import { SignedContractDialog } from './contractDialogs'
 import { CreditAssessmentDialog, type CreditResult } from './creditAssessmentDialog'
@@ -35,6 +36,7 @@ const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
 const TABS = [
   { value: 'overview', label: 'Overview' },
+  { value: 'workflow', label: 'Workflow' },
   { value: 'requirements', label: 'Requirements' },
   { value: 'approvals', label: 'Approvals' },
   { value: 'contract', label: 'Contract' },
@@ -337,6 +339,13 @@ export function LoanApplicationProfile() {
             <div className="p-5">
               <Tabs.Panel value="overview">
                 <OverviewTab application={application} />
+              </Tabs.Panel>
+              <Tabs.Panel value="workflow">
+                <WorkflowTab
+                  application={application}
+                  verifiedGuarantors={verifiedG}
+                  verifiedCollaterals={verifiedC}
+                />
               </Tabs.Panel>
               <Tabs.Panel value="requirements">
                 <RequirementsTab
