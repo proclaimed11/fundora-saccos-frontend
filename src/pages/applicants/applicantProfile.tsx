@@ -1,8 +1,8 @@
 import { AppIcon } from '../../components/appIcon'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import dayjs from 'dayjs'
-import { Badge, Button, Tabs, Text } from '@mantine/core'
+import { Alert, Badge, Button, Tabs, Text } from '@mantine/core'
 import { DashboardLayout } from '../../components/layout/dashboardLayout'
 import {
   STATUS,
@@ -20,6 +20,9 @@ import {
   OverviewTab,
 } from './applicantProfileTabs'
 import { KycDecisionDialog } from './applicantKYCDecisionDialog'
+import { ApplicantEditDialog, type ApplicantEditInput } from './applicantEditDialog'
+import { ContractConfirmDialog } from '../loans/contractDialogs'
+import { LOANS, applications } from '../loans/loanApplicationsData'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -36,11 +39,23 @@ export function ApplicantProfile() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [reviewOpen, setReviewOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [notice, setNotice] = useState<string | null>(null)
   // UI only: a decision changes the status for this session, nothing is saved yet
   const [statusOverride, setStatusOverride] = useState<ApplicantStatus | null>(null)
+  // UI only: edits made in this session, nothing is saved yet
+  const [changes, setChanges] = useState<ApplicantEditInput | null>(null)
+
+  // success banner fades away on its own
+  useEffect(() => {
+    if (!notice) return
+    const t = setTimeout(() => setNotice(null), 9000)
+    return () => clearTimeout(t)
+  }, [notice])
 
   const base = applicants.find((a) => String(a.id) === id)
-  const applicant = base ? { ...base, status: statusOverride ?? base.status } : undefined
+  const applicant = base ? { ...base, ...changes, status: statusOverride ?? base.status } : undefined
 
   if (!applicant) {
     return (
@@ -60,6 +75,28 @@ export function ApplicantProfile() {
         </div>
       </DashboardLayout>
     )
+  }
+
+  const saveEdit = (input: ApplicantEditInput) => {
+    // TODO: PUT /api/applicants/{id}
+    setChanges(input)
+    setNotice(`${input.name}'s details were updated.`)
+    setEditOpen(false)
+  }
+
+  // our own rule, the API does not say when an applicant can be deleted
+  const loanCount = LOANS.filter((l) => l.applicantId === applicant.id).length
+  const applicationCount = applications.filter((a) => a.applicantId === applicant.id).length
+  const deleteBlock =
+    loanCount > 0 || applicationCount > 0
+      ? `${applicant.name} has ${applicationCount} loan ${applicationCount === 1 ? 'application' : 'applications'} and ${loanCount} ${loanCount === 1 ? 'loan' : 'loans'} on record, so the profile cannot be deleted.`
+      : null
+
+  const removeApplicant = () => {
+    if (deleteBlock) return
+    // TODO: DELETE /api/applicants/{id}
+    setDeleteOpen(false)
+    navigate('/applicants', { replace: true })
   }
 
   const status = STATUS[applicant.status]
@@ -87,6 +124,7 @@ export function ApplicantProfile() {
             size="xs"
             variant="default"
             leftSection={<AppIcon name="pen-line" />}
+            onClick={() => setEditOpen(true)}
           >
             Edit
           </Button>
@@ -104,12 +142,26 @@ export function ApplicantProfile() {
             size="xs"
             color="red"
             leftSection={<AppIcon name="trash" />}
+            onClick={() => setDeleteOpen(true)}
           >
             Delete profile
           </Button>
         </>
       }
     >
+      {notice && (
+        <Alert
+          color="green"
+          variant="light"
+          withCloseButton
+          onClose={() => setNotice(null)}
+          icon={<AppIcon name="circle-check" />}
+          mb="md"
+        >
+          <Text size="sm">{notice}</Text>
+        </Alert>
+      )}
+
       <div className="grid items-start gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
         {/* profile summary */}
         <div className={`${CARD} p-5`}>
@@ -158,10 +210,10 @@ export function ApplicantProfile() {
                 <KycTab applicant={applicant} onReview={() => setReviewOpen(true)} />
               </Tabs.Panel>
               <Tabs.Panel value="financial">
-                <FinancialTab />
+                <FinancialTab applicant={applicant} />
               </Tabs.Panel>
               <Tabs.Panel value="accounts">
-                <AccountsTab />
+                <AccountsTab applicant={applicant} />
               </Tabs.Panel>
               <Tabs.Panel value="loans">
                 <LoansTab applicant={applicant} />
@@ -180,6 +232,25 @@ export function ApplicantProfile() {
         onDecided={(_, decision) =>
           setStatusOverride(decision === 'APPROVED' ? 'KYC_APPROVED' : 'REJECTED')
         }
+      />
+
+      <ApplicantEditDialog
+        opened={editOpen}
+        applicant={applicant}
+        onClose={() => setEditOpen(false)}
+        onSubmit={saveEdit}
+      />
+
+      <ContractConfirmDialog
+        opened={deleteOpen}
+        title={deleteBlock ? 'Cannot delete profile' : 'Delete profile'}
+        message={
+          deleteBlock ??
+          `Delete ${applicant.name} (${applicant.applicantNo})? Their documents and KYC records are removed with the profile. This cannot be undone.`
+        }
+        confirmLabel="Delete profile"
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={removeApplicant}
       />
     </DashboardLayout>
   )
