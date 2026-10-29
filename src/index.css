@@ -2,8 +2,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Source Sans 3', sans-serif;
-  --font-heading: 'Source Sans 3', sans-serif;
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-heading: 'Plus Jakarta Sans', sans-serif;
 }
 
 @theme inline {

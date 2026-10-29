@@ -41,7 +41,6 @@ export function StatWidget({
   const hasTzsPrefix = typeof value === 'string' && value.startsWith('TZS ')
   const hasCustomCurrencyLabel = hasTzsPrefix && miniLabel !== undefined
   const displayUnit = miniLabel && !hasTzsPrefix ? miniLabel : null
-  const formattedLabel = label.toLowerCase().replace(/\b\w/g, (character) => character.toUpperCase())
   const isUp = change !== undefined && change >= 0
   const showChange = change !== undefined
 
@@ -58,7 +57,7 @@ export function StatWidget({
       <Tag
         type={onClick ? 'button' : undefined}
         onClick={onClick}
-        className={`flex w-full flex-col px-3 py-2.5 text-left ${
+        className={`flex w-full flex-col px-2.5 py-1.5 text-left ${
           onClick
             ? 'cursor-pointer transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-300'
             : ''
@@ -66,36 +65,32 @@ export function StatWidget({
       >
         {loading ? (
           <div className="min-w-0 flex-1">
-            <div className="mb-2 flex items-center gap-2">
-              <Skeleton height={18} width={18} className="shrink-0 rounded" />
-              <Skeleton height={12} width={90} />
+            <div className="mb-1 flex items-center gap-1.5">
+              <Skeleton height={16} width={16} className="shrink-0 rounded" />
+              <Skeleton height={10} width={90} />
             </div>
-            <Skeleton height={24} width={110} mb={8} />
-            <Skeleton height={12} width={140} />
+            <Skeleton height={20} width={110} mb={4} />
+            <Skeleton height={10} width={140} />
           </div>
         ) : (
           <>
             {/* Icon + Heading on the same row */}
-            <div className="mb-1 flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <span
                 className="flex shrink-0 items-center justify-center"
                 style={{ color }}
                 aria-hidden="true"
               >
-                <AppIcon
-                  name={icon}
-                  size={16}
-                  strokeWidth={1.25}   // ← reduced from 1.75
-                />
+                <AppIcon name={icon} size={15} strokeWidth={1.25} />
               </span>
-              <div className="truncate text-[13px] font-medium leading-none text-slate-500">
-                {formattedLabel}
+              <div className="truncate text-[11px] font-normal uppercase leading-none tracking-wide text-slate-500">
+                {label}
               </div>
             </div>
 
             {/* Value */}
             <div
-              className="truncate text-[22px] font-semibold leading-tight tracking-tight text-slate-900"
+              className="truncate text-[19px] font-medium leading-tight tracking-tight text-slate-800"
               style={valueColor ? { color: valueColor } : undefined}
             >
               {hasCustomCurrencyLabel ? (
@@ -119,7 +114,7 @@ export function StatWidget({
 
             {/* Change indicator */}
             {showChange && (
-              <div className="mt-1.5 flex min-w-0 items-center gap-1.5 text-[12px] leading-none">
+              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[12px] leading-none">
                 <span
                   className={`inline-flex items-center gap-1 font-semibold ${
                     isUp ? 'text-emerald-500' : 'text-red-500'
