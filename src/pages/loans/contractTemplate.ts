@@ -9,6 +9,7 @@ import {
   totalRepayable,
   type LoanApplication,
 } from './loanApplicationsData'
+import { escapeHtml, printHtml } from '../../utils/printHtml'
 
 export type ContractClause = { id: number; title: string; body: string }
 export type ContractContent = { title: string; clauses: ContractClause[] }
@@ -130,3 +131,34 @@ export function validateContent(c: ContractContent): string[] {
 export const sameContent = (a: ContractContent, b: ContractContent) =>
   JSON.stringify({ t: a.title, c: a.clauses.map((x) => [x.title, x.body]) }) ===
   JSON.stringify({ t: b.title, c: b.clauses.map((x) => [x.title, x.body]) })
+
+// **word** becomes bold, new lines are kept
+const rich = (text: string) =>
+  escapeHtml(text)
+    .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+    .replace(/\n/g, '<br/>')
+
+// prints the contract exactly as the review dialog shows it
+export function printContract(
+  content: ContractContent,
+  values: Record<string, string>,
+  contractNo: string,
+  dateText: string,
+) {
+  const fill = (t: string) => fillPlaceholders(t, values)
+
+  const clauses = content.clauses
+    .map((c, i) => `<section><h3>${i + 1}. ${escapeHtml(fill(c.title))}</h3><p>${rich(fill(c.body))}</p></section>`)
+    .join('')
+
+  const body = `
+    <div class="head">
+      <div class="co">${escapeHtml(values.companyName ?? '')}</div>
+      <h1>${escapeHtml(fill(content.title))}</h1>
+      <div class="muted">Contract No. ${escapeHtml(contractNo)} · ${escapeHtml(dateText)}</div>
+    </div>
+    ${clauses}
+    <div class="sign"><div>Borrower<br/>Name and date</div><div>For the Lender<br/>Name and date</div></div>`
+
+  printHtml(`Contract ${contractNo}`, body, 'body { font-family: Georgia, serif; font-size: 13px; }')
+}

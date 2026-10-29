@@ -7,6 +7,7 @@ import { ContractEditor } from './contractEditor'
 import {
   defaultContent,
   fillPlaceholders,
+  printContract,
   sameContent,
   validateContent,
   valuesFor,
@@ -139,6 +140,8 @@ export function ContractReviewDialog({
   const values = valuesFor(a)
   const contractNo = contract?.contractNo ?? ''
   const dateText = contract ? dayjs(contract.generated).format('MMMM D, YYYY') : ''
+
+  const print = () => printContract(current, values, contractNo, dateText)
 
   const reset = () => {
     setReviewed(false)
@@ -383,7 +386,13 @@ export function ContractReviewDialog({
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 pt-4">
         <div className="flex gap-2">
-          <Button size="xs" variant="default" leftSection={<AppIcon name="printer" />}>
+          <Button
+            size="xs"
+            variant="default"
+            disabled={!!uploadedName}
+            leftSection={<AppIcon name="printer" />}
+            onClick={print}
+          >
             Print
           </Button>
           {canSend && (

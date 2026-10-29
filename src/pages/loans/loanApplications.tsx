@@ -1,5 +1,9 @@
+import { useState } from 'react'
 import { AppIcon } from '../../components/appIcon'
-import { Badge, Button } from '@mantine/core'
+import { Alert, Badge, Button, Text } from '@mantine/core'
+import dayjs from 'dayjs'
+import { applicants } from '../applicants/applicantsData'
+import { allDrafts, clearDraft } from './draftStore'
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from '../../components/layout/dashboardLayout'
 import { StatWidget } from '../../components/statsWidgets'
@@ -46,6 +50,9 @@ function StatusBadge({ status }: { status: ApplicationStatus }) {
 
 export function LoanApplications() {
   const navigate = useNavigate()
+  // UI only: drafts saved in this browser by "Save draft and exit"
+  const [, refresh] = useState(0)
+  const drafts = allDrafts()
 
   const columns: CustomTableColumn<LoanApplication>[] = [
     {
@@ -124,6 +131,47 @@ export function LoanApplications() {
         </Button>
       }
     >
+
+    {drafts.length > 0 && (
+        <Alert
+          color="blue"
+          variant="light"
+          icon={<AppIcon name="pencil" />}
+          title={`${drafts.length} saved ${drafts.length === 1 ? 'draft' : 'drafts'}`}
+          mb="md"
+        >
+          <ul className="space-y-2">
+            {drafts.map((d) => (
+              <li key={d.applicantId} className="flex flex-wrap items-center justify-between gap-2">
+                <Text size="sm">
+                  {applicants.find((a) => String(a.id) === d.applicantId)?.name ?? 'Applicant'} · stopped at{' '}
+                  {d.stepLabel} · saved {dayjs(d.savedAt).format('MMM D, h:mm A')}
+                </Text>
+                <div className="flex gap-2">
+                  <Button
+                    size="compact-xs"
+                    onClick={() => navigate(`/loan-applications/new?applicantId=${d.applicantId}`)}
+                  >
+                    Resume
+                  </Button>
+                  <Button
+                    size="compact-xs"
+                    variant="default"
+                    onClick={() => {
+                      clearDraft(d.applicantId)
+                      refresh((n) => n + 1)
+                    }}
+                  >
+                    Discard
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Alert>
+      )}
+
+
       {/* row 1: key numbers */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {stats.map((s) => (

@@ -184,3 +184,71 @@ export const documentsFor = (a: Applicant): ApplicantDocument[] => [
   { id: 1, type: 'NIDA document', fileName: 'nida-document.pdf', sizeKb: 420, uploaded: a.registered, uploadedBy: 'Registration', notes: '' },
   { id: 2, type: 'ID scan', fileName: 'id-scan.jpg', sizeKb: 310, uploaded: a.registered, uploadedBy: 'Registration', notes: '' },
 ]
+
+/* ---------- SAMPLE ONLY: KYC history, replaced by GET /api/kyc-verifications later ---------- */
+
+export type KycRecord = {
+  id: number
+  status: 'APPROVED' | 'REJECTED'
+  verificationType: 'FULL_KYC' | 'RETURNING_CHECK'
+  remarks: string
+  verifiedBy: string
+  date: string // ISO date
+  expiresAt: string | null // an approval is valid for 12 months
+}
+
+// older records of returning applicants, from before they registered again
+const EARLIER_KYC: Record<number, Omit<KycRecord, 'id'>[]> = {
+  // expired, so a re-check says full KYC is needed
+  2: [
+    { status: 'APPROVED', verificationType: 'FULL_KYC', remarks: 'All documents verified', verifiedBy: 'Asha Mrema', date: '2025-06-20', expiresAt: '2026-06-20' },
+  ],
+  // still valid
+  5: [
+    { status: 'APPROVED', verificationType: 'FULL_KYC', remarks: 'All documents verified', verifiedBy: 'Juma Bakari', date: '2026-05-12', expiresAt: '2027-05-12' },
+  ],
+}
+
+// newest first, built from the applicant's status so it always matches
+export function kycHistoryFor(a: Applicant): KycRecord[] {
+  const list: Omit<KycRecord, 'id'>[] = [...(EARLIER_KYC[a.id] ?? [])]
+  const decided = dayjs(a.registered).add(1, 'day').format('YYYY-MM-DD')
+
+  if (a.status === 'KYC_APPROVED') {
+    list.push({
+      status: 'APPROVED',
+      verificationType: 'FULL_KYC',
+      remarks: 'All documents verified',
+      verifiedBy: 'Asha Mrema',
+      date: decided,
+      expiresAt: dayjs(decided).add(12, 'month').format('YYYY-MM-DD'),
+    })
+  }
+  if (a.status === 'REJECTED') {
+    list.push({
+      status: 'REJECTED',
+      verificationType: 'FULL_KYC',
+      remarks: 'Documents did not pass review',
+      verifiedBy: 'Asha Mrema',
+      date: decided,
+      expiresAt: null,
+    })
+  }
+
+  return list.map((r, i) => ({ id: i + 1, ...r })).sort((x, y) => y.date.localeCompare(x.date))
+}
+
+export type RecheckResult = { valid: boolean; message: string; record: KycRecord | null }
+
+// the same rule as POST /api/onboarding/kyc/check-returning/{applicantId}:
+// skip full KYC when an APPROVED record has not expired (valid for 12 months)
+export function recheckKyc(history: KycRecord[]): RecheckResult {
+  const record =
+    history.find(
+      (r) => r.status === 'APPROVED' && r.expiresAt !== null && !dayjs(r.expiresAt).isBefore(dayjs(), 'day'),
+    ) ?? null
+
+  return record
+    ? { valid: true, message: 'Existing KYC still valid; applicant may proceed', record }
+    : { valid: false, message: 'No valid existing KYC found; full KYC required', record: null }
+}

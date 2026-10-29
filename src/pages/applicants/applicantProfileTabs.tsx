@@ -15,6 +15,7 @@ import {
   financialFor,
   loansFor,
   nidaFor,
+  kycHistoryFor,
   type Applicant,
   type ApplicantAccount,
   type ApplicantDocument,
@@ -116,8 +117,17 @@ export function OverviewTab({ applicant }: { applicant: Applicant }) {
 
 type DocDialog = 'add' | { kind: 'replace' | 'remove'; id: number } | null
 
-export function KycTab({ applicant, onReview }: { applicant: Applicant; onReview?: () => void }) {
+export function KycTab({
+  applicant,
+  onReview,
+  onRecheck,
+}: {
+  applicant: Applicant
+  onReview?: () => void
+  onRecheck?: () => void
+}) {
   const approvedOn = dayjs(applicant.registered).add(1, 'day')
+  const history = kycHistoryFor(applicant)
 
   // UI only: changes made in this session, nothing is saved yet
   const [docs, setDocs] = useState<ApplicantDocument[]>(() => documentsFor(applicant))
@@ -180,11 +190,23 @@ export function KycTab({ applicant, onReview }: { applicant: Applicant; onReview
           )}
           <Field label="NIDA number" value={nidaFor(applicant)} />
           <Field label="TIN number" value="TIN123" />
-          {applicant.status === 'PENDING_KYC' && (
-            <div className="mt-3 flex gap-2">
-              <Button size="xs" leftSection={<AppIcon name="contact-round" />} onClick={onReview}>
-                Review KYC
-              </Button>
+          {(applicant.status === 'PENDING_KYC' || (applicant.isReturning && applicant.status !== 'REJECTED')) && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {applicant.status === 'PENDING_KYC' && (
+                <Button size="xs" leftSection={<AppIcon name="contact-round" />} onClick={onReview}>
+                  Review KYC
+                </Button>
+              )}
+              {/* {applicant.isReturning && applicant.status !== 'REJECTED' && onRecheck && (
+                <Button size="xs" variant="default" leftSection={<AppIcon name="refresh-cw" />} onClick={onRecheck}>
+                  Re-check KYC
+                </Button>
+              )} */}
+              {applicant.isReturning && onRecheck && (
+                  <Button size="xs" variant="default" leftSection={<AppIcon name="refresh-cw" />} onClick={onRecheck}>
+                    Re-check KYC
+                  </Button>
+                )}
             </div>
           )}
         </div>
@@ -247,6 +269,49 @@ export function KycTab({ applicant, onReview }: { applicant: Applicant; onReview
             </ul>
           )}
         </div>
+      </div>
+
+            <div>
+        <SectionTitle>{`KYC history (${history.length})`}</SectionTitle>
+        {history.length === 0 ? (
+          <div className="rounded-md border border-dashed border-gray-200 px-4 py-5 text-center text-xs text-gray-500">
+            No KYC decision has been recorded yet.
+          </div>
+        ) : (
+          <ul className="mt-2 space-y-2">
+            {history.map((r) => {
+              const expired =
+                r.status === 'APPROVED' && r.expiresAt !== null && dayjs(r.expiresAt).isBefore(dayjs(), 'day')
+              return (
+                <li key={r.id} className="flex items-start gap-3 rounded-md border border-gray-200 px-3 py-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+                    <AppIcon name={r.status === 'APPROVED' ? 'circle-check' : 'circle-x'} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-medium text-gray-800">
+                        {r.verificationType === 'FULL_KYC' ? 'Full KYC' : 'Returning check'}
+                      </span>
+                      <Badge variant="light" color={r.status === 'APPROVED' ? 'green' : 'red'} radius="sm" size="sm">
+                        {r.status === 'APPROVED' ? 'Approved' : 'Rejected'}
+                      </Badge>
+                      {r.status === 'APPROVED' && (
+                        <Badge variant="outline" color={expired ? 'gray' : 'brand'} radius="sm" size="sm">
+                          {expired ? 'Expired' : 'Valid'}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {dayjs(r.date).format('MMM D, YYYY')} · by {r.verifiedBy}
+                      {r.expiresAt ? ` · until ${dayjs(r.expiresAt).format('MMM D, YYYY')}` : ''}
+                    </div>
+                    {r.remarks && <div className="mt-0.5 text-xs text-gray-600">"{r.remarks}"</div>}
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        )}
       </div>
 
       <DocumentDialog

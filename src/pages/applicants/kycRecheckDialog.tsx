@@ -1,0 +1,87 @@
+import { AppIcon } from '../../components/appIcon'
+import { useEffect, useState } from 'react'
+import dayjs from 'dayjs'
+import { Alert, Button, Modal, Text } from '@mantine/core'
+import { kycHistoryFor, recheckKyc, type Applicant, type RecheckResult } from './applicantsData'
+
+type Props = {
+  /** the applicant to check, null keeps the dialog closed */
+  applicant: Applicant | null
+  onClose: () => void
+}
+
+export function RecheckKycDialog({ applicant, onClose }: Props) {
+  const [result, setResult] = useState<RecheckResult | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  // every time it opens it starts without a result
+  useEffect(() => {
+    setResult(null)
+  }, [applicant])
+
+  const run = async () => {
+    if (!applicant) return
+    setLoading(true)
+    try {
+      // TODO: POST /api/onboarding/kyc/check-returning/{applicantId}
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      setResult(recheckKyc(kycHistoryFor(applicant)))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const left = result?.record?.expiresAt ? dayjs(result.record.expiresAt).diff(dayjs(), 'day') : 0
+
+  return (
+    <Modal opened={!!applicant} onClose={onClose} title="Re-check KYC" centered>
+      {applicant && (
+        <div className="space-y-4">
+          <div>
+            <Text fw={600}>{applicant.name}</Text>
+            <Text size="xs" c="dimmed">
+              {applicant.applicantNo}
+            </Text>
+          </div>
+
+          <Text size="sm">
+            This looks for an earlier approved KYC that has not expired. An approval is valid for 12 months. When one is
+            found, the applicant can skip full KYC.
+          </Text>
+
+          {result &&
+            (result.valid && result.record ? (
+              <Alert color="green" variant="light" title="KYC is still valid" icon={<AppIcon name="circle-check" />}>
+                <Text size="sm">{result.message}.</Text>
+                <div className="mt-2 space-y-1 text-xs text-gray-600">
+                  <div>
+                    Approved {dayjs(result.record.date).format('MMM D, YYYY')} by {result.record.verifiedBy}
+                  </div>
+                  <div>
+                    Valid until {dayjs(result.record.expiresAt).format('MMM D, YYYY')} ({left}{' '}
+                    {left === 1 ? 'day' : 'days'} left)
+                  </div>
+                </div>
+              </Alert>
+            ) : (
+              <Alert color="red" variant="light" title="Full KYC required" icon={<AppIcon name="circle-x" />}>
+                <Text size="sm">{result.message}.</Text>
+                <Text size="xs" c="dimmed" mt={4}>
+                  Review the applicant's documents and record a new KYC decision.
+                </Text>
+              </Alert>
+            ))}
+
+          <div className="flex justify-end gap-2">
+            <Button size="xs" variant="default" onClick={onClose}>
+              Close
+            </Button>
+            <Button size="xs" loading={loading} leftSection={<AppIcon name="refresh-cw" />} onClick={run}>
+              {result ? 'Check again' : 'Run check'}
+            </Button>
+          </div>
+        </div>
+      )}
+    </Modal>
+  )
+}

@@ -22,6 +22,7 @@ import {
   type DisbursementRecord,
   type LoanApplication,
 } from './loanApplicationsData'
+import { printVoucher } from './printDocs'
 
 // our own rule, the API has no deadline: warn when a created loan waits longer than this
 const LATE_AFTER_DAYS = 3
@@ -204,9 +205,15 @@ function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication 
                   <div className="truncate text-xs text-gray-500">{record.reference || r.applicationNo}-voucher.pdf</div>
                 </div>
                 {/* inactive for now: no click handler until the voucher is built */}
-                <Button size="compact-xs" variant="subtle" color="brand" leftSection={<AppIcon name="printer" />}>
-                  Print
-                </Button>
+              <Button
+                size="compact-xs"
+                variant="subtle"
+                color="brand"
+                leftSection={<AppIcon name="printer" />}
+                onClick={() => printVoucher(r, record, source, member)}
+              >
+                Print
+              </Button>
               </li>
             </ul>
           </div>

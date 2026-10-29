@@ -8,6 +8,7 @@ export type ApplicationStatus =
   | 'PENDING_APPROVAL'
   | 'APPROVED'
   | 'REJECTED'
+  | 'CANCELLED'
   | 'CONTRACT_GENERATED'
   | 'CONTRACT_SIGNED'
   | 'LOAN_CREATED'
@@ -35,6 +36,8 @@ export type LoanApplication = {
   contractSentAt?: string | null
   contractSignedAt?: string | null
   credit?: CreditRow | null // set when an assessment is run in the UI
+  cancelReason?: string | null
+  cancelledAt?: string | null
 }
 
 // SAMPLE ONLY: replaced with database data later
@@ -60,6 +63,7 @@ export const STATUS: Record<ApplicationStatus, { label: string; color: string; s
   PENDING_APPROVAL: { label: 'Pending approval', color: 'yellow', step: 2 },
   APPROVED: { label: 'Approved', color: 'green', step: 3 },
   REJECTED: { label: 'Rejected', color: 'red', step: 1 },
+  CANCELLED: { label: 'Cancelled', color: 'gray', step: 0 },
   CONTRACT_GENERATED: { label: 'Contract generated', color: 'violet', step: 3 },
   CONTRACT_SIGNED: { label: 'Contract signed', color: 'teal', step: 4 },
   LOAN_CREATED: { label: 'Loan created', color: 'brand', step: 5 },
@@ -70,6 +74,7 @@ export const RANK: Record<ApplicationStatus, number> = {
   DRAFT: 0,
   SUBMITTED: 1,
   REJECTED: 1,
+  CANCELLED: 1,
   CREDIT_APPROVED: 2,
   PENDING_APPROVAL: 2,
   APPROVED: 3,
@@ -354,6 +359,9 @@ export function activityFor(a: LoanApplication): ActivityEvent[] {
   }))
   if (a.status === 'REJECTED') {
     events.push({ title: 'Application rejected', detail: a.creditAssessmentRequired ? 'Credit assessment failed' : 'Application halted', date: day(1), icon: 'circle-x' })
+  }
+    if (a.status === 'CANCELLED') {
+    events.push({ title: 'Application cancelled', detail: a.cancelReason || 'Cancelled by staff', date: a.cancelledAt ?? day(1), icon: 'x' })
   }
   return events.reverse()
 }

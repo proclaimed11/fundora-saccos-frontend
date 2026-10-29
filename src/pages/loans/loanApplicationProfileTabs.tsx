@@ -143,13 +143,30 @@ export function OverviewTab({ application }: { application: LoanApplication }) {
   )
 }
 
-export function RequirementsTab({ application }: { application: LoanApplication }) {
+type RequirementsProps = {
+  application: LoanApplication
+  /** ids verified in this session */
+  verifiedGuarantors?: number[]
+  verifiedCollaterals?: number[]
+  onVerifyGuarantor?: (id: number) => void
+  onVerifyCollateral?: (id: number) => void
+}
+
+export function RequirementsTab({
+  application,
+  verifiedGuarantors = [],
+  verifiedCollaterals = [],
+  onVerifyGuarantor,
+  onVerifyCollateral,
+}: RequirementsProps) {
   const guarantors = guarantorsFor(application)
   const collaterals = collateralsFor(application)
   const credit = creditFor(application)
   const installment = Math.round(estimateInstallment(application))
   const totalValue = collaterals.reduce((sum, c) => sum + c.value, 0)
   const shortfall = credit ? Math.max(0, installment - credit.cashFlow) : 0
+  // checks can only be done after submission and before the credit assessment
+  const canVerify = application.status === 'SUBMITTED'
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -162,18 +179,26 @@ export function RequirementsTab({ application }: { application: LoanApplication 
             <Empty>No guarantor has been added yet.</Empty>
           ) : (
             <ul className="mt-2 space-y-2">
-              {guarantors.map((g) => (
-                <li key={g.id} className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
-                  <AppIcon name="user-round" className="w-6 text-center text-xl text-gray-400"  size={24} />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium text-gray-800">{g.name}</div>
-                    <div className="text-xs text-gray-500">
-                      {g.relationship} · {g.phone}
+              {guarantors.map((g) => {
+                const status = verifiedGuarantors.includes(g.id) ? 'VERIFIED' : g.status
+                return (
+                  <li key={g.id} className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
+                    <AppIcon name="user-round" className="w-6 text-center text-xl text-gray-400" size={24} />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium text-gray-800">{g.name}</div>
+                      <div className="text-xs text-gray-500">
+                        {g.relationship} · {g.phone}
+                      </div>
                     </div>
-                  </div>
-                  <Pill value={g.status} />
-                </li>
-              ))}
+                    {canVerify && status === 'PENDING' && onVerifyGuarantor && (
+                      <Button size="compact-xs" variant="light" onClick={() => onVerifyGuarantor(g.id)}>
+                        Verify
+                      </Button>
+                    )}
+                    <Pill value={status} />
+                  </li>
+                )
+              })}
             </ul>
           )}
         </div>
@@ -187,33 +212,41 @@ export function RequirementsTab({ application }: { application: LoanApplication 
           ) : (
             <>
               <ul className="mt-2 space-y-2">
-                {collaterals.map((c) => (
-                  <li key={c.id} className="rounded-md border border-gray-200 px-3 py-2.5">
-                    <div className="flex items-center gap-3">
-                      <AppIcon name="shield" className="w-6 text-center text-xl text-gray-400"  size={24} />
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-gray-800">{c.type}</div>
-                        <div className="truncate text-xs text-gray-500">
-                          {c.description} · {formatTzs(c.value)}
+                {collaterals.map((c) => {
+                  const status = verifiedCollaterals.includes(c.id) ? 'VERIFIED' : c.status
+                  return (
+                    <li key={c.id} className="rounded-md border border-gray-200 px-3 py-2.5">
+                      <div className="flex items-center gap-3">
+                        <AppIcon name="shield" className="w-6 text-center text-xl text-gray-400" size={24} />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium text-gray-800">{c.type}</div>
+                          <div className="truncate text-xs text-gray-500">
+                            {c.description} · {formatTzs(c.value)}
+                          </div>
                         </div>
-                      </div>
-                      <Pill value={c.status} />
-                    </div>
-                    <div className="mt-2 flex items-center gap-2 border-t border-gray-100 pt-2 text-xs">
-                      <AppIcon name="file-text" className="${c.document ? 'text-gray-400' : 'text-gray-300'}" />
-                      {c.document ? (
-                        <>
-                          <span className="min-w-0 flex-1 truncate text-gray-600">{c.document}</span>
-                          <Button size="compact-xs" variant="subtle" color="brand">
-                            View
+                        {canVerify && status === 'PENDING' && onVerifyCollateral && (
+                          <Button size="compact-xs" variant="light" onClick={() => onVerifyCollateral(c.id)}>
+                            Verify
                           </Button>
-                        </>
-                      ) : (
-                        <span className="text-gray-400">No document uploaded</span>
-                      )}
-                    </div>
-                  </li>
-                ))}
+                        )}
+                        <Pill value={status} />
+                      </div>
+                      <div className="mt-2 flex items-center gap-2 border-t border-gray-100 pt-2 text-xs">
+                        <AppIcon name="file-text" className={c.document ? 'text-gray-400' : 'text-gray-300'} />
+                        {c.document ? (
+                          <>
+                            <span className="min-w-0 flex-1 truncate text-gray-600">{c.document}</span>
+                            <Button size="compact-xs" variant="subtle" color="brand">
+                              View
+                            </Button>
+                          </>
+                        ) : (
+                          <span className="text-gray-400">No document uploaded</span>
+                        )}
+                      </div>
+                    </li>
+                  )
+                })}
               </ul>
               <div className="mt-2 flex justify-between rounded-md bg-gray-50 px-3 py-2 text-sm">
                 <span className="text-gray-500">Total value</span>
@@ -234,7 +267,11 @@ export function RequirementsTab({ application }: { application: LoanApplication 
         {!application.creditAssessmentRequired ? (
           <Empty>Credit assessment is switched off for this application.</Empty>
         ) : !credit ? (
-          <Empty>The credit assessment has not been run yet.</Empty>
+          <Empty>
+            {canVerify
+              ? 'The credit assessment has not been run yet. Use the button at the top of the page once everything is verified.'
+              : 'The credit assessment has not been run yet.'}
+          </Empty>
         ) : (
           <div className="space-y-3">
             {credit.decision === 'REJECT' && (

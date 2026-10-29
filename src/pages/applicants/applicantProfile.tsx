@@ -23,6 +23,8 @@ import { KycDecisionDialog } from './applicantKYCDecisionDialog'
 import { ApplicantEditDialog, type ApplicantEditInput } from './applicantEditDialog'
 import { ContractConfirmDialog } from '../loans/contractDialogs'
 import { LOANS, applications } from '../loans/loanApplicationsData'
+import { RecheckKycDialog } from './kycRecheckDialog'
+import { SendOtpDialog } from './otpDialog'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -41,6 +43,8 @@ export function ApplicantProfile() {
   const [reviewOpen, setReviewOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [recheckOpen, setRecheckOpen] = useState(false)
+  const [otpOpen, setOtpOpen] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   // UI only: a decision changes the status for this session, nothing is saved yet
   const [statusOverride, setStatusOverride] = useState<ApplicantStatus | null>(null)
@@ -84,6 +88,14 @@ export function ApplicantProfile() {
     setEditOpen(false)
   }
 
+    // the buttons shown depend on the stage, each one opens its own dialog
+  const runStage = (label: string) => {
+    if (label === 'Review KYC') setReviewOpen(true)
+    else if (label === 'Re-check KYC') setRecheckOpen(true)
+    else if (label === 'Send OTP') setOtpOpen(true)
+    else if (label === 'Start loan application') navigate(`/loan-applications/new?applicantId=${applicant.id}`)
+  }
+
   // our own rule, the API does not say when an applicant can be deleted
   const loanCount = LOANS.filter((l) => l.applicantId === applicant.id).length
   const applicationCount = applications.filter((a) => a.applicantId === applicant.id).length
@@ -118,7 +130,6 @@ export function ApplicantProfile() {
         { label: applicant.name },
       ]}
       actions={
-        // only Review KYC is wired so far, the rest stay inactive
         <>
           <Button
             size="xs"
@@ -133,7 +144,7 @@ export function ApplicantProfile() {
               key={x.label}
               size="xs"
               leftSection={<AppIcon name={x.icon} />}
-              onClick={x.label === 'Review KYC' ? () => setReviewOpen(true) : undefined}
+              onClick={() => runStage(x.label)}
             >
               {x.label}
             </Button>
@@ -207,7 +218,11 @@ export function ApplicantProfile() {
                 <OverviewTab applicant={applicant} />
               </Tabs.Panel>
               <Tabs.Panel value="kyc">
-                <KycTab applicant={applicant} onReview={() => setReviewOpen(true)} />
+                <KycTab
+                  applicant={applicant}
+                  onReview={() => setReviewOpen(true)}
+                  onRecheck={() => setRecheckOpen(true)}
+                />
               </Tabs.Panel>
               <Tabs.Panel value="financial">
                 <FinancialTab applicant={applicant} />
@@ -232,6 +247,18 @@ export function ApplicantProfile() {
         onDecided={(_, decision) =>
           setStatusOverride(decision === 'APPROVED' ? 'KYC_APPROVED' : 'REJECTED')
         }
+      />
+
+      <RecheckKycDialog applicant={recheckOpen ? applicant : null} onClose={() => setRecheckOpen(false)} />
+
+      <SendOtpDialog
+        applicant={otpOpen ? applicant : null}
+        onClose={() => setOtpOpen(false)}
+        onVerified={(a) => {
+          setStatusOverride('PENDING_KYC')
+          setNotice(`${a.name} was verified. They are now pending KYC review.`)
+          setOtpOpen(false)
+        }}
       />
 
       <ApplicantEditDialog

@@ -33,6 +33,7 @@ import {
   type PaymentMethod,
 } from './loanApplicationsData'
 import { ScheduleDrawer } from './scheduleDrawer'
+import { printReceipt } from './printDocs'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -231,7 +232,7 @@ function ReceiptBody({ row: r, loan, onPay, onOpenLoan, onSchedule }: BodyProps)
 
       <div className="flex flex-wrap gap-2">
         {/* inactive for now: no click handler until printing is built */}
-        <Button size="xs" variant="default" leftSection={<AppIcon name="printer" />}>
+        <Button size="xs" variant="default" leftSection={<AppIcon name="printer" />} onClick={() => printReceipt(r, loan)}>
           Print receipt
         </Button>
         <Button size="xs" variant="default" leftSection={<AppIcon name="external-link" />} onClick={() => onOpenLoan(loan)}>

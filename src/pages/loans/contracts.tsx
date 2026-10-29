@@ -18,7 +18,7 @@ import {
   type ContractRow,
   type LoanApplication,
 } from './loanApplicationsData'
-import type { ContractContent } from './contractTemplate'
+import { defaultContent, printContract, valuesFor, type ContractContent } from './contractTemplate'
 
 // our own rule, the API has no deadline: warn when a contract waits longer than this at one stage
 const LATE_AFTER_DAYS = 7
@@ -159,9 +159,10 @@ type DrawerBodyProps = {
   onPreview: (a: LoanApplication) => void
   onOpenApplication: (a: LoanApplication) => void
   onDisburse: (a: LoanApplication) => void
+  onPrint: (a: LoanApplication) => void
 }
 
-function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDisburse }: DrawerBodyProps) {
+function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDisburse, onPrint }: DrawerBodyProps) {
   const [copied, setCopied] = useState(false)
   const stage = stageOf(a)
   const contract = contractFor(a)
@@ -303,7 +304,13 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
               >
                 Preview
               </Button>
-              <Button size="compact-xs" variant="subtle" color="brand" leftSection={<AppIcon name="printer" />}>
+              <Button
+                size="compact-xs"
+                variant="subtle"
+                color="brand"
+                leftSection={<AppIcon name="printer" />}
+                onClick={() => onPrint(a)}
+              >
                 Print
               </Button>
             </li>
@@ -443,6 +450,22 @@ export function ContractsPage() {
   // Loan created -> open the Loans page with the disburse dialog for this application
   const disburse = (a: LoanApplication) =>
     navigate(`/loan-disbursements?disburse=${a.id}`, { state: { createdId: a.id } })
+
+
+  const printFor = (a: LoanApplication) => {
+  const c = contractFor(a)
+  if (!c) return
+  if (uploads[a.id]) {
+    setNotice({ text: `${uploads[a.id].name} is an uploaded file. Open the file itself to print it.` })
+    return
+  }
+  printContract(
+    edits[a.id] ?? defaultContent(a),
+    valuesFor(a),
+    c.contractNo,
+    dayjs(c.generated).format('MMMM D, YYYY'),
+  )
+}
 
   const dialogApp = dialog ? all.find((a) => a.id === dialog.id) : undefined
 
@@ -740,6 +763,7 @@ export function ContractsPage() {
             onPreview={(a) => setDialog({ kind: 'review', id: a.id })}
             onOpenApplication={(a) => navigate(`/loan-applications/${a.id}`)}
             onDisburse={disburse}
+            onPrint={printFor}
           />
         )}
       </Drawer>

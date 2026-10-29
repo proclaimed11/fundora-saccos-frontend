@@ -34,6 +34,8 @@ import {
   type LoanApplication,
 } from './loanApplicationsData'
 import { ExistingLoansPanel } from './existingLoansPanel'
+import { ContractConfirmDialog } from './contractDialogs'
+import { clearDraft, loadDraft, saveDraft } from './draftStore'
 
 /* ---------- types ---------- */
 
@@ -189,6 +191,40 @@ const collateralVerified = (c: CollateralItem) => c.ownershipVerified && c.pledg
 // only applicants with approved KYC can start a loan application
 const eligible = applicants.filter((a) => a.status === 'KYC_APPROVED')
 const applicantOptions = eligible.map((a) => ({ value: String(a.id), label: `${a.name} · ${a.applicantNo}` }))
+
+// guarantor, collateral and credit steps only exist when the application needs them
+const stepsFor = (v: FormValues): StepId[] => [
+  'applicant',
+  'details',
+  'requirements',
+  ...(v.guarantorRequired ? (['guarantor'] as StepId[]) : []),
+  ...(v.collateralRequired ? (['collateral'] as StepId[]) : []),
+  ...(v.creditAssessmentRequired ? (['credit'] as StepId[]) : []),
+  'review',
+]
+
+// files cannot be stored, so an uploaded deed has to be added again after a resume
+const forStorage = (v: FormValues): FormValues => ({
+  ...v,
+  collaterals: v.collaterals.map((c) => ({ ...c, document: null })),
+})
+
+// turns saved data back into form values, null when it is not usable
+function restore(raw: unknown): FormValues | null {
+  if (!raw || typeof raw !== 'object') return null
+  const r = raw as Partial<FormValues>
+  if (typeof r.applicantId !== 'string' || !Array.isArray(r.guarantors) || !Array.isArray(r.collaterals)) return null
+
+  const merged: FormValues = { ...emptyValues(), ...r }
+  if (merged.guarantors.length === 0) merged.guarantors = [newGuarantor()]
+  if (merged.collaterals.length === 0) merged.collaterals = [newCollateral()]
+  merged.collaterals = merged.collaterals.map((c) => ({ ...c, document: null }))
+
+  // new guarantors and assets must not reuse an id that was already saved
+  const used = [...merged.guarantors, ...merged.collaterals].map((x) => x.uid)
+  nextUid = Math.max(nextUid, ...used) + 1
+  return merged
+}
 
 const CARD = 'rounded-md bg-white p-6 shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -527,16 +563,30 @@ export function NewLoanApplicationPage() {
   const [params] = useSearchParams()
   const goBack = () => navigate('/loan-applications')
 
-  // /loan-applications/new?applicantId=1 opens with the applicant already chosen
+  // /loan-applications/new?applicantId=1 opens with the applicant already chosen,
+  // and picks up that applicant's saved draft when there is one
   const preselected = params.get('applicantId')
-  const [values, setValues] = useState<FormValues>(() => ({
-    ...emptyValues(),
-    applicantId: eligible.some((a) => String(a.id) === preselected) ? preselected! : '',
-  }))
+  const preselectedId = eligible.some((a) => String(a.id) === preselected) ? preselected! : ''
+  const [startDraft] = useState(() => {
+    const saved = preselectedId ? loadDraft<unknown>(preselectedId) : null
+    const restored = saved ? restore(saved.values) : null
+    return saved && restored ? { saved, values: restored } : null
+  })
+  const [values, setValues] = useState<FormValues>(
+    () => startDraft?.values ?? { ...emptyValues(), applicantId: preselectedId },
+  )
   const [errors, setErrors] = useState<Errors>({})
   const [guarantorErrors, setGuarantorErrors] = useState<ItemErrors>({})
   const [collateralErrors, setCollateralErrors] = useState<ItemErrors>({})
-  const [active, setActive] = useState(0)
+  const [active, setActive] = useState(() =>
+    startDraft ? Math.max(0, stepsFor(startDraft.values).indexOf(startDraft.saved.stepId as StepId)) : 0,
+  )
+  // true once a saved draft has been loaded, so it is not offered again
+  const [resumed, setResumed] = useState(startDraft !== null)
+  const [notice, setNotice] = useState<string | null>(
+    startDraft ? `Resumed the draft saved on ${dayjs(startDraft.saved.savedAt).format('MMM D, YYYY h:mm A')}.` : null,
+  )
+  const [cancelOpen, setCancelOpen] = useState(false)
   const [applicationNo, setApplicationNo] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [outcome, setOutcome] = useState<Outcome>('SUBMITTED')
@@ -544,15 +594,7 @@ export function NewLoanApplicationPage() {
   const [creditError, setCreditError] = useState<string>()
 
   // guarantor, collateral and credit steps only exist when the application needs them
-  const steps: StepId[] = [
-    'applicant',
-    'details',
-    'requirements',
-    ...(values.guarantorRequired ? (['guarantor'] as StepId[]) : []),
-    ...(values.collateralRequired ? (['collateral'] as StepId[]) : []),
-    ...(values.creditAssessmentRequired ? (['credit'] as StepId[]) : []),
-    'review',
-  ]
+  const steps = stepsFor(values)
   const current = steps[active]
   const isLast = active === steps.length - 1
 
@@ -579,6 +621,51 @@ export function NewLoanApplicationPage() {
     onChange: (v: string | number) => set(key, v === '' ? '' : Number(v)),
     error: errors[key],
   })
+
+    /* ---------- saved draft ---------- */
+
+  // an applicant picked by hand may already have a saved draft
+  const offered = !resumed && active === 0 && values.applicantId ? loadDraft<unknown>(values.applicantId) : null
+
+  const resumeDraft = () => {
+    if (!offered) return
+    const restored = restore(offered.values)
+    if (!restored) {
+      clearDraft(offered.applicantId)
+      setNotice('The saved draft could not be read, so it was removed.')
+      return
+    }
+    setValues(restored)
+    setErrors({})
+    setGuarantorErrors({})
+    setCollateralErrors({})
+    setAssessment(null)
+    setActive(Math.max(0, stepsFor(restored).indexOf(offered.stepId as StepId)))
+    setResumed(true)
+    setNotice(`Resumed the draft saved on ${dayjs(offered.savedAt).format('MMM D, YYYY h:mm A')}.`)
+  }
+
+  const discardOffered = () => {
+    if (!offered) return
+    clearDraft(offered.applicantId)
+    setNotice('The saved draft was discarded.')
+  }
+
+  const persist = (stepId: StepId) =>
+    // TODO: PUT /api/loan-applications/{id}/progress { currentStage: STAGE[stepId], ...fields }
+    saveDraft<FormValues>({
+      applicantId: values.applicantId,
+      stepId,
+      stepLabel: STEP_LABEL[stepId],
+      savedAt: new Date().toISOString(),
+      values: forStorage(values),
+    })
+
+  const discard = () => {
+    if (values.applicantId) clearDraft(values.applicantId)
+    setCancelOpen(false)
+    goBack()
+  }
 
   /* ---------- guarantors ---------- */
 
@@ -730,31 +817,29 @@ export function NewLoanApplicationPage() {
 
     if (isLast) {
       // TODO: POST /api/loan-applications/start { applicantId, loanOfficerId }
-      //       PUT  /api/loan-applications/{id}/progress with the loan details and approval checks
-      //       for each guarantor: POST /api/guarantors with applicationId, then its /verify endpoint
-      //       for each asset: POST /api/collaterals with applicationId, upload its file
-      //         (see the collateral-documents record), then its /verify endpoint
-      //       POST /api/loan-origination/applications/{id}/credit-assessment (see runAssessment)
-      //       POST /api/loan-applications/{id}/finalize
+      //       ... (keep the existing TODO comments)
+      clearDraft(values.applicantId)
       setOutcome('CREDIT_APPROVED')
       setApplicationNo(`LA-${Date.now()}`)
       setSubmitted(true)
       return
     }
-    // TODO: save the draft here with PUT /api/loan-applications/{id}/progress { currentStage: STAGE[current], ...fields }
+    // every step forward saves the draft, so closing the tab does not lose the work
+    persist(steps[active + 1])
     setActive(active + 1)
   }
 
   function recordRejection() {
     // TODO: the API sets the application to REJECTED when the credit assessment decision is REJECT
+    clearDraft(values.applicantId)
     setOutcome('REJECTED')
     setApplicationNo(`LA-${Date.now()}`)
     setSubmitted(true)
   }
 
   function saveAndExit() {
-    // TODO: PUT /api/loan-applications/{id}/progress with { currentStage: STAGE[current], ...fields }
-    // The draft can be picked up later with GET /api/loan-applications/latest?applicantId=
+    // the draft can be picked up later from the Loan applications page or Continue application
+    if (values.applicantId) persist(current)
     goBack()
   }
 
@@ -769,6 +854,8 @@ export function NewLoanApplicationPage() {
     setAssessment(null)
     setCreditError(undefined)
     setActive(0)
+    setResumed(false)
+    setNotice(null)
   }
 
   function handleSubmit(e: FormEvent) {
@@ -789,14 +876,16 @@ export function NewLoanApplicationPage() {
         { label: 'New application' },
       ]}
       actions={
-        <Button
-          size="xs"
-          color="red"
-          leftSection={<AppIcon name="x" />}
-          onClick={goBack}
-        >
-          Cancel Application
-        </Button>
+        submitted ? undefined : (
+          <Button
+            size="xs"
+            color="red"
+            leftSection={<AppIcon name="x" />}
+            onClick={() => (values.applicantId ? setCancelOpen(true) : goBack())}
+          >
+            Cancel Application
+          </Button>
+        )
       }
     >
       <div className={CARD}>
@@ -815,6 +904,19 @@ export function NewLoanApplicationPage() {
           ))}
         </Stepper>
 
+        {notice && !submitted && (
+          <Alert
+            color="blue"
+            variant="light"
+            withCloseButton
+            onClose={() => setNotice(null)}
+            icon={<AppIcon name="info" />}
+            mb="md"
+          >
+            <Text size="sm">{notice}</Text>
+          </Alert>
+        )}
+
         <form onSubmit={handleSubmit} noValidate>
           {/* ---------- step: applicant ---------- */}
           {!submitted && current === 'applicant' && (
@@ -830,7 +932,10 @@ export function NewLoanApplicationPage() {
                   data={applicantOptions}
                   allowDeselect={false}
                   value={values.applicantId || null}
-                  onChange={(v) => set('applicantId', v ?? '')}
+                  onChange={(v) => {
+                    set('applicantId', v ?? '')
+                    setResumed(false)
+                  }}
                   error={errors.applicantId}
                 />
                 <Select
@@ -845,6 +950,23 @@ export function NewLoanApplicationPage() {
                   error={errors.loanOfficerId}
                 />
               </SimpleGrid>
+
+              {offered && (
+                <Alert color="yellow" variant="light" title="You have a saved draft" icon={<AppIcon name="pencil" />}>
+                  <Text size="sm">
+                    A draft for this applicant was saved on {dayjs(offered.savedAt).format('MMM D, YYYY h:mm A')}. It
+                    stopped at {offered.stepLabel}.
+                  </Text>
+                  <div className="mt-2 flex gap-2">
+                    <Button type="button" size="compact-xs" onClick={resumeDraft}>
+                      Resume draft
+                    </Button>
+                    <Button type="button" size="compact-xs" variant="default" onClick={discardOffered}>
+                      Start fresh
+                    </Button>
+                  </div>
+                </Alert>
+              )}
 
               {applicant && (
                 <div className="rounded-md border border-gray-200 px-4 py-3">
@@ -1359,6 +1481,15 @@ export function NewLoanApplicationPage() {
           )}
         </form>
       </div>
+
+      <ContractConfirmDialog
+        opened={cancelOpen}
+        title="Cancel application"
+        message={`Leave without submitting? Everything entered for ${applicant?.name ?? 'this applicant'}, including any saved draft, is discarded. Use "Save draft and exit" to keep it instead.`}
+        confirmLabel="Discard and leave"
+        onClose={() => setCancelOpen(false)}
+        onConfirm={discard}
+      />
     </DashboardLayout>
   )
 }
