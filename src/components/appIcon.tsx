@@ -79,6 +79,7 @@ import {
   type LucideIcon,
   FileChartColumn,
   FileCheck2,
+  FileUser,
 } from 'lucide-react'
 
 const icons = {
@@ -160,7 +161,8 @@ const icons = {
   x: X,
  'notebook-pen': NotebookPen,
  'file-chart-column': FileChartColumn,
- 'file-check': FileCheck2
+ 'file-check': FileCheck2,
+ 'file-user': FileUser
 } satisfies Record<string, LucideIcon>
 
 type AppIconName = keyof typeof icons

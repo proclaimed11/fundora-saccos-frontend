@@ -30,6 +30,7 @@ export const navSections: NavSection[] = [
       { key: 'contracts', label: 'Contracts', icon: 'pen-line', path: '/loan-contracts', area: 'loans', page: 'contracts' },
       { key: 'disbursements', label: 'Disbursements', icon: 'banknote', path: '/loan-disbursements', area: 'loans', page: 'disbursements' },
       { key: 'loans', label: 'Loans', icon: 'hand-coins', path: '/loans', area: 'loans', page: 'loans' },
+      { key: 'collateral-guarantors', label: 'Collateral & Guarantors', icon: 'file-user', path: '/collateral-guarantors', area: 'loans', page: 'securities' },
     ],
   },
   {
