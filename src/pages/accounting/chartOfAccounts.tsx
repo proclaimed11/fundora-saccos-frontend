@@ -18,10 +18,12 @@ import {
   type Account,
   type AccountType,
 } from './accountingData'
+import { METHOD_LABEL } from '../loans/loanApplicationsData'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
 type TypeFilter = AccountType | 'ALL'
+const [paymentOnly, setPaymentOnly] = useState(false)
 type Notice = { text: string; color: 'green' | 'blue' } | null
 type DialogState = { kind: 'create' } | { kind: 'edit' | 'delete'; id: number } | null
 
@@ -135,6 +137,9 @@ function AccountDrawerBody({ account: a, onEdit, onDelete, onTransactions }: Dra
         <Field label="Account name" value={a.accountName} />
         <Field label="Type" value={ACCOUNT_TYPE[a.accountTypeName].label} />
         <Field label="Normal balance" value={ACCOUNT_TYPE[a.accountTypeName].normal} />
+        {a.accountTypeName === 'ASSET' && (
+          <Field label="Payment account" value={a.paymentMethod ? METHOD_LABEL[a.paymentMethod] : 'No'} />
+        )}
       </div>
 
       <div>
@@ -208,7 +213,9 @@ export function ChartOfAccountsPage() {
     return { type: t, count: list.length, total: list.reduce((s, a) => s + a.currentBalance, 0) }
   })
 
-  const visible = typeFilter === 'ALL' ? accounts : accounts.filter((a) => a.accountTypeName === typeFilter)
+    const visible = accounts
+    .filter((a) => typeFilter === 'ALL' || a.accountTypeName === typeFilter)
+    .filter((a) => !paymentOnly || !!a.paymentMethod)
 
   // /chart-of-accounts?account=5 opens the drawer for account 5
   const accountParam = params.get('account')
@@ -229,7 +236,10 @@ export function ChartOfAccountsPage() {
     if (dialog?.kind === 'create') {
       // TODO: POST /api/chart-of-accounts { accountCode, accountName, accountTypeName, openingBalance, currentBalance }
       const id = Math.max(0, ...accounts.map((a) => a.id)) + 1
-      setAccounts((list) => [...list, { id, ...input, currentBalance: input.openingBalance }])
+            setAccounts((list) => [
+        ...list,
+        { id, ...input, paymentMethod: input.paymentMethod ?? undefined, currentBalance: input.openingBalance },
+      ])
       setNotice({ color: 'green', text: `Account ${input.accountCode} was created.` })
     } else if (dialogAccount) {
       // TODO: PUT /api/chart-of-accounts/{id}
@@ -242,6 +252,7 @@ export function ChartOfAccountsPage() {
                 accountCode: input.accountCode,
                 accountName: input.accountName,
                 accountTypeName: input.accountTypeName,
+                 paymentMethod: input.paymentMethod ?? undefined,
             }
             : a,
         ),
@@ -293,6 +304,11 @@ export function ChartOfAccountsPage() {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="truncate text-sm font-medium text-gray-800">{a.accountCode}</span>
+            {a.paymentMethod && (
+              <Badge variant="light" color="teal" radius="sm" size="xs">
+                {METHOD_LABEL[a.paymentMethod]}
+              </Badge>
+            )}
             {isSystemAccount(a) && (
               <Badge variant="outline" color="gray" radius="sm" size="xs">
                 System
@@ -433,11 +449,29 @@ export function ChartOfAccountsPage() {
               {filterLabel} · showing {visible.length} of {accounts.length} accounts · 5 system accounts are needed
               for automatic posting and cannot be deleted
             </Text>
-            {typeFilter !== 'ALL' && (
-              <Button size="compact-xs" variant="subtle" color="gray" onClick={() => setTypeFilter('ALL')}>
-                Clear filter
+            <div className="flex items-center gap-1">
+              <Button
+                size="compact-xs"
+                variant={paymentOnly ? 'filled' : 'default'}
+                leftSection={<AppIcon name="landmark" size={12} />}
+                onClick={() => setPaymentOnly((v) => !v)}
+              >
+                Payment accounts only
               </Button>
-            )}
+              {(typeFilter !== 'ALL' || paymentOnly) && (
+                <Button
+                  size="compact-xs"
+                  variant="subtle"
+                  color="gray"
+                  onClick={() => {
+                    setTypeFilter('ALL')
+                    setPaymentOnly(false)
+                  }}
+                >
+                  Clear filter
+                </Button>
+              )}
+            </div>
           </div>
 
           <CustomTable<Account>

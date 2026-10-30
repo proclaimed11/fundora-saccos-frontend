@@ -11,6 +11,7 @@ import {
   type Account,
   type AccountType,
 } from './accountingData'
+import { METHOD_LABEL, type PaymentMethod } from '../loans/loanApplicationsData'
 
 export type AccountInput = {
   accountNo: number
@@ -18,6 +19,7 @@ export type AccountInput = {
   accountName: string
   accountTypeName: AccountType
   openingBalance: number
+  paymentMethod: PaymentMethod | null
 }
 
 type Props = {
@@ -36,6 +38,7 @@ type Errors = Partial<Record<'no' | 'code' | 'name' | 'type', string>>
 
 const CODE = /^[A-Z0-9_]+$/
 
+const METHOD_OPTIONS = (Object.keys(METHOD_LABEL) as PaymentMethod[]).map((k) => ({ value: k, label: METHOD_LABEL[k] }))
 const TYPE_OPTIONS = ACCOUNT_TYPES.map((t) => ({ value: t, label: ACCOUNT_TYPE[t].label }))
 
 export function AccountDialog({ opened, account, existingCodes, existingNumbers, onClose, onSubmit }: Props) {
@@ -47,6 +50,7 @@ export function AccountDialog({ opened, account, existingCodes, existingNumbers,
   const [name, setName] = useState('')
   const [type, setType] = useState<AccountType | null>(null)
   const [opening, setOpening] = useState<number | ''>(0)
+    const [method, setMethod] = useState<PaymentMethod | null>(null)
   const [errors, setErrors] = useState<Errors>({})
 
   // start from the account being edited, or from an empty form
@@ -57,6 +61,7 @@ export function AccountDialog({ opened, account, existingCodes, existingNumbers,
     setName(account?.accountName ?? '')
     setType(account?.accountTypeName ?? null)
     setOpening(account?.openingBalance ?? 0)
+        setMethod(account?.paymentMethod ?? null)
     setErrors({})
   }, [opened, account])
 
@@ -99,6 +104,7 @@ export function AccountDialog({ opened, account, existingCodes, existingNumbers,
       accountName: name.trim(),
       accountTypeName: type,
       openingBalance: opening === '' ? 0 : opening,
+      paymentMethod: type === 'ASSET' ? method : null,
     })
   }
 
@@ -174,6 +180,19 @@ export function AccountDialog({ opened, account, existingCodes, existingNumbers,
             error={errors.name}
           />
         </SimpleGrid>
+
+                {type === 'ASSET' && (
+          <Select
+            label="Payment account (optional)"
+            description="Choose this if the company pays from or receives money into this account. It then appears in the payment and disbursement forms."
+            placeholder="Not a payment account"
+            size="sm"
+            clearable
+            data={METHOD_OPTIONS}
+            value={method}
+            onChange={(v) => setMethod(v as PaymentMethod | null)}
+          />
+        )}
 
         <NumberInput
           label="Opening balance"

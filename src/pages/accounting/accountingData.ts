@@ -1,5 +1,6 @@
 // field names follow the API: GET /api/chart-of-accounts
 import { LOANS, SAMPLE_DISBURSEMENTS, SAMPLE_PAYMENTS } from '../loans/loanApplicationsData'
+import type { PaymentMethod } from '../loans/loanApplicationsData'
 import { SAMPLE_WRITE_OFFS } from '../collections/collectionsData'
 
 export type AccountType = 'ASSET' | 'LIABILITY' | 'EQUITY' | 'INCOME' | 'EXPENSE'
@@ -12,6 +13,7 @@ export type Account = {
   accountTypeName: AccountType
   openingBalance: number
   currentBalance: number
+  paymentMethod?: PaymentMethod
 }
 
 export const ACCOUNT_TYPE: Record<
@@ -82,10 +84,10 @@ export function deleteBlockReason(a: Account): string | null {
 // SAMPLE ONLY: replaced by GET /api/chart-of-accounts later.
 // The cash and bank balances match the company accounts on the Disbursements page.
 export const SAMPLE_ACCOUNTS: Account[] = [
-  { id: 1, accountNo: 1010, accountCode: 'CASH', accountName: 'Cash on hand', accountTypeName: 'ASSET', openingBalance: 5000000, currentBalance: 6000000 },
-  { id: 2, accountNo: 1020, accountCode: 'BANK_CRDB', accountName: 'CRDB Bank · 0150 xxxx 4412', accountTypeName: 'ASSET', openingBalance: 45000000, currentBalance: 48000000 },
-  { id: 3, accountNo: 1030, accountCode: 'BANK_NMB', accountName: 'NMB Bank · 2041 xxxx 9087', accountTypeName: 'ASSET', openingBalance: 12500000, currentBalance: 12500000 },
-  { id: 4, accountNo: 1040, accountCode: 'MPESA', accountName: 'M-Pesa business · 0754 xxx 100', accountTypeName: 'ASSET', openingBalance: 8000000, currentBalance: 9000000 },
+  { id: 1, accountNo: 1010, accountCode: 'CASH', accountName: 'Cash on hand', accountTypeName: 'ASSET', openingBalance: 5000000, currentBalance: 6000000, paymentMethod: 'CASH' },
+  { id: 2, accountNo: 1020, accountCode: 'BANK_CRDB', accountName: 'CRDB Bank · 0150 xxxx 4412', accountTypeName: 'ASSET', openingBalance: 45000000, currentBalance: 48000000, paymentMethod: 'BANK_TRANSFER' },
+  { id: 3, accountNo: 1030, accountCode: 'BANK_NMB', accountName: 'NMB Bank · 2041 xxxx 9087', accountTypeName: 'ASSET', openingBalance: 12500000, currentBalance: 12500000, paymentMethod: 'BANK_TRANSFER' },
+  { id: 4, accountNo: 1040, accountCode: 'MPESA', accountName: 'M-Pesa business · 0754 xxx 100', accountTypeName: 'ASSET', openingBalance: 8000000, currentBalance: 9000000, paymentMethod: 'MOBILE_MONEY' },
   { id: 5, accountNo: 1200, accountCode: 'LOAN_RECEIVABLE', accountName: 'Loan Receivable', accountTypeName: 'ASSET', openingBalance: 20000000, currentBalance: 24300000 },
   { id: 6, accountNo: 1900, accountCode: 'SUSPENSE', accountName: 'Suspense Account', accountTypeName: 'ASSET', openingBalance: 0, currentBalance: 0 },
   { id: 7, accountNo: 2100, accountCode: 'BANK_LOAN_PAYABLE', accountName: 'Bank Loan Payable', accountTypeName: 'LIABILITY', openingBalance: 10000000, currentBalance: 10000000 },
