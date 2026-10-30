@@ -8,6 +8,7 @@ export type EventType =
   | 'CONTRACT_SENT'
   | 'PASSWORD_RESET'
   | 'TWO_FACTOR'
+  | 'CUSTOM'
 
 export type AppNotification = {
   id: number
@@ -39,6 +40,7 @@ export const EVENT: Record<EventType, { label: string; icon: string }> = {
   CONTRACT_SENT: { label: 'Contract sent', icon: 'file-text' },
   PASSWORD_RESET: { label: 'Password reset code', icon: 'key-round' },
   TWO_FACTOR: { label: 'Sign-in code', icon: 'lock-keyhole' },
+  CUSTOM: { label: 'Custom message', icon: 'send' },
 }
 
 // SAMPLE ONLY: replaced by GET /api/notifications later

@@ -17,6 +17,7 @@ import {
   type EventType,
   type NotificationChannel,
 } from './notificationsData'
+import { SendNotificationDialog, type SendNotificationInput } from './sendNotificationDialog'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 const WHEN = 'MMM D, YYYY h:mm A'
@@ -130,7 +131,7 @@ function NotificationDrawerBody({ row: r, onOpenLoan, onOpenApplicant }: DrawerP
 export function NotificationsPage() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
-
+  const [sendOpen, setSendOpen] = useState(false)
   // UI only: read marks change for this session, nothing is saved yet
   const [items, setItems] = useState<AppNotification[]>(SAMPLE_NOTIFICATIONS)
   const [tab, setTab] = useState<TabKey>('all')
@@ -187,6 +188,29 @@ export function NotificationsPage() {
     setItems((list) => list.map((n) => ({ ...n, status: 'READ' })))
     setNotice({ color: 'green', text: `${unread.length} ${unread.length === 1 ? 'notification' : 'notifications'} marked as read.` })
   }
+
+  const send = (input: SendNotificationInput) => {
+  // TODO: POST /api/notifications { applicantId, loanId, eventType: 'CUSTOM', channel, recipient, message }
+  //       The API saves it as SENT. There is no live email or SMS gateway yet.
+  const id = Math.max(0, ...items.map((n) => n.id)) + 1
+  setItems((list) => [
+    {
+      id,
+      applicantId: input.applicantId,
+      loanId: input.loanId,
+      eventType: 'CUSTOM',
+      channel: input.channel,
+      recipient: input.recipient,
+      message: input.message,
+      status: 'SENT',
+      sentAt: dayjs().format('YYYY-MM-DDTHH:mm:ss'),
+    },
+    ...list,
+  ])
+  setNotice({ color: 'green', text: `Notification sent to ${input.recipient}.` })
+  setTab('all')
+  setSendOpen(false)
+}
 
   /* ---------- columns ---------- */
 
@@ -302,17 +326,25 @@ export function NotificationsPage() {
       subtitle="Emails and messages the system has sent to borrowers and staff"
       breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Administration' }, { label: 'Notifications' }]}
       actions={
-        <Button
-          size="xs"
-          variant="default"
-          disabled={unread.length === 0}
-          leftSection={<AppIcon name="check" />}
-          onClick={markAllRead}
-        >
-          Mark all as read
-        </Button>
+        <>
+          <Button size="xs" leftSection={<AppIcon name="send" />} onClick={() => setSendOpen(true)}>
+            Send notification
+          </Button>
+          <Button
+            size="xs"
+            variant="default"
+            disabled={unread.length === 0}
+            leftSection={<AppIcon name="check" />}
+            onClick={markAllRead}
+          >
+            Mark all as read
+          </Button>
+        </>
       }
     >
+
+      <SendNotificationDialog opened={sendOpen} onClose={() => setSendOpen(false)} onSubmit={send} />
+        
       <div className="space-y-4">
         {notice && (
           <Alert

@@ -19,11 +19,12 @@ import {
   type AccountType,
 } from './accountingData'
 import { METHOD_LABEL } from '../loans/loanApplicationsData'
+import { usePageAccess } from '../auth/usePageAccess'
+import { Can } from '../auth/requirePermission'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
 type TypeFilter = AccountType | 'ALL'
-const [paymentOnly, setPaymentOnly] = useState(false)
 type Notice = { text: string; color: 'green' | 'blue' } | null
 type DialogState = { kind: 'create' } | { kind: 'edit' | 'delete'; id: number } | null
 
@@ -100,6 +101,7 @@ type DrawerProps = {
 function AccountDrawerBody({ account: a, onEdit, onDelete, onTransactions }: DrawerProps) {
   const system = isSystemAccount(a)
   const blocked = deleteBlockReason(a)
+  // const { canEdit, canDelete } = usePageAccess('accounting', 'chart-of-accounts')
   const change = a.currentBalance - a.openingBalance
   const usage = SYSTEM_USAGE[a.accountCode]
 
@@ -168,22 +170,15 @@ function AccountDrawerBody({ account: a, onEdit, onDelete, onTransactions }: Dra
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Button size="xs" leftSection={<AppIcon name="pencil" />} onClick={() => onEdit(a)}>
-          Edit
-        </Button>
+      <Can area="accounting" page="chart-of-accounts" action="edit">
+        <Button size="xs" leftSection={<AppIcon name="pencil" />} onClick={() => onEdit(a)}>Edit</Button>
+      </Can>
         <Button size="xs" variant="default" leftSection={<AppIcon name="book" />} onClick={() => onTransactions(a)}>
           View transactions
         </Button>
-        <Button
-          size="xs"
-          color="red"
-          variant="light"
-          disabled={!!blocked}
-          leftSection={<AppIcon name="trash" />}
-          onClick={() => onDelete(a)}
-        >
-          Delete
-        </Button>
+        <Can area="accounting" page="chart-of-accounts" action="delete">
+          <Button size="xs" color="red" variant="light" disabled={!!blocked} leftSection={<AppIcon name="trash" />} onClick={() => onDelete(a)}>Delete</Button>
+        </Can>
       </div>
     </div>
   )
@@ -200,6 +195,8 @@ export function ChartOfAccountsPage() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('ALL')
   const [dialog, setDialog] = useState<DialogState>(null)
   const [notice, setNotice] = useState<Notice>(null)
+  const [paymentOnly, setPaymentOnly] = useState(false)
+  const { canCreate, canEdit, canDelete } = usePageAccess('accounting', 'chart-of-accounts')
 
   // success banners fade away on their own
   useEffect(() => {
@@ -377,26 +374,29 @@ export function ChartOfAccountsPage() {
                 </ActionIcon>
               </Menu.Target>
               <Menu.Dropdown>
-                <Menu.Item fw={500} leftSection={<AppIcon name="pencil" />} onClick={() => setDialog({ kind: 'edit', id: a.id })}>
-                  Edit account
-                </Menu.Item>
-                <Menu.Divider />
+                {canEdit && (
+                  <>
+                    <Menu.Item fw={500} leftSection={<AppIcon name="pencil" />} onClick={() => setDialog({ kind: 'edit', id: a.id })}>
+                      Edit account
+                    </Menu.Item>
+                    <Menu.Divider />
+                  </>
+                )}
                 <Menu.Item leftSection={<AppIcon name="eye" />} onClick={() => openView(a.id)}>
                   View details
                 </Menu.Item>
                 <Menu.Item leftSection={<AppIcon name="book" />} onClick={() => transactions(a)}>
                   View transactions
                 </Menu.Item>
-                <Menu.Divider />
-                <Menu.Item
-                  color="red"
-                  disabled={!!blocked}
-                  leftSection={<AppIcon name="trash" />}
-                  onClick={() => setDialog({ kind: 'delete', id: a.id })}
-                >
-                  {blocked ? 'Cannot delete' : 'Delete account'}
-                </Menu.Item>
-              </Menu.Dropdown>
+                {canDelete && (
+                    <>
+                      <Menu.Divider />
+                      <Menu.Item color="red" disabled={!!blocked} leftSection={<AppIcon name="trash" />} onClick={() => setDialog({ kind: 'delete', id: a.id })}>
+                        {blocked ? 'Cannot delete' : 'Delete account'}
+                      </Menu.Item>
+                    </>
+                  )}
+                </Menu.Dropdown>
             </Menu>
           </div>
         )
@@ -410,9 +410,11 @@ export function ChartOfAccountsPage() {
       subtitle="The master list of accounts used for double-entry posting"
       breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Accounting' }, { label: 'Chart of Accounts' }]}
       actions={
-        <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setDialog({ kind: 'create' })}>
-          New account
-        </Button>
+        canCreate ? (
+          <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setDialog({ kind: 'create' })}>
+            New account
+          </Button>
+        ) : undefined
       }
     >
       <div className="space-y-4">
