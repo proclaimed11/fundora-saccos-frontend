@@ -30,6 +30,8 @@ import {
   type RecoveryStatus,
   type WriteOffRecord,
 } from './collectionsData'
+import { DocumentViewer, type ViewableDocument } from '../../components/documentViewer'
+import { allWriteOffs, nextWriteOffId, saveWriteOff, writeOffFor } from './writeOffStore'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -108,7 +110,7 @@ function OverdueCell({ r }: { r: RecoveryRow }) {
   )
 }
 
-function Timeline({ list }: { list: RecoveryAction[] }) {
+function Timeline({ list, onView }: { list: RecoveryAction[]; onView: (a: RecoveryAction) => void }) {
   if (list.length === 0) {
     return (
       <div className="rounded-md border border-dashed border-gray-200 px-4 py-5 text-center text-xs text-gray-500">
@@ -137,7 +139,7 @@ function Timeline({ list }: { list: RecoveryAction[] }) {
               <div className="mt-1.5 flex items-center gap-2 rounded-md border border-gray-200 px-2.5 py-1.5">
                 <AppIcon name="file-text" className="text-gray-400" />
                 <span className="min-w-0 flex-1 truncate text-xs text-gray-600">{a.documentName}</span>
-                <Button size="compact-xs" variant="subtle" color="brand">
+                <Button size="compact-xs" variant="subtle" color="brand" onClick={() => onView(a)}>
                   View
                 </Button>
               </div>
@@ -170,6 +172,7 @@ type DrawerProps = {
   onOpenBorrower: (r: RecoveryRow) => void
   onSourceCase: (r: RecoveryRow) => void
   onPayments: () => void
+  onViewDocument: (a: RecoveryAction) => void
 }
 
 function CaseDrawerBody({
@@ -181,6 +184,7 @@ function CaseDrawerBody({
   onOpenBorrower,
   onSourceCase,
   onPayments,
+  onViewDocument
 }: DrawerProps) {
   const isOpen = r.status === 'OPEN'
   const settlement = r.actions.filter((a) => a.type === 'NEGOTIATED_SETTLEMENT').reduce((s, a) => s + a.amount, 0)
@@ -286,7 +290,7 @@ function CaseDrawerBody({
       <div>
         <SectionTitle>{`Recovery actions (${r.actions.length})`}</SectionTitle>
         <div className="mt-3">
-          <Timeline list={r.actions} />
+          <Timeline list={r.actions} onView={onViewDocument} />
         </div>
       </div>
 
@@ -327,12 +331,41 @@ export function RecoveryCasesPage() {
   const [params, setParams] = useSearchParams()
 
   // UI only: changes made in this session, nothing is saved yet
-  const [cases, setCases] = useState<RecoveryCase[]>(SAMPLE_RECOVERY_CASES)
+  const [cases, setCases] = useState<RecoveryCase[]>(() =>
+  SAMPLE_RECOVERY_CASES.map((c) => {
+    const w = writeOffFor(c.loanId)
+    return w && c.status === 'OPEN'
+      ? { ...c, status: 'CLOSED' as const, closed: w.date, closeRemarks: 'Loan written off' }
+      : c
+  }),
+)
   const [actions, setActions] = useState<RecoveryAction[]>(SAMPLE_RECOVERY_ACTIONS)
-  const [writeOffs, setWriteOffs] = useState<Record<number, WriteOffRecord>>({})
+  const [writeOffs, setWriteOffs] = useState<Record<number, WriteOffRecord>>(() =>
+  Object.fromEntries(
+    allWriteOffs()
+      .filter((w) => w.loanId !== null)
+      .map((w) => [
+        w.loanId as number,
+        { loanId: w.loanId as number, amount: w.amount, reason: w.reason, approvedBy: w.approvedBy, date: w.date },
+      ]),
+  ),
+)
   const [tab, setTab] = useState<TabKey>('open')
   const [dialog, setDialog] = useState<DialogState>(null)
   const [notice, setNotice] = useState<Notice>(null)
+  const [viewing, setViewing] = useState<ViewableDocument | null>(null)
+  
+
+const viewDocument = (a: RecoveryAction) => {
+  if (!a.documentName) return
+  setViewing({
+    title: RECOVERY_ACTION_LABEL[a.type],
+    fileName: a.documentName,
+    subtitle: `Logged by ${a.performedBy} on ${dayjs(a.date).format('MMM D, YYYY')}`,
+    notes: a.description,
+    file: a.file,
+  })
+}
 
   const today = dayjs().format('YYYY-MM-DD')
   const nextId = (list: { id: number }[]) => Math.max(0, ...list.map((x) => x.id)) + 1
@@ -416,6 +449,7 @@ export function RecoveryCasesPage() {
         description: input.description,
         amount: input.amount,
         documentName: input.documentName,
+        file: input.file,
         performedBy: CURRENT_USER,
         date: today,
       },
@@ -440,11 +474,40 @@ export function RecoveryCasesPage() {
     // TODO: POST /api/collections-workflow/loans/{loanId}/write-off { reason, approvedBy }
     //       needs Loan.isNpl and a loan that is not already written off.
     //       The API zeroes the balances and closes every open case on the loan.
-    const amount = dialogCase.loan.outstanding
+
+    const loan = dialogCase.loan
+    const amount = loan.outstanding
+
+    // Persist to the shared write-off store (visible on other pages)
+    saveWriteOff({
+      id: nextWriteOffId(),
+      loanId: loan.id,
+      applicantId: loan.applicantId,
+      loanNo: loan.loanNo,
+      borrower: loan.applicantName,
+      principal: loan.outstandingPrincipal,
+      interest: loan.outstandingInterest,
+      penalty: loan.outstandingPenalty,
+      amount: loan.outstanding,
+      overdueDays: loan.overdueDays,
+      classification: loan.classification,
+      reason: input.reason,
+      approvedBy: input.approvedBy,
+      date: today,
+    })
+
+    // Keep the local UI state in sync for this page
     setWriteOffs((w) => ({
       ...w,
-      [dialogCase.loanId]: { loanId: dialogCase.loanId, amount, reason: input.reason, approvedBy: input.approvedBy, date: today },
+      [dialogCase.loanId]: {
+        loanId: dialogCase.loanId,
+        amount,
+        reason: input.reason,
+        approvedBy: input.approvedBy,
+        date: today,
+      },
     }))
+
     setCases((list) =>
       list.map((c) =>
         c.loanId === dialogCase.loanId && c.status === 'OPEN'
@@ -452,6 +515,7 @@ export function RecoveryCasesPage() {
           : c,
       ),
     )
+
     setNotice({
       color: 'green',
       text: `${dialogCase.loanNo} was written off for ${formatTzs(amount)}. The recovery case is now closed.`,
@@ -743,6 +807,7 @@ export function RecoveryCasesPage() {
             onOpenBorrower={(r) => navigate(`/applicants/${r.loan.applicantId}`)}
             onSourceCase={(r) => navigate(`/collection-cases?case=${r.sourceCaseId}`)}
             onPayments={() => navigate('/payments')}
+            onViewDocument={viewDocument}
           />
         )}
       </Drawer>
@@ -771,6 +836,8 @@ export function RecoveryCasesPage() {
         onClose={() => setDialog(null)}
         onSubmit={writeOff}
       />
+
+      <DocumentViewer document={viewing} onClose={() => setViewing(null)} />
     </DashboardLayout>
   )
 }

@@ -144,6 +144,8 @@ export type RecoveryAction = {
   description: string
   amount: number // 0 when the action has no amount
   documentName: string | null // uploaded file name
+  /** the uploaded file, only kept for this session */
+  file?: File | null
   performedBy: string
   date: string // ISO date
 }

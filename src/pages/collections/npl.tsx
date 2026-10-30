@@ -14,9 +14,10 @@ import {
   LOAN_VIEWS,
   SAMPLE_CASES,
   SAMPLE_RECOVERY_CASES,
-  SAMPLE_WRITE_OFFS,
+  //SAMPLE_WRITE_OFFS,
   type WriteOffEntry,
 } from './collectionsData'
+import { allWriteOffs, saveWriteOff } from './writeOffStore'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -154,6 +155,7 @@ function WriteOffDrawerBody({ entry: e, onOpenLoan, onOpenBorrower }: DrawerProp
   const journal: JournalLine[] = [
     { side: 'DEBIT', code: 'BAD_DEBT_EXPENSE', name: 'Bad debt expense', amount: e.amount },
     { side: 'CREDIT', code: 'LOAN_RECEIVABLE', name: 'Loan receivable', amount: e.amount },
+    { side: 'DEBIT', code: 'WRITE_OFF_EXPENSE', name: 'Write-off expense', amount: e.amount },
   ]
 
   return (
@@ -226,7 +228,7 @@ export function NplPage() {
   const [params, setParams] = useSearchParams()
 
   // UI only: write-offs made in this session, nothing is saved yet
-  const [written, setWritten] = useState<WriteOffEntry[]>(SAMPLE_WRITE_OFFS)
+ const [written, setWritten] = useState<WriteOffEntry[]>(allWriteOffs)
   const [tab, setTab] = useState<TabKey>('loans')
   const [classFilter, setClassFilter] = useState<ClassFilter>('RISK')
   const [nplOnly, setNplOnly] = useState(false)
@@ -349,6 +351,7 @@ export function NplPage() {
       date: today,
     }
     setWritten((list) => [entry, ...list])
+    saveWriteOff(entry)
     setNotice({
       color: 'green',
       text: `${dialogLoan.loanNo} was written off for ${formatTzs(dialogLoan.outstanding)}. Its open cases are closed.`,

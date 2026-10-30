@@ -364,6 +364,7 @@ export type RecoveryActionInput = {
   description: string
   amount: number
   documentName: string | null
+  file: File | null
 }
 
 type RecoveryActionProps = {
@@ -411,6 +412,7 @@ export function LogRecoveryActionDialog({ opened, caseNo, borrower, onClose, onS
       description: description.trim(),
       amount: amount === '' ? 0 : amount,
       documentName: document?.name ?? null,
+      file: document,
     })
     reset()
   }
@@ -531,6 +533,7 @@ export function WriteOffDialog({ opened, loan, onClose, onSubmit }: WriteOffProp
   const journal: JournalLine[] = [
     { side: 'DEBIT', code: 'BAD_DEBT_EXPENSE', name: 'Bad debt expense', amount: loan.outstanding },
     { side: 'CREDIT', code: 'LOAN_RECEIVABLE', name: 'Loan receivable', amount: loan.outstanding },
+    { side: 'DEBIT', code: 'WRITE_OFF_EXPENSE', name: 'Write-off expense', amount: loan.outstanding },
   ]
 
   const reset = () => {

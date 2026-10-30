@@ -6,16 +6,20 @@ import { ActionIcon, Alert, Badge, Button, Drawer, Menu, SegmentedControl, Text 
 import { DashboardLayout } from '../../components/layout/dashboardLayout'
 import { StatWidget } from '../../components/statsWidgets'
 import { CustomTable, type CustomTableColumn } from '../../components/customTable/customTable'
+import { DocumentViewer, type ViewableDocument } from '../../components/documentViewer'
 import { formatTzs } from '../../utils/format'
 import { CURRENT_USER } from './disbursementDialog'
 import { RemarksDialog } from '../collections/collectionDialogs'
 import { useRoles } from '../administration/roles/rolesContext'
 import { STATUS as APPLICATION_STATUS } from './loanApplicationsData'
+import { CollateralDocumentDialog } from './collateralDocumentDialog'
+import { COLLATERAL_CHECKS, GUARANTOR_CHECKS, VerifyDialog } from './verifyDialogs'
 import {
   ASSET_ROWS,
   GUARANTOR_ROWS,
   MAX_GUARANTOR_EXPOSURE,
   type AssetRow,
+  type Guaranteed,
   type GuarantorRow,
 } from './securitiesData'
 
@@ -23,13 +27,41 @@ const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
 type TabKey = 'assets' | 'guarantors'
 type AssetStatus = 'PENDING' | 'HELD' | 'RELEASABLE' | 'RELEASED'
+type LiabilityStatus = 'ACTIVE' | 'RELEASABLE' | 'RELEASED'
 type Release = { date: string; by: string; remarks: string }
-type AssetView = AssetRow & { status: AssetStatus; release: Release | null }
+
+type AssetView = AssetRow & {
+  status: AssetStatus
+  release: Release | null
+  /** the uploaded file name, from the sample data or from this session */
+  documentName: string | null
+  /** the real file, only for a document uploaded in this session */
+  documentFile: File | null
+}
+
+type GuaranteeView = Guaranteed & { key: string; liability: LiabilityStatus; release: Release | null }
+
+type GuarantorView = Omit<GuarantorRow, 'guaranteed'> & {
+  guaranteed: GuaranteeView[]
+  /** live guarantees that are not verified yet */
+  unverified: number
+  /** liabilities that can be released now */
+  releasable: number
+}
+
+type DialogKind = 'release' | 'verify' | 'document' | 'verify-guarantee' | 'release-liability'
+type DialogState = { kind: DialogKind; id: string } | null
 type Notice = { text: string; color: 'green' | 'blue' } | null
 
 const ASSET_STATUS: Record<AssetStatus, { label: string; color: string }> = {
   PENDING: { label: 'Not verified', color: 'gray' },
   HELD: { label: 'Held as security', color: 'blue' },
+  RELEASABLE: { label: 'Can be released', color: 'yellow' },
+  RELEASED: { label: 'Released', color: 'teal' },
+}
+
+const LIABILITY: Record<LiabilityStatus, { label: string; color: string }> = {
+  ACTIVE: { label: 'Active liability', color: 'blue' },
   RELEASABLE: { label: 'Can be released', color: 'yellow' },
   RELEASED: { label: 'Released', color: 'teal' },
 }
@@ -75,13 +107,25 @@ function StatusBadge({ status }: { status: AssetStatus }) {
 
 type AssetDrawerProps = {
   row: AssetView
-  canRelease: boolean
+  canEdit: boolean
   onRelease: (r: AssetView) => void
+  onVerify: (r: AssetView) => void
+  onDocument: (r: AssetView) => void
+  onViewDocument: (r: AssetView) => void
   onOpenApplication: (r: AssetView) => void
   onOpenLoan: (r: AssetView) => void
 }
 
-function AssetDrawerBody({ row: r, canRelease, onRelease, onOpenApplication, onOpenLoan }: AssetDrawerProps) {
+function AssetDrawerBody({
+  row: r,
+  canEdit,
+  onRelease,
+  onVerify,
+  onDocument,
+  onViewDocument,
+  onOpenApplication,
+  onOpenLoan,
+}: AssetDrawerProps) {
   const share = r.value > 0 ? Math.round((r.loanAmount / r.value) * 100) : 0
   const tiles = [
     { label: 'Estimated value', value: formatTzs(r.value) },
@@ -106,12 +150,10 @@ function AssetDrawerBody({ row: r, canRelease, onRelease, onOpenApplication, onO
             the borrower.
           </p>
           <div className="mt-3">
-            <Button size="xs" disabled={!canRelease} leftSection={<AppIcon name="undo-2" />} onClick={() => onRelease(r)}>
+            <Button size="xs" disabled={!canEdit} leftSection={<AppIcon name="undo-2" />} onClick={() => onRelease(r)}>
               Release collateral
             </Button>
-            {!canRelease && (
-              <p className="mt-2 text-xs text-gray-500">Your role cannot release collateral.</p>
-            )}
+            {!canEdit && <p className="mt-2 text-xs text-gray-500">Your role cannot release collateral.</p>}
           </div>
         </div>
       )}
@@ -126,7 +168,12 @@ function AssetDrawerBody({ row: r, canRelease, onRelease, onOpenApplication, onO
 
       {r.status === 'PENDING' && (
         <Alert color="yellow" variant="light" icon={<AppIcon name="triangle-alert" />}>
-          <Text size="sm">Ownership and existing pledges have not been verified yet. Verify it on the application.</Text>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Text size="sm">Ownership and existing pledges have not been verified yet.</Text>
+            <Button size="compact-xs" disabled={!canEdit} onClick={() => onVerify(r)}>
+              Verify now
+            </Button>
+          </div>
         </Alert>
       )}
 
@@ -150,12 +197,25 @@ function AssetDrawerBody({ row: r, canRelease, onRelease, onOpenApplication, onO
       </div>
 
       <div>
-        <SectionTitle>Document</SectionTitle>
-        {r.document ? (
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <SectionTitle>Document</SectionTitle>
+          {r.status !== 'RELEASED' && (
+            <Button
+              size="compact-xs"
+              variant="default"
+              disabled={!canEdit}
+              leftSection={<AppIcon name="upload" />}
+              onClick={() => onDocument(r)}
+            >
+              {r.documentName ? 'Replace' : 'Upload'}
+            </Button>
+          )}
+        </div>
+        {r.documentName ? (
           <div className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
             <AppIcon name="file-text" className="text-gray-400" size={20} />
-            <div className="min-w-0 flex-1 truncate text-sm text-gray-800">{r.document}</div>
-            <Button size="compact-xs" variant="subtle" color="brand">
+            <div className="min-w-0 flex-1 truncate text-sm text-gray-800">{r.documentName}</div>
+            <Button size="compact-xs" variant="subtle" color="brand" onClick={() => onViewDocument(r)}>
               View
             </Button>
           </div>
@@ -182,7 +242,15 @@ function AssetDrawerBody({ row: r, canRelease, onRelease, onOpenApplication, onO
 
 /* ---------- guarantor drawer ---------- */
 
-function GuarantorDrawerBody({ row: g, onOpenApplication }: { row: GuarantorRow; onOpenApplication: (id: number) => void }) {
+type GuarantorDrawerProps = {
+  row: GuarantorView
+  canEdit: boolean
+  onVerify: (key: string) => void
+  onRelease: (key: string) => void
+  onOpenApplication: (id: number) => void
+}
+
+function GuarantorDrawerBody({ row: g, canEdit, onVerify, onRelease, onOpenApplication }: GuarantorDrawerProps) {
   const tiles = [
     { label: 'Live exposure', value: formatTzs(g.exposure) },
     { label: 'Live guarantees', value: String(g.liveCount) },
@@ -221,29 +289,56 @@ function GuarantorDrawerBody({ row: g, onOpenApplication }: { row: GuarantorRow;
       <div>
         <SectionTitle>{`Guaranteed loans (${g.guaranteed.length})`}</SectionTitle>
         <p className="mb-2 text-xs text-gray-500">
-          Only loans that are still running count toward the exposure. Rejected, cancelled and fully repaid ones do not.
+          Only loans that are still running count toward the exposure. Once a loan is repaid or its application is
+          stopped, the liability can be released.
         </p>
         <ul className="space-y-2">
           {g.guaranteed.map((x) => (
-            <li key={x.applicationId} className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-gray-800">{x.borrower}</div>
-                <div className="truncate text-xs text-gray-500">
-                  {x.applicationNo}
-                  {x.loanNo ? ` · ${x.loanNo}` : ''} · {x.relationship} · {formatTzs(x.amount)}
+            <li key={x.key} className="rounded-md border border-gray-200 px-3 py-2.5">
+              <div className="flex items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-gray-800">{x.borrower}</div>
+                  <div className="truncate text-xs text-gray-500">
+                    {x.applicationNo}
+                    {x.loanNo ? ` · ${x.loanNo}` : ''} · {x.relationship} · {formatTzs(x.amount)}
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-col items-end gap-1">
                 <Badge variant="light" color={APPLICATION_STATUS[x.status].color} radius="sm" size="sm">
                   {APPLICATION_STATUS[x.status].label}
                 </Badge>
-                <Text size="xs" c={x.live ? undefined : 'dimmed'}>
-                  {x.live ? 'Counts' : 'Not counted'}
-                </Text>
+                <ActionIcon variant="subtle" color="gray" size="sm" aria-label={`Open ${x.applicationNo}`} onClick={() => onOpenApplication(x.applicationId)}>
+                  <AppIcon name="external-link" />
+                </ActionIcon>
               </div>
-              <ActionIcon variant="subtle" color="gray" size="sm" aria-label={`Open ${x.applicationNo}`} onClick={() => onOpenApplication(x.applicationId)}>
-                <AppIcon name="external-link" />
-              </ActionIcon>
+
+              <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-2">
+                <Badge variant="light" color={LIABILITY[x.liability].color} radius="sm" size="sm">
+                  {LIABILITY[x.liability].label}
+                </Badge>
+                {x.live && (
+                  <Badge variant="outline" color={x.verified ? 'green' : 'gray'} radius="sm" size="sm">
+                    {x.verified ? 'Verified' : 'Not verified'}
+                  </Badge>
+                )}
+                <div className="ml-auto flex gap-2">
+                  {x.live && !x.verified && (
+                    <Button size="compact-xs" variant="light" disabled={!canEdit} onClick={() => onVerify(x.key)}>
+                      Verify
+                    </Button>
+                  )}
+                  {x.liability === 'RELEASABLE' && (
+                    <Button size="compact-xs" disabled={!canEdit} leftSection={<AppIcon name="undo-2" />} onClick={() => onRelease(x.key)}>
+                      Release liability
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {x.release && (
+                <Text size="xs" c="dimmed" mt={6}>
+                  Released on {dayjs(x.release.date).format('MMM D, YYYY')} by {x.release.by}. "{x.release.remarks}"
+                </Text>
+              )}
             </li>
           ))}
         </ul>
@@ -258,12 +353,18 @@ export function SecuritiesPage() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const { can } = useRoles()
-  const canRelease = can('loans', 'edit', 'securities')
+  // releasing, verifying and uploading all need the Edit permission on this page
+  const canEdit = can('loans', 'edit', 'securities')
 
-  // UI only: releases made in this session, nothing is saved yet
+  // UI only: changes made in this session, nothing is saved yet
   const [releases, setReleases] = useState<Record<string, Release>>({})
+  const [verifiedAssets, setVerifiedAssets] = useState<string[]>([])
+  const [documents, setDocuments] = useState<Record<string, { name: string; file: File }>>({})
+  const [verifiedGuarantees, setVerifiedGuarantees] = useState<string[]>([])
+  const [liabilityReleases, setLiabilityReleases] = useState<Record<string, Release>>({})
   const [tab, setTab] = useState<TabKey>('assets')
-  const [releaseId, setReleaseId] = useState<string | null>(null)
+  const [dialog, setDialog] = useState<DialogState>(null)
+  const [viewing, setViewing] = useState<ViewableDocument | null>(null)
   const [notice, setNotice] = useState<Notice>(null)
 
   // success banners fade away on their own
@@ -277,16 +378,41 @@ export function SecuritiesPage() {
     () =>
       ASSET_ROWS.map((r) => {
         const release = releases[r.id] ?? null
-        const status: AssetStatus = release ? 'RELEASED' : r.releasable ? 'RELEASABLE' : r.verified ? 'HELD' : 'PENDING'
-        return { ...r, status, release }
+        const verified = r.verified || verifiedAssets.includes(r.id)
+        const status: AssetStatus = release ? 'RELEASED' : r.releasable ? 'RELEASABLE' : verified ? 'HELD' : 'PENDING'
+        const doc = documents[r.id]
+        return { ...r, verified, status, release, documentName: doc?.name ?? r.document, documentFile: doc?.file ?? null }
       }),
-    [releases],
+    [releases, verifiedAssets, documents],
   )
+
+  const guarantors = useMemo<GuarantorView[]>(
+    () =>
+      GUARANTOR_ROWS.map((g) => {
+        const guaranteed: GuaranteeView[] = g.guaranteed.map((x) => {
+          // one liability record per guarantor and application
+          const key = `${g.id}|${x.applicationId}`
+          const release = liabilityReleases[key] ?? null
+          const liability: LiabilityStatus = release ? 'RELEASED' : x.live ? 'ACTIVE' : 'RELEASABLE'
+          return { ...x, key, verified: x.verified || verifiedGuarantees.includes(key), liability, release }
+        })
+        return {
+          ...g,
+          guaranteed,
+          unverified: guaranteed.filter((x) => x.live && !x.verified).length,
+          releasable: guaranteed.filter((x) => x.liability === 'RELEASABLE').length,
+        }
+      }),
+    [liabilityReleases, verifiedGuarantees],
+  )
+
+  const guarantees = guarantors.flatMap((g) => g.guaranteed.map((x) => ({ g, x })))
 
   const held = assets.filter((r) => r.status === 'HELD' || r.status === 'PENDING')
   const releasable = assets.filter((r) => r.status === 'RELEASABLE')
   const notVerified = assets.filter((r) => r.status === 'PENDING')
-  const overLimit = GUARANTOR_ROWS.filter((g) => g.overLimit)
+  const overLimit = guarantors.filter((g) => g.overLimit)
+  const liabilitiesToRelease = guarantors.reduce((s, g) => s + g.releasable, 0)
 
   // here `color` is the icon color
   const stats = [
@@ -301,23 +427,89 @@ export function SecuritiesPage() {
   const assetParam = params.get('asset')
   const guarantorParam = params.get('guarantor')
   const selectedAsset = assetParam ? (assets.find((r) => r.id === assetParam) ?? null) : null
-  const selectedGuarantor = guarantorParam ? (GUARANTOR_ROWS.find((g) => g.id === guarantorParam) ?? null) : null
+  const selectedGuarantor = guarantorParam ? (guarantors.find((g) => g.id === guarantorParam) ?? null) : null
   const openAsset = (id: string) => setParams({ asset: id }, { replace: true })
   const openGuarantor = (id: string) => setParams({ guarantor: id }, { replace: true })
   const closeView = () => setParams({}, { replace: true })
 
-  const releasing = releaseId ? assets.find((r) => r.id === releaseId && r.status === 'RELEASABLE') : undefined
+  // the drawer buttons close the drawer first, then open the dialog
+  const fromDrawer = (kind: DialogKind, id: string) => {
+    closeView()
+    setDialog({ kind, id })
+  }
+
+  const forAsset = (kind: DialogKind) => (dialog?.kind === kind ? assets.find((r) => r.id === dialog.id) : undefined)
+  const forGuarantee = (kind: DialogKind) =>
+    dialog?.kind === kind ? guarantees.find((e) => e.x.key === dialog.id) : undefined
+
+  const releasing = forAsset('release')?.status === 'RELEASABLE' ? forAsset('release') : undefined
+  const verifyingAsset = forAsset('verify')
+  const documentAsset = forAsset('document')
+  const verifyingGuarantee = forGuarantee('verify-guarantee')
+  const releasingLiability = forGuarantee('release-liability')?.x.liability === 'RELEASABLE' ? forGuarantee('release-liability') : undefined
+
+  const today = () => dayjs().format('YYYY-MM-DD')
+
+  /* ---------- actions ---------- */
 
   const release = (remarks: string) => {
-    if (!releasing || !canRelease) return
+    if (!releasing || !canEdit) return
     // TODO: POST /api/collateral-releases (raw CRUD, there is no workflow endpoint yet)
     //       { collateralId, releasedBy, remarks }
-    setReleases((all) => ({
-      ...all,
-      [releasing.id]: { date: dayjs().format('YYYY-MM-DD'), by: CURRENT_USER, remarks },
-    }))
+    setReleases((all) => ({ ...all, [releasing.id]: { date: today(), by: CURRENT_USER, remarks } }))
     setNotice({ color: 'green', text: `The ${releasing.type.toLowerCase()} of ${releasing.applicantName} was released.` })
-    setReleaseId(null)
+    setDialog(null)
+  }
+
+  const verifyAsset = () => {
+    if (!verifyingAsset || !canEdit) return
+    // TODO: POST /api/loan-origination/applications/{applicationId}/collaterals/{collateralId}/verify
+    //       { ownershipVerified, existingPledgeVerified, verifiedBy, remarks }
+    setVerifiedAssets((list) => [...list, verifyingAsset.id])
+    setNotice({ color: 'green', text: `The ${verifyingAsset.type.toLowerCase()} of ${verifyingAsset.applicantName} was verified.` })
+    setDialog(null)
+  }
+
+  const saveDocument = (file: File) => {
+    if (!documentAsset || !canEdit) return
+    setDocuments((all) => ({ ...all, [documentAsset.id]: { name: file.name, file } }))
+    setNotice({
+      color: 'green',
+      text: `${documentAsset.documentName ? 'The document was replaced' : 'The document was uploaded'} for the ${documentAsset.type.toLowerCase()} of ${documentAsset.applicantName}.`,
+    })
+    setDialog(null)
+  }
+
+  const verifyGuarantee = () => {
+    if (!verifyingGuarantee || !canEdit) return
+    // TODO: POST /api/loan-origination/applications/{applicationId}/guarantors/{guarantorId}/verify
+    //       { idVerified, exposureVerified, verifiedBy, remarks }
+    setVerifiedGuarantees((list) => [...list, verifyingGuarantee.x.key])
+    setNotice({ color: 'green', text: `${verifyingGuarantee.g.name} was verified for ${verifyingGuarantee.x.borrower}.` })
+    setDialog(null)
+  }
+
+  const releaseLiability = (remarks: string) => {
+    if (!releasingLiability || !canEdit) return
+    // TODO: POST /api/guarantor-liabilities (raw CRUD, no workflow endpoint yet)
+    //       { guarantorId, applicationId, releasedBy, remarks }
+    setLiabilityReleases((all) => ({ ...all, [releasingLiability.x.key]: { date: today(), by: CURRENT_USER, remarks } }))
+    setNotice({
+      color: 'green',
+      text: `${releasingLiability.g.name} is no longer liable for ${releasingLiability.x.borrower}'s loan.`,
+    })
+    setDialog(null)
+  }
+
+  const viewDocument = (r: AssetView) => {
+    if (!r.documentName) return
+    setViewing({
+      title: `${r.type} document`,
+      fileName: r.documentName,
+      subtitle: `${r.applicantName} · ${r.applicationNo}`,
+      notes: r.description,
+      file: r.documentFile,
+    })
   }
 
   /* ---------- columns ---------- */
@@ -369,7 +561,12 @@ export function SecuritiesPage() {
       accessor: 'status',
       header: 'Status',
       sortable: false,
-      render: (r) => <StatusBadge status={r.status} />,
+      render: (r) => (
+        <div>
+          <StatusBadge status={r.status} />
+          <div className="mt-0.5 text-[11px] text-gray-500">{r.documentName ? 'Document on file' : 'No document'}</div>
+        </div>
+      ),
       exportValue: (r) => ASSET_STATUS[r.status].label,
     },
     {
@@ -382,7 +579,7 @@ export function SecuritiesPage() {
       render: (r) => (
         // stop the click so the row doesn't also open the drawer
         <div onClick={(e) => e.stopPropagation()}>
-          <Menu position="bottom-end" shadow="md" width={230}>
+          <Menu position="bottom-end" shadow="md" width={240}>
             <Menu.Target>
               <ActionIcon variant="subtle" color="gray" size="sm" aria-label={`Actions for ${r.type} of ${r.applicantName}`}>
                 <AppIcon name="ellipsis-vertical" />
@@ -393,11 +590,24 @@ export function SecuritiesPage() {
                 <>
                   <Menu.Item
                     fw={500}
-                    disabled={!canRelease}
+                    disabled={!canEdit}
                     leftSection={<AppIcon name="undo-2" />}
-                    onClick={() => setReleaseId(r.id)}
+                    onClick={() => setDialog({ kind: 'release', id: r.id })}
                   >
-                    {canRelease ? 'Release collateral' : 'Release (no permission)'}
+                    {canEdit ? 'Release collateral' : 'Release (no permission)'}
+                  </Menu.Item>
+                  <Menu.Divider />
+                </>
+              )}
+              {r.status === 'PENDING' && (
+                <>
+                  <Menu.Item
+                    fw={500}
+                    disabled={!canEdit}
+                    leftSection={<AppIcon name="circle-check" />}
+                    onClick={() => setDialog({ kind: 'verify', id: r.id })}
+                  >
+                    {canEdit ? 'Verify collateral' : 'Verify (no permission)'}
                   </Menu.Item>
                   <Menu.Divider />
                 </>
@@ -405,6 +615,20 @@ export function SecuritiesPage() {
               <Menu.Item leftSection={<AppIcon name="eye" />} onClick={() => openAsset(r.id)}>
                 View details
               </Menu.Item>
+              {r.documentName && (
+                <Menu.Item leftSection={<AppIcon name="file-text" />} onClick={() => viewDocument(r)}>
+                  View document
+                </Menu.Item>
+              )}
+              {r.status !== 'RELEASED' && (
+                <Menu.Item
+                  disabled={!canEdit}
+                  leftSection={<AppIcon name="upload" />}
+                  onClick={() => setDialog({ kind: 'document', id: r.id })}
+                >
+                  {r.documentName ? 'Replace document' : 'Upload document'}
+                </Menu.Item>
+              )}
               <Menu.Item leftSection={<AppIcon name="external-link" />} onClick={() => navigate(`/loan-applications/${r.applicationId}`)}>
                 View application
               </Menu.Item>
@@ -420,7 +644,7 @@ export function SecuritiesPage() {
     },
   ]
 
-  const guarantorColumns: CustomTableColumn<GuarantorRow>[] = [
+  const guarantorColumns: CustomTableColumn<GuarantorView>[] = [
     {
       accessor: 'name',
       header: 'Guarantor',
@@ -441,7 +665,9 @@ export function SecuritiesPage() {
             {g.liveCount} live of {g.guaranteed.length}
           </div>
           <div className="max-w-[260px] truncate text-xs text-gray-500">
-            {g.guaranteed.map((x) => x.borrower).join(', ')}
+            {g.releasable > 0
+              ? `${g.releasable} to release`
+              : g.guaranteed.map((x) => x.borrower).join(', ')}
           </div>
         </div>
       ),
@@ -459,6 +685,17 @@ export function SecuritiesPage() {
         </div>
       ),
       exportValue: (g) => g.exposure,
+    },
+    {
+      accessor: 'unverified',
+      header: 'Verification',
+      sortable: false,
+      render: (g) => (
+        <Badge variant="light" color={g.unverified > 0 ? 'yellow' : 'green'} radius="sm" size="sm">
+          {g.unverified > 0 ? `${g.unverified} not verified` : 'All verified'}
+        </Badge>
+      ),
+      exportValue: (g) => (g.unverified > 0 ? `${g.unverified} not verified` : 'All verified'),
     },
     {
       accessor: 'overLimit',
@@ -529,6 +766,20 @@ export function SecuritiesPage() {
           </Alert>
         )}
 
+        {liabilitiesToRelease > 0 && (
+          <Alert color="yellow" variant="light" icon={<AppIcon name="triangle-alert" />}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Text size="sm">
+                {liabilitiesToRelease} guarantor {liabilitiesToRelease === 1 ? 'liability can' : 'liabilities can'} be
+                released. The loan is repaid or the application was stopped.
+              </Text>
+              <Button size="compact-xs" variant="default" onClick={() => setTab('guarantors')}>
+                Show them
+              </Button>
+            </div>
+          </Alert>
+        )}
+
         {/* row 1: key numbers */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
           {stats.map((s) => (
@@ -546,7 +797,7 @@ export function SecuritiesPage() {
                 onChange={(v) => setTab(v as TabKey)}
                 data={[
                   { value: 'assets', label: `Collateral (${assets.length})` },
-                  { value: 'guarantors', label: `Guarantors (${GUARANTOR_ROWS.length})` },
+                  { value: 'guarantors', label: `Guarantors (${guarantors.length})` },
                 ]}
               />
             </div>
@@ -576,9 +827,9 @@ export function SecuritiesPage() {
               printTitle="Collateral"
             />
           ) : (
-            <CustomTable<GuarantorRow>
+            <CustomTable<GuarantorView>
               size="md"
-              data={GUARANTOR_ROWS}
+              data={guarantors}
               columns={guarantorColumns}
               searchInput
               searchPlaceholder="Search guarantor or borrower"
@@ -601,11 +852,11 @@ export function SecuritiesPage() {
         {selectedAsset && (
           <AssetDrawerBody
             row={selectedAsset}
-            canRelease={canRelease}
-            onRelease={(r) => {
-              closeView()
-              setReleaseId(r.id)
-            }}
+            canEdit={canEdit}
+            onRelease={(r) => fromDrawer('release', r.id)}
+            onVerify={(r) => fromDrawer('verify', r.id)}
+            onDocument={(r) => fromDrawer('document', r.id)}
+            onViewDocument={viewDocument}
             onOpenApplication={(r) => navigate(`/loan-applications/${r.applicationId}`)}
             onOpenLoan={(r) => navigate(`/loans/${r.loanId}`)}
           />
@@ -615,7 +866,13 @@ export function SecuritiesPage() {
       {/* guarantor drawer */}
       <Drawer opened={!!selectedGuarantor} onClose={closeView} position="right" size="lg" title={selectedGuarantor?.name ?? ''}>
         {selectedGuarantor && (
-          <GuarantorDrawerBody row={selectedGuarantor} onOpenApplication={(id) => navigate(`/loan-applications/${id}`)} />
+          <GuarantorDrawerBody
+            row={selectedGuarantor}
+            canEdit={canEdit}
+            onVerify={(key) => fromDrawer('verify-guarantee', key)}
+            onRelease={(key) => fromDrawer('release-liability', key)}
+            onOpenApplication={(id) => navigate(`/loan-applications/${id}`)}
+          />
         )}
       </Drawer>
 
@@ -625,9 +882,47 @@ export function SecuritiesPage() {
         message={`Release the ${releasing?.type.toLowerCase() ?? 'asset'} of ${releasing?.applicantName ?? 'the borrower'}? It is no longer held as security and the papers go back to the borrower. This cannot be undone.`}
         confirmLabel="Release"
         placeholder="Loan fully repaid, title deed handed back"
-        onClose={() => setReleaseId(null)}
+        onClose={() => setDialog(null)}
         onSubmit={release}
       />
+
+      <RemarksDialog
+        opened={!!releasingLiability}
+        title="Release guarantor liability"
+        message={`Release ${releasingLiability?.g.name ?? 'the guarantor'} from the loan of ${releasingLiability?.x.borrower ?? 'the borrower'}? They no longer stand behind it. This cannot be undone.`}
+        confirmLabel="Release liability"
+        placeholder="Loan fully repaid, guarantor informed"
+        onClose={() => setDialog(null)}
+        onSubmit={releaseLiability}
+      />
+
+      <VerifyDialog
+        opened={!!verifyingAsset}
+        title="Verify collateral"
+        subject={verifyingAsset ? `${verifyingAsset.type}: ${verifyingAsset.description}` : ''}
+        checks={COLLATERAL_CHECKS}
+        onClose={() => setDialog(null)}
+        onVerified={verifyAsset}
+      />
+
+      <VerifyDialog
+        opened={!!verifyingGuarantee}
+        title="Verify guarantor"
+        subject={verifyingGuarantee ? `${verifyingGuarantee.g.name} (${verifyingGuarantee.x.relationship}) for ${verifyingGuarantee.x.borrower}` : ''}
+        checks={GUARANTOR_CHECKS}
+        onClose={() => setDialog(null)}
+        onVerified={verifyGuarantee}
+      />
+
+      <CollateralDocumentDialog
+        opened={!!documentAsset}
+        subject={documentAsset ? `${documentAsset.type}: ${documentAsset.description}` : ''}
+        current={documentAsset?.documentName ?? null}
+        onClose={() => setDialog(null)}
+        onSubmit={saveDocument}
+      />
+
+      <DocumentViewer document={viewing} onClose={() => setViewing(null)} />
     </DashboardLayout>
   )
 }

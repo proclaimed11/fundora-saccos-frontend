@@ -26,7 +26,11 @@ import {
   type LoanPayment,
   type LoanView,
   type PenaltyRecord,
+  type JournalLine
 } from './loanApplicationsData'
+import { JournalPreview } from './disbursementDialog'
+import { writeOffFor } from '../collections/writeOffStore'
+import type { WriteOffEntry } from '../collections/collectionsData'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -180,9 +184,9 @@ const penaltyColumns: CustomTableColumn<PenaltyRow>[] = [
 
 /* ---------- tabs ---------- */
 
-function OverviewTab({ v }: { v: LoanView }) {
+function OverviewTab({ v, writtenOff }: { v: LoanView; writtenOff: boolean }) {
   const tiles = [
-    { label: 'Outstanding balance', value: formatTzs(v.outstanding) },
+    { label: 'Outstanding balance', value: formatTzs(writtenOff ? 0 : v.outstanding) },
     {
       label: v.next ? `Next installment · ${dayjs(v.next.dueDate).format('MMM D, YYYY')}` : 'Next installment',
       value: v.next ? formatTzs(v.next.outstanding) : '—',
@@ -192,7 +196,7 @@ function OverviewTab({ v }: { v: LoanView }) {
 
   return (
     <div className="space-y-6">
-      {v.state === 'OVERDUE' && (
+      {v.state === 'OVERDUE' && !writtenOff && (
         <Alert
           color={v.isNpl ? 'red' : 'yellow'}
           variant="light"
@@ -244,6 +248,48 @@ function OverviewTab({ v }: { v: LoanView }) {
   )
 }
 
+function WriteOffTab({ entry, onOpenNpl }: { entry: WriteOffEntry; onOpenNpl: () => void }) {
+  const journal: JournalLine[] = [
+    { side: 'DEBIT', code: 'WRITE_OFF_EXPENSE', name: 'Write-off expense', amount: entry.amount },
+    { side: 'CREDIT', code: 'LOAN_RECEIVABLE', name: 'Loan receivable', amount: entry.amount },
+  ]
+
+  return (
+    <div className="space-y-6">
+      <Alert color="gray" variant="light" icon={<AppIcon name="lock-keyhole" />}>
+        <Text size="sm">A written-off loan is final. Its balances were set to zero and it cannot take payments.</Text>
+      </Alert>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div>
+          <SectionTitle>What was written off</SectionTitle>
+          <Field label="Principal" value={formatTzs(entry.principal)} />
+          <Field label="Interest" value={formatTzs(entry.interest)} />
+          <Field label="Penalty" value={formatTzs(entry.penalty)} />
+          <Field label="Total" value={formatTzs(entry.amount)} />
+        </div>
+        <div>
+          <SectionTitle>Write-off details</SectionTitle>
+          <Field label="Written off on" value={dayjs(entry.date).format('MMM D, YYYY')} />
+          <Field label="Approved by" value={entry.approvedBy} />
+          <Field label="Class at write-off" value={NPL_STYLE[entry.classification].label} />
+          <Field label="Days overdue then" value={`${entry.overdueDays} days`} />
+          <Field label="Reason" value={entry.reason} />
+        </div>
+      </div>
+
+      <div>
+        <SectionTitle>Journal entry</SectionTitle>
+        <JournalPreview lines={journal} />
+      </div>
+
+      <Button size="xs" variant="default" leftSection={<AppIcon name="triangle-alert" />} onClick={onOpenNpl}>
+        Open in NPL &amp; write-offs
+      </Button>
+    </div>
+  )
+}
+
 /* ---------- page ---------- */
 
 export function LoanProfile() {
@@ -291,6 +337,8 @@ export function LoanProfile() {
       </DashboardLayout>
     )
   }
+
+  const writeOff = writeOffFor(view.id)
 
   const toCharge = penaltiesToCharge(
     view,
@@ -377,6 +425,7 @@ export function LoanProfile() {
     { value: 'schedule', label: 'Schedule' },
     { value: 'payments', label: `Payments (${view.payments.length})` },
     { value: 'penalties', label: `Penalties (${view.penalties.length})` },
+    ...(writeOff ? [{ value: 'writeoff', label: 'Write-off' }] : []),
     { value: 'activity', label: 'Activity' },
   ]
 
@@ -405,7 +454,7 @@ export function LoanProfile() {
               View application
             </Button>
           )}
-          {view.state !== 'CLOSED' && (
+          {view.state !== 'CLOSED' && !writeOff && (
             <>
               <Button
                 size="xs"
@@ -440,6 +489,20 @@ export function LoanProfile() {
           </Alert>
         )}
 
+        {writeOff && (
+          <Alert color="red" variant="light" icon={<AppIcon name="triangle-alert" />}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Text size="sm">
+                This loan was written off on {dayjs(writeOff.date).format('MMM D, YYYY')} for {formatTzs(writeOff.amount)}. It
+                no longer takes payments or penalties.
+              </Text>
+              <Button size="compact-xs" variant="default" onClick={() => setTab('writeoff')}>
+                View write-off
+              </Button>
+            </div>
+          </Alert>
+        )}
+
         <div className="grid items-start gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
           {/* loan summary */}
           <div className={`${CARD} p-5`}>
@@ -447,8 +510,10 @@ export function LoanProfile() {
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-subtle text-2xl text-brand-dark">
                 <AppIcon name="hand-coins" size={28} strokeWidth={1.25} />
               </div>
-              <div className="mt-3 text-lg font-medium text-gray-800">{formatTzs(view.outstanding)}</div>
-              <div className="text-[11px] text-gray-500">outstanding</div>
+              <div className="mt-3 text-lg font-medium text-gray-800">{formatTzs(writeOff ? 0 : view.outstanding)}</div>
+              <div className="text-[11px] text-gray-500">
+                {writeOff ? `${formatTzs(writeOff.amount)} written off` : 'outstanding'}
+              </div>
               <button
                 type="button"
                 className="mt-1 text-xs text-brand-dark hover:underline"
@@ -457,14 +522,22 @@ export function LoanProfile() {
                 {view.applicantName}
               </button>
               <div className="mt-3 flex flex-wrap justify-center gap-2">
-                <Badge variant="light" color={LOAN_STATE[view.state].color} radius="sm" size="sm">
-                  {LOAN_STATE[view.state].label}
-                </Badge>
-                {view.state === 'OVERDUE' && (
-                  <Badge variant="outline" color={NPL_STYLE[view.classification].color} radius="sm" size="sm">
-                    {view.isNpl ? 'NPL · ' : ''}
-                    {NPL_STYLE[view.classification].label}
+                {writeOff ? (
+                  <Badge variant="filled" color="dark" radius="sm" size="sm">
+                    Written off
                   </Badge>
+                ) : (
+                  <>
+                    <Badge variant="light" color={LOAN_STATE[view.state].color} radius="sm" size="sm">
+                      {LOAN_STATE[view.state].label}
+                    </Badge>
+                    {view.state === 'OVERDUE' && (
+                      <Badge variant="outline" color={NPL_STYLE[view.classification].color} radius="sm" size="sm">
+                        {view.isNpl ? 'NPL · ' : ''}
+                        {NPL_STYLE[view.classification].label}
+                      </Badge>
+                    )}
+                  </>
                 )}
               </div>
               <div className="mt-3 w-full">
@@ -501,8 +574,15 @@ export function LoanProfile() {
 
               <div className="p-5">
                 <Tabs.Panel value="overview">
-                  <OverviewTab v={view} />
+                  <OverviewTab v={view} writtenOff={!!writeOff} />
                 </Tabs.Panel>
+
+                
+                {writeOff && (
+                    <Tabs.Panel value="writeoff">
+                      <WriteOffTab entry={writeOff} onOpenNpl={() => navigate(`/npl?writeoff=${writeOff.id}`)} />
+                    </Tabs.Panel>
+                )}
 
                 <Tabs.Panel value="schedule">
                   <div className="space-y-3">
@@ -543,7 +623,7 @@ export function LoanProfile() {
                       twice.
                     </p>
 
-                    {toCharge.length > 0 && view.state !== 'CLOSED' && (
+                    {toCharge.length > 0 && view.state !== 'CLOSED' && !writeOff && (
                       <Alert
                         color="yellow"
                         variant="light"
@@ -583,7 +663,7 @@ export function LoanProfile() {
       </div>
 
       <PaymentDialog
-        opened={payOpen && view.state !== 'CLOSED'}
+        opened={payOpen && view.state !== 'CLOSED' && !writeOff}
         loan={view}
         usedReferences={usedReferences}
         onClose={closePay}

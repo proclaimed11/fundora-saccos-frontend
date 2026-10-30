@@ -1,4 +1,7 @@
 import { AppIcon } from '../../components/appIcon'
+import { useState } from 'react'
+import { DocumentViewer, type ViewableDocument } from '../../components/documentViewer'
+import { defaultContent, printContract, valuesFor } from './contractTemplate'
 import { Alert, Badge, Button, Stepper, Text } from '@mantine/core'
 import dayjs from 'dayjs'
 import { CustomTable, type CustomTableColumn } from '../../components/customTable/customTable'
@@ -371,13 +374,14 @@ export function ApprovalsTab({ application }: { application: LoanApplication }) 
   )
 }
 
-export function ContractTab({ 
-    application, onUploadSigned 
-      }
-    : { 
-       application: LoanApplication
-       onUploadSigned?: () => void
-    }) {
+export function ContractTab({
+  application,
+  onUploadSigned,
+}: {
+  application: LoanApplication
+  onUploadSigned?: () => void
+}) {
+  const [viewing, setViewing] = useState<ViewableDocument | null>(null)
   const contract = contractFor(application)
 
   if (!contract) {
@@ -389,6 +393,15 @@ export function ContractTab({
       </Empty>
     )
   }
+
+  const print = () =>
+    printContract(
+      defaultContent(application),
+      valuesFor(application),
+      contract.contractNo,
+      dayjs(contract.generated).format('MMMM D, YYYY'),
+    )
+  const signedOn = contract.signed ? dayjs(contract.signed).format('MMM D, YYYY') : ''
 
   // 3 means every contract step is done
   const step = { GENERATED: 1, SENT: 2, SIGNED: 3 }[contract.status]
@@ -438,44 +451,65 @@ export function ContractTab({
           <SectionTitle>Documents</SectionTitle>
           <ul className="mt-2 space-y-2">
             <li className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
-              <AppIcon name="file-text" className="text-xl text-gray-400"  size={20} />
+              <AppIcon name="file-text" className="text-xl text-gray-400" size={20} />
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium text-gray-800">Loan contract</div>
                 <div className="truncate text-xs text-gray-500">{contract.contractNo}.pdf</div>
               </div>
-              <Button size="compact-xs" variant="subtle" color="brand">
+              <Button
+                size="xs"
+                variant="subtle"
+                color="brand"
+                leftSection={<AppIcon name="printer" />}
+                onClick={print}
+              >
                 Print
               </Button>
             </li>
+
             {contract.signed ? (
               <li className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
-                <AppIcon name="file-image" className="text-xl text-gray-400"  size={20} />
+                <AppIcon name="file-image" className="text-xl text-gray-400" size={20} />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium text-gray-800">Signed copy</div>
                   <div className="truncate text-xs text-gray-500">{contract.contractNo}-signed.pdf</div>
                 </div>
-                <Button size="compact-xs" variant="subtle" color="brand">
+                <Button
+                  size="xs"
+                  variant="subtle"
+                  color="brand"
+                  onClick={() =>
+                    setViewing({
+                      title: 'Signed copy',
+                      fileName: `${contract.contractNo}-signed.pdf`,
+                      subtitle: `Signed on ${signedOn}`,
+                    })
+                  }
+                >
                   View
                 </Button>
               </li>
             ) : (
-                <li className="flex items-center gap-3 rounded-md border border-dashed border-gray-200 px-3 py-2.5">
-                    <AppIcon name="file-image" className="text-xl text-gray-300"  size={20} />
-                    <div className="min-w-0 flex-1 text-xs text-gray-500">Signed copy not uploaded yet</div>
-                    {contract.status === 'SENT' && (
-                    <Button
-                        size="compact-xs"
-                        leftSection={<AppIcon name="upload" />}
-                        onClick={onUploadSigned}
-                    >
-                        Upload signed contract
-                    </Button>
-                    )}
-                </li>
+              <li className="flex items-center gap-3 rounded-md border border-dashed border-gray-200 px-3 py-2.5">
+                <AppIcon name="file-image" className="text-xl text-gray-300" size={20} />
+                <div className="min-w-0 flex-1 text-xs text-gray-500">Signed copy not uploaded yet</div>
+                {contract.status === 'SENT' && (
+                  <Button
+                    size="compact-xs"
+                    leftSection={<AppIcon name="upload" />}
+                    onClick={onUploadSigned}
+                  >
+                    Upload signed contract
+                  </Button>
+                )}
+              </li>
             )}
           </ul>
         </div>
       </div>
+
+      {/* Document viewer added here */}
+      <DocumentViewer document={viewing} onClose={() => setViewing(null)} />
     </div>
   )
 }
