@@ -26,7 +26,8 @@ import {
 import { MemberAccountDialog, type AccountInput } from './memberAccountDialog'
 import { DebtDialog, FinancialProfileDialog, type DebtInput } from './financialDialogs'
 import { CURRENT_USER } from '../loans/disbursementDialog'
-import { DocumentDialog, DocumentPreview, isImage, sizeText, type DocumentInput } from './documentDialogs'
+import { DocumentViewer } from '../../components/documentViewer'
+import { DocumentDialog, isImage, sizeText, type DocumentInput } from './documentDialogs'
 
 /* ---------- small helpers ---------- */
 
@@ -322,7 +323,20 @@ export function KycTab({
         onSubmit={save}
       />
 
-      <DocumentPreview document={viewing} onClose={() => setViewing(null)} />
+      <DocumentViewer
+        document={
+          viewing
+            ? {
+                title: viewing.type,
+                fileName: viewing.fileName,
+                subtitle: `Uploaded ${dayjs(viewing.uploaded).format('MMM D, YYYY')} by ${viewing.uploadedBy}`,
+                notes: viewing.notes,
+                file: viewing.file,
+              }
+            : null
+        }
+        onClose={() => setViewing(null)}
+      />
 
       <ContractConfirmDialog
         opened={typeof dialog === 'object' && dialog?.kind === 'remove' && !!target}

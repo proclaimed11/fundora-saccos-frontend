@@ -19,6 +19,7 @@ import {
   type LoanApplication,
 } from './loanApplicationsData'
 import { defaultContent, printContract, valuesFor, type ContractContent } from './contractTemplate'
+import { DocumentViewer, type ViewableDocument } from '../../components/documentViewer'
 
 // our own rule, the API has no deadline: warn when a contract waits longer than this at one stage
 const LATE_AFTER_DAYS = 7
@@ -164,6 +165,7 @@ type DrawerBodyProps = {
 
 function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDisburse, onPrint }: DrawerBodyProps) {
   const [copied, setCopied] = useState(false)
+  const [viewing, setViewing] = useState<ViewableDocument | null>(null)
   const stage = stageOf(a)
   const contract = contractFor(a)
   if (!stage) return null
@@ -321,7 +323,18 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
                   <div className="text-sm font-medium text-gray-800">Signed copy</div>
                   <div className="truncate text-xs text-gray-500">{contract.contractNo}-signed.pdf</div>
                 </div>
-                <Button size="compact-xs" variant="subtle" color="brand">
+                <Button
+                  size="compact-xs"
+                  variant="subtle"
+                  color="brand"
+                  onClick={() =>
+                    setViewing({
+                      title: 'Signed copy',
+                      fileName: `${contract.contractNo}-signed.pdf`,
+                      subtitle: `Signed on ${dayjs(contract.signed!).format('MMM D, YYYY')}`,
+                    })
+                  }
+                >
                   View
                 </Button>
               </li>
@@ -360,6 +373,8 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
       >
         View full application
       </Button>
+
+      <DocumentViewer document={viewing} onClose={() => setViewing(null)} />
     </div>
   )
 }

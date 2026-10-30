@@ -23,6 +23,7 @@ import {
   type LoanApplication,
 } from './loanApplicationsData'
 import { printVoucher } from './printDocs'
+import { DocumentViewer, type ViewableDocument } from '../../components/documentViewer'
 
 // our own rule, the API has no deadline: warn when a created loan waits longer than this
 const LATE_AFTER_DAYS = 3
@@ -100,6 +101,7 @@ type DrawerProps = {
 }
 
 function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication }: DrawerProps) {
+  const [viewing, setViewing] = useState<ViewableDocument | null>(null)
   const record = r.record
   const source = record ? accounts.find((x) => x.id === record.sourceAccountId) : undefined
   const member = record ? memberAccountsFor(r.applicantId).find((x) => x.id === record.memberAccountId) : undefined
@@ -189,7 +191,18 @@ function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication 
                     <div className="text-sm font-medium text-gray-800">Proof of payment</div>
                     <div className="truncate text-xs text-gray-500">{record.proofName}</div>
                   </div>
-                  <Button size="compact-xs" variant="subtle" color="brand">
+                  <Button
+                    size="compact-xs"
+                    variant="subtle"
+                    color="brand"
+                    onClick={() =>
+                      setViewing({
+                        title: 'Proof of payment',
+                        fileName: record.proofName!,
+                        subtitle: `${r.applicantName} · ${dayjs(record.date).format('MMM D, YYYY')}`,
+                      })
+                    }
+                  >
                     View
                   </Button>
                 </li>
@@ -236,6 +249,8 @@ function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication 
       >
         View full application
       </Button>
+
+            <DocumentViewer document={viewing} onClose={() => setViewing(null)} />
     </div>
   )
 }

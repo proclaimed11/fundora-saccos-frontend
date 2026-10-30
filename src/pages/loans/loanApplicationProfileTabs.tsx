@@ -164,6 +164,7 @@ export function RequirementsTab({
   onVerifyGuarantor,
   onVerifyCollateral,
 }: RequirementsProps) {
+  const [viewing, setViewing] = useState<ViewableDocument | null>(null)
   const guarantors = guarantorsFor(application)
   const collaterals = collateralsFor(application)
   const credit = creditFor(application)
@@ -241,7 +242,19 @@ export function RequirementsTab({
                         {c.document ? (
                           <>
                             <span className="min-w-0 flex-1 truncate text-gray-600">{c.document}</span>
-                            <Button size="compact-xs" variant="subtle" color="brand">
+                            <Button
+                              size="compact-xs"
+                              variant="subtle"
+                              color="brand"
+                              onClick={() =>
+                                setViewing({
+                                  title: `${c.type} document`,
+                                  fileName: c.document!,
+                                  subtitle: application.applicationNo,
+                                  notes: c.description,
+                                })
+                              }
+                            >
                               View
                             </Button>
                           </>
@@ -311,6 +324,8 @@ export function RequirementsTab({
           </div>
         )}
       </div>
+
+      <DocumentViewer document={viewing} onClose={() => setViewing(null)} />
     </div>
   )
 }

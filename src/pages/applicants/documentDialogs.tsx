@@ -9,7 +9,7 @@ export const isImage = (name: string) => /\.(jpe?g|png|gif|webp)$/i.test(name)
 
 /* ---------- upload / replace ---------- */
 
-export type DocumentInput = { type: string; fileName: string; sizeKb: number; notes: string }
+export type DocumentInput = { type: string; fileName: string; sizeKb: number; notes: string; file: File | null }
 
 type Props = {
   opened: boolean
@@ -51,7 +51,7 @@ export function DocumentDialog({ opened, document, existingTypes, onClose, onSub
 
     // TODO: POST /api/applicant-documents, or PUT /api/applicant-documents/{id} when replacing.
     //       The file upload is not in the API yet, only a file path is saved.
-    onSubmit({ type, fileName: file.name, sizeKb: file.size / 1024, notes: notes.trim() })
+        onSubmit({ type, fileName: file.name, sizeKb: file.size / 1024, notes: notes.trim(), file })
   }
 
   return (

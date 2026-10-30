@@ -178,6 +178,8 @@ export type ApplicantDocument = {
   uploaded: string // ISO date
   uploadedBy: string
   notes: string
+  /** the real file, only for a document uploaded in this session */
+  file?: File | null
 }
 
 export const documentsFor = (a: Applicant): ApplicantDocument[] => [
