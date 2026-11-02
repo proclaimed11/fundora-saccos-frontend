@@ -31,6 +31,7 @@ import { CreditAssessmentDialog, type CreditResult } from './creditAssessmentDia
 import { COLLATERAL_CHECKS, GUARANTOR_CHECKS, VerifyDialog } from './verifyDialogs'
 import { RemarksDialog } from '../collections/collectionDialogs'
 import { CURRENT_USER } from './disbursementDialog'
+import { usePageAccess } from '../auth/usePageAccess'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -62,6 +63,7 @@ export function LoanApplicationProfile() {
   const [notice, setNotice] = useState<Notice>(null)
   // UI only: actions change the application for this session, nothing is saved yet
   const [changes, setChanges] = useState<Partial<LoanApplication>>({})
+  const { canEdit } = usePageAccess('loans', 'applications')   // with the other hooks, before the early return
 
   // success banners fade away on their own
   useEffect(() => {
@@ -201,7 +203,7 @@ export function LoanApplicationProfile() {
       ]}
       actions={
         <>
-          {submitted && (
+          {submitted && canEdit && (
             <Button
               size="xs"
               disabled={unverified > 0}
@@ -219,6 +221,7 @@ export function LoanApplicationProfile() {
           >
             View applicant
           </Button>
+          {canEdit && (
           <Button
             size="xs"
             leftSection={<AppIcon name="pencil" />}
@@ -226,7 +229,8 @@ export function LoanApplicationProfile() {
           >
             Continue application
           </Button>
-          {canCancel && (
+          )}
+          {canEdit && canCancel && (
             <Button size="xs" color="red" leftSection={<AppIcon name="x" />} onClick={() => setCancelOpen(true)}>
               Cancel application
             </Button>
@@ -352,15 +356,15 @@ export function LoanApplicationProfile() {
                   application={application}
                   verifiedGuarantors={verifiedG}
                   verifiedCollaterals={verifiedC}
-                  onVerifyGuarantor={(gid) => setVerifying({ kind: 'guarantor', id: gid })}
-                  onVerifyCollateral={(cid) => setVerifying({ kind: 'collateral', id: cid })}
+                  onVerifyGuarantor={canEdit ? (gid) => setVerifying({ kind: 'guarantor', id: gid }) : undefined}
+                  onVerifyCollateral={canEdit ? (cid) => setVerifying({ kind: 'collateral', id: cid }) : undefined}
                 />
               </Tabs.Panel>
               <Tabs.Panel value="approvals">
                 <ApprovalsTab application={application} />
               </Tabs.Panel>
               <Tabs.Panel value="contract">
-                <ContractTab application={application} onUploadSigned={() => setUploadOpen(true)} />
+                <ContractTab application={application} onUploadSigned={canEdit ? () => setUploadOpen(true) : undefined} />
               </Tabs.Panel>
               <Tabs.Panel value="schedule">
                 <ScheduleTab application={application} />

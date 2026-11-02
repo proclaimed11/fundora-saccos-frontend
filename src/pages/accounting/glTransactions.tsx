@@ -22,6 +22,7 @@ import {
   type GlTransactionType,
   type TrialBalanceRow,
 } from './accountingData'
+import { usePageAccess } from '../auth/usePageAccess'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -215,6 +216,7 @@ function TransactionDrawerBody({ transaction: t, onOpenLoan, onOpenPayment, onOp
 
 export function GlTransactionsPage() {
   const navigate = useNavigate()
+  const { canCreate } = usePageAccess('accounting', 'gl-transactions')
   const [params, setParams] = useSearchParams()
 
   const [tab, setTab] = useState<TabKey>('transactions')
@@ -519,9 +521,11 @@ export function GlTransactionsPage() {
           <Button size="xs" variant="default" leftSection={<AppIcon name="list-ordered" />} onClick={() => navigate('/chart-of-accounts')}>
             Chart of accounts
           </Button>
-          <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setEntryOpen(true)}>
-            New journal entry
-          </Button>
+          {canCreate && (
+            <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setEntryOpen(true)}>
+              New journal entry
+            </Button>
+          )}
         </>
       }
     >

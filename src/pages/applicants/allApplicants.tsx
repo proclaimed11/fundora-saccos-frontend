@@ -6,6 +6,7 @@ import { DashboardLayout } from '../../components/layout/dashboardLayout'
 import { StatWidget } from '../../components/statsWidgets'
 import { CustomTable,type CustomTableColumn  } from '../../components/customTable/customTable'
 import { useNavigate } from 'react-router-dom'
+import { usePageAccess } from '../auth/usePageAccess'
 
 type ApplicantStatus = 'PENDING_OTP' | 'PENDING_KYC' | 'KYC_APPROVED' | 'REJECTED'
 
@@ -93,6 +94,7 @@ export function Applicants() {
   const navigate = useNavigate()
   const [selected, setSelected] = useState<Applicant | null>(null)
   const [kycFor, setKycFor] = useState<Applicant | null>(null)
+  const { canCreate, canDelete } = usePageAccess('applicants', 'applicants')
 
   const columns: CustomTableColumn<Applicant>[] = [
     {
@@ -153,16 +155,18 @@ export function Applicants() {
       subtitle="Manage all applicants"
       breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Applicants' }]}
       actions={
-        // inactive for now: no click handler until the form is built
-      <Button
+        canCreate ? (
+        <Button
         size="xs"
         leftSection={<AppIcon name="user-round-plus" />}
         onClick={() => navigate('/applicants/new')}
       >
         New applicant
       </Button>
+        ) : undefined
       }
     >
+
       {/* row 1: key numbers */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {stats.map((s) => (
@@ -180,8 +184,8 @@ export function Applicants() {
         searchPlaceholder="Search applicant"
         searchKeys={['name', 'applicantNo', 'phone']}
         filters={{ status: statusOptions, isReturning: typeOptions, registered: 'date' }}
-        selectCheckbox
-        onDelete={() => {}} // UI only for now: shows the Delete selected button and confirm dialog
+        selectCheckbox={canDelete}
+        onDelete={canDelete ? () => {} : undefined}
         defaultSort={{ accessor: 'registered', direction: 'desc' }}
         onRowClick={(row) => navigate(`/applicants/${row.id}`)}
         exportCsv

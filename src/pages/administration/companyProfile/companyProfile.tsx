@@ -4,6 +4,7 @@ import { Alert, Button, Select, SimpleGrid, Text, TextInput, Textarea } from '@m
 import { DashboardLayout } from '../../../components/layout/dashboardLayout'
 import logo from '../../../assets/logo.png'
 import { CURRENCIES, EMAIL, LANGUAGES, SAMPLE_PROFILE, isPhone, type CompanyProfile } from './companyProfileData'
+import { usePageAccess } from '../../auth/usePageAccess'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -27,6 +28,7 @@ export function CompanyProfilePage() {
   const [values, setValues] = useState<Values>(toValues(SAMPLE_PROFILE))
   const [errors, setErrors] = useState<Errors>({})
   const [notice, setNotice] = useState<Notice>(null)
+  const { canEdit } = usePageAccess('administration', 'company-profile') // 'security' in security.tsx
 
   // success banners fade away on their own
   useEffect(() => {
@@ -114,7 +116,13 @@ export function CompanyProfilePage() {
 
         <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
           {/* the form */}
-          <div className={`${CARD} p-5`}>
+          <div className="space-y-4">
+            {!canEdit && (
+              <Alert color="gray" variant="light" icon={<AppIcon name="lock-keyhole" />}>
+                <Text size="sm">Your role can view these settings but not change them.</Text>
+              </Alert>
+            )}
+            <div className={`${CARD} p-5`}>
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-subtle text-brand-dark">
                 <AppIcon name="building-2" size={20} strokeWidth={1.25} />
@@ -221,13 +229,14 @@ export function CompanyProfilePage() {
             </div>
 
             <div className="mt-6 flex justify-end gap-2 border-t border-gray-100 pt-4">
-              <Button size="xs" variant="default" disabled={!dirty} onClick={discard}>
+              <Button size="xs" variant="default" disabled={!dirty || !canEdit} onClick={discard}>
                 Discard changes
               </Button>
-              <Button size="xs" disabled={!dirty} leftSection={<AppIcon name="check" />} onClick={save}>
+              <Button size="xs" disabled={!dirty || !canEdit} leftSection={<AppIcon name="check" />} onClick={save}>
                 Save changes
               </Button>
             </div>
+          </div>
           </div>
 
           {/* where it appears, follows the form as you type */}

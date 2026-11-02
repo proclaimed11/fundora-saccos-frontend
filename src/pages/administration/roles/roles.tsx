@@ -11,6 +11,7 @@ import { RoleDialog, type RoleInput } from './roleDialogs'
 import { KIND, MODULES, actionLabel, areaCount, hasPages, isSplit, pageActions, permissionCount, type Role } from './rolesData'
 import { useRoles } from './rolesContext'
 import { SAMPLE_USERS } from '../users/usersData'
+import { usePageAccess } from '../../auth/usePageAccess'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -238,6 +239,7 @@ export function RolesPage() {
   const [tab, setTab] = useState<TabKey>('all')
   const [dialog, setDialog] = useState<DialogState>(null)
   const [notice, setNotice] = useState<Notice>(null)
+  const { canCreate, canEdit, canDelete } = usePageAccess('administration', 'roles')
 
   // success banners fade away on their own
   useEffect(() => {
@@ -390,14 +392,20 @@ export function RolesPage() {
                 </ActionIcon>
               </Menu.Target>
               <Menu.Dropdown>
+              {canEdit && (
+                <>
                 <Menu.Item fw={500} leftSection={<AppIcon name="pencil" />} onClick={() => setDialog({ kind: 'edit', id: r.id })}>
                   Edit role
                 </Menu.Item>
                 <Menu.Divider />
+                </>
+                )}
                 <Menu.Item leftSection={<AppIcon name="eye" />} onClick={() => openView(r.id)}>
                   View details
                 </Menu.Item>
                 <Menu.Divider />
+                {canDelete && (
+                <>
                 <Menu.Item
                   color="red"
                   disabled={!!blocked}
@@ -406,6 +414,8 @@ export function RolesPage() {
                 >
                   {blocked ? 'Cannot delete' : 'Delete role'}
                 </Menu.Item>
+                 </>
+                )}
               </Menu.Dropdown>
             </Menu>
           </div>
@@ -421,17 +431,21 @@ export function RolesPage() {
       breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Administration' }, { label: 'Roles' }]}
       actions={
         <>
-          <Button
-            size="xs"
-            variant="default"
-            leftSection={<AppIcon name="refresh-cw" />}
-            onClick={() => setDialog({ kind: 'reset' })}
-          >
-            Reset to defaults
-          </Button>
-          <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setDialog({ kind: 'create' })}>
-            New role
-          </Button>
+          {canEdit && (
+            <Button
+              size="xs"
+              variant="default"
+              leftSection={<AppIcon name="refresh-cw" />}
+              onClick={() => setDialog({ kind: 'reset' })}
+            >
+              Reset to defaults
+            </Button>
+          )}
+          {canCreate && (
+            <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setDialog({ kind: 'create' })}>
+              New role
+            </Button>
+          )}
         </>
       }
     >

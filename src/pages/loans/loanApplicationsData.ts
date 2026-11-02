@@ -589,6 +589,9 @@ export type LoanPayment = {
   receivedBy: string
   allocations: PaymentAllocation[]
   unallocated: number
+  receiptName?: string | null
+  /** the real file, only kept for this session */
+  receiptFile?: File | null
 }
 
 export type PenaltyRecord = {

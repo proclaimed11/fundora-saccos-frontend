@@ -25,6 +25,7 @@ import { ContractConfirmDialog } from '../loans/contractDialogs'
 import { LOANS, applications } from '../loans/loanApplicationsData'
 import { RecheckKycDialog } from './kycRecheckDialog'
 import { SendOtpDialog } from './otpDialog'
+import { usePageAccess } from '../auth/usePageAccess'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -61,6 +62,10 @@ export function ApplicantProfile() {
   const base = applicants.find((a) => String(a.id) === id)
   const applicant = base ? { ...base, ...changes, status: statusOverride ?? base.status } : undefined
 
+  const { canEdit, canDelete } = usePageAccess('applicants', 'applicants')
+  const { canApprove: canDecideKyc } = usePageAccess('applicants', 'kyc-review')
+  const { canCreate: canStartLoan } = usePageAccess('loans', 'applications')
+
   if (!applicant) {
     return (
       <DashboardLayout
@@ -80,6 +85,9 @@ export function ApplicantProfile() {
       </DashboardLayout>
     )
   }
+
+  const allowed = (label: string) =>
+  label === 'Review KYC' ? canDecideKyc : label === 'Start loan application' ? canStartLoan : canEdit
 
   const saveEdit = (input: ApplicantEditInput) => {
     // TODO: PUT /api/applicants/{id}
@@ -130,7 +138,9 @@ export function ApplicantProfile() {
         { label: applicant.name },
       ]}
       actions={
+
         <>
+        {canEdit && (          
           <Button
             size="xs"
             variant="default"
@@ -138,8 +148,10 @@ export function ApplicantProfile() {
             onClick={() => setEditOpen(true)}
           >
             Edit
-          </Button>
-          {stageActions(applicant).map((x) => (
+          </Button>)
+          }
+
+          {stageActions(applicant).filter((x) => allowed(x.label)).map((x) => (
             <Button
               key={x.label}
               size="xs"
@@ -149,14 +161,16 @@ export function ApplicantProfile() {
               {x.label}
             </Button>
           ))}
-          <Button
+          {canDelete && (          
+            <Button
             size="xs"
             color="red"
             leftSection={<AppIcon name="trash" />}
             onClick={() => setDeleteOpen(true)}
           >
             Delete profile
-          </Button>
+          </Button>)
+          }
         </>
       }
     >
@@ -220,8 +234,8 @@ export function ApplicantProfile() {
               <Tabs.Panel value="kyc">
                 <KycTab
                   applicant={applicant}
-                  onReview={() => setReviewOpen(true)}
-                  onRecheck={() => setRecheckOpen(true)}
+                  onReview={canDecideKyc ? () => setReviewOpen(true) : undefined}
+                  onRecheck={canEdit ? () => setRecheckOpen(true) : undefined}
                 />
               </Tabs.Panel>
               <Tabs.Panel value="financial">

@@ -15,6 +15,7 @@ import {
   type ApprovalHierarchy,
   type ApprovalLevel,
 } from './approvalHierarchyData'
+import { usePageAccess } from '../../auth/usePageAccess'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -73,6 +74,8 @@ export function ApprovalHierarchyPage() {
   const [notice, setNotice] = useState<Notice>(null)
   // UI only: true means the Admin approves everything alone and no hierarchy is used
   const [adminOnly, setAdminOnly] = useState(false)
+  const { canCreate, canEdit, canDelete } = usePageAccess('administration', 'approval-hierarchy')
+  const locked = adminOnly || !canEdit
 
   // success banners fade away on their own
   useEffect(() => {
@@ -250,7 +253,8 @@ export function ApprovalHierarchyPage() {
       title="Approval Hierarchy"
       subtitle="The chain of levels every loan application goes through before it is approved"
       breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Administration' }, { label: 'Approval Hierarchy' }]}
-      actions={
+       actions={
+        canCreate ? (
         <Button
           size="xs"
           disabled={adminOnly}
@@ -259,6 +263,7 @@ export function ApprovalHierarchyPage() {
         >
           New hierarchy
         </Button>
+        ) : undefined
       }
     >
       <div className="space-y-4">
@@ -301,6 +306,7 @@ export function ApprovalHierarchyPage() {
             </div>
             <Switch
               checked={adminOnly}
+              disabled={!canEdit}
               onChange={() => setDialog({ kind: 'mode' })}
               aria-label="Admin approves everything"
             />
@@ -346,7 +352,7 @@ export function ApprovalHierarchyPage() {
         )}
 
         {/* row 2: the hierarchies and the chain of the selected one, greyed out in Admin-only mode */}
-        <div aria-disabled={adminOnly} className={adminOnly ? 'pointer-events-none select-none opacity-50' : ''}>
+        <div aria-disabled={locked} className={locked ? 'pointer-events-none select-none opacity-50' : ''}>
           <div className="grid items-start gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
             {/* hierarchy list */}
             <div className={`${CARD} p-4`}>
@@ -427,7 +433,7 @@ export function ApprovalHierarchyPage() {
                       <Menu.Divider />
                       <Menu.Item
                         color="red"
-                        disabled={!!deleteBlock}
+                        disabled={!!deleteBlock || !canDelete}
                         leftSection={<AppIcon name="trash" />}
                         onClick={() => setDialog({ kind: 'hierarchy-delete' })}
                       >
@@ -562,7 +568,7 @@ export function ApprovalHierarchyPage() {
                                   Edit level
                                 </Menu.Item>
                                 <Menu.Item
-                                  disabled={!!blocked}
+                                  disabled={!!blocked || !canDelete}
                                   leftSection={<AppIcon name={l.isActive ? 'circle-x' : 'circle-check'} />}
                                   onClick={() => toggleLevel(l)}
                                 >

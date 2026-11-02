@@ -32,6 +32,8 @@ import {
 } from './collectionsData'
 import { DocumentViewer, type ViewableDocument } from '../../components/documentViewer'
 import { allWriteOffs, nextWriteOffId, saveWriteOff, writeOffFor } from './writeOffStore'
+import { Can } from '../auth/requirePermission'
+import { usePageAccess } from '../auth/usePageAccess'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -222,24 +224,26 @@ function CaseDrawerBody({
         <div className="rounded-md border border-brand/20 bg-brand-subtle p-4">
           <div className="text-xs font-semibold uppercase tracking-wide text-brand-dark">Next step</div>
           <p className="mt-1 text-sm text-gray-700">{nextStep(r)}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button size="xs" leftSection={<AppIcon name="scale" />} onClick={() => onLog(r)}>
-              Log action
-            </Button>
-            <Button size="xs" variant="default" leftSection={<AppIcon name="check" />} onClick={() => onClose(r)}>
-              Close case
-            </Button>
-            <Button
-              size="xs"
-              color="red"
-              variant="light"
-              disabled={!r.loan.isNpl}
-              leftSection={<AppIcon name="triangle-alert" />}
-              onClick={() => onWriteOff(r)}
-            >
-              Write off loan
-            </Button>
-          </div>
+          <Can area="collections" page="recovery-cases" action="edit">
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button size="xs" leftSection={<AppIcon name="scale" />} onClick={() => onLog(r)}>
+                Log action
+              </Button>
+              <Button size="xs" variant="default" leftSection={<AppIcon name="check" />} onClick={() => onClose(r)}>
+                Close case
+              </Button>
+              <Button
+                size="xs"
+                color="red"
+                variant="light"
+                disabled={!r.loan.isNpl}
+                leftSection={<AppIcon name="triangle-alert" />}
+                onClick={() => onWriteOff(r)}
+              >
+                Write off loan
+              </Button>
+            </div>
+          </Can>
           <p className="mt-2 text-xs text-gray-500">
             A write-off is the last step for a loan that cannot be recovered. It needs the loan to be non-performing.
           </p>
@@ -328,6 +332,7 @@ function CaseDrawerBody({
 
 export function RecoveryCasesPage() {
   const navigate = useNavigate()
+  const { canEdit } = usePageAccess('collections', 'recovery-cases')
   const [params, setParams] = useSearchParams()
 
   // UI only: changes made in this session, nothing is saved yet
@@ -634,7 +639,7 @@ const viewDocument = (a: RecoveryAction) => {
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
-              {r.status === 'OPEN' && (
+              {r.status === 'OPEN' && canEdit && (
                 <>
                   <Menu.Item
                     fw={500}
@@ -649,7 +654,7 @@ const viewDocument = (a: RecoveryAction) => {
               <Menu.Item leftSection={<AppIcon name="eye" />} onClick={() => openView(r.id)}>
                 View case
               </Menu.Item>
-              {r.status === 'OPEN' && (
+              {r.status === 'OPEN' && canEdit && (
                 <>
                   <Menu.Item leftSection={<AppIcon name="check" />} onClick={() => setDialog({ kind: 'close', caseId: r.id })}>
                     Close case

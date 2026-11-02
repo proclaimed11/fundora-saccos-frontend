@@ -6,6 +6,7 @@ import { DashboardLayout } from '../../../components/layout/dashboardLayout'
 import { StatWidget } from '../../../components/statsWidgets'
 import { SAMPLE_USERS } from '../users/usersData'
 import { LIMITS, SAMPLE_SETTINGS, type SecuritySettings } from './securityData'
+import { usePageAccess } from '../../auth/usePageAccess'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -25,6 +26,7 @@ const limitText = (key: keyof SecuritySettings) => `Between ${LIMITS[key].min} a
 
 export function SecurityPage() {
   const navigate = useNavigate()
+  const { canEdit } = usePageAccess('administration', 'company-profile') // 'security' in security.tsx
 
   // UI only: the saved settings change for this session, nothing is stored yet
   const [saved, setSaved] = useState<SecuritySettings>(SAMPLE_SETTINGS)
@@ -149,7 +151,13 @@ export function SecurityPage() {
 
         <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
           {/* the form */}
-          <div className={`${CARD} p-5`}>
+          <div className="space-y-4">
+            {!canEdit && (
+              <Alert color="gray" variant="light" icon={<AppIcon name="lock-keyhole" />}>
+                <Text size="sm">Your role can view these settings but not change them.</Text>
+              </Alert>
+            )}
+            <div className={`${CARD} p-5`}>
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-subtle text-brand-dark">
                 <AppIcon name="lock-keyhole" size={20} strokeWidth={1.25} />
@@ -201,13 +209,14 @@ export function SecurityPage() {
             </div>
 
             <div className="mt-6 flex justify-end gap-2 border-t border-gray-100 pt-4">
-              <Button size="xs" variant="default" disabled={!dirty} onClick={discard}>
+              <Button size="xs" variant="default" disabled={!dirty || !canEdit} onClick={discard}>
                 Discard changes
               </Button>
-              <Button size="xs" disabled={!dirty} leftSection={<AppIcon name="check" />} onClick={save}>
+              <Button size="xs" disabled={!dirty || !canEdit} leftSection={<AppIcon name="check" />} onClick={save}>
                 Save changes
               </Button>
             </div>
+          </div>
           </div>
 
           <div className="space-y-4">

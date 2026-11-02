@@ -24,6 +24,8 @@ import {
 } from './loanApplicationsData'
 import { printVoucher } from './printDocs'
 import { DocumentViewer, type ViewableDocument } from '../../components/documentViewer'
+import { Can } from '../auth/requirePermission'
+import { usePageAccess } from '../auth/usePageAccess'
 
 // our own rule, the API has no deadline: warn when a created loan waits longer than this
 const LATE_AFTER_DAYS = 3
@@ -127,13 +129,15 @@ function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication 
             where it was paid from and where it went.
           </p>
           <div className="mt-3">
-            <Button
-              size="xs"
-              leftSection={<AppIcon name="banknote" />}
-              onClick={() => onDisburse(r)}
-            >
-              Record disbursement
-            </Button>
+            <Can area="loans" page="disbursements" action="create">
+              <Button
+                size="xs"
+                leftSection={<AppIcon name="banknote" />}
+                onClick={() => onDisburse(r)}
+              >
+                Record disbursement
+              </Button>
+            </Can>
           </div>
         </div>
       ) : (
@@ -141,9 +145,11 @@ function DrawerBody({ row: r, accounts, onDisburse, onPostGl, onOpenApplication 
           <Alert color="orange" variant="light" icon={<AppIcon name="triangle-alert" />}>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Text size="sm">The loan is disbursed, but the ledger entry has not been posted yet.</Text>
-              <Button size="compact-xs" onClick={() => onPostGl(r)}>
-                Post to ledger
-              </Button>
+              <Can area="loans" page="disbursements" action="create">
+                <Button size="compact-xs" onClick={() => onPostGl(r)}>
+                  Post to ledger
+                </Button>
+              </Can>
             </div>
           </Alert>
         )
@@ -262,6 +268,7 @@ type Notice = { text: string; viewId?: number } | null
 export function DisbursementsPage() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
+  const { canCreate } = usePageAccess('loans', 'disbursements')
 
   const location = useLocation()
     // a loan created in this session on the Contracts page, not in the sample data yet
@@ -331,7 +338,10 @@ export function DisbursementsPage() {
 
   const dialogRow = dialogId ? rows.find((r) => r.id === dialogId) : undefined
 
-  const openDialog = (r: Row) => setDialogId(r.id)
+  const openDialog = (r: Row) => {
+    if (!canCreate) return
+    setDialogId(r.id)
+  } 
   const closeDialog = () => {
     setDialogId(null)
     if (params.get('disburse')) setParams({}, { replace: true })
@@ -490,7 +500,7 @@ export function DisbursementsPage() {
 
             <Menu.Dropdown>
             {/* the main action for this stage */}
-            {r.stage === 'PENDING' && (
+            {r.stage === 'PENDING' && canCreate && (
                 <Menu.Item
                 fw={500}
                 leftSection={<AppIcon name="banknote" />}
@@ -501,7 +511,7 @@ export function DisbursementsPage() {
             )}
 
             {/* disbursed, but the ledger entry failed to post */}
-            {r.stage === 'DISBURSED' && r.record?.glStatus === 'PENDING' && (
+            {r.stage === 'DISBURSED' && r.record?.glStatus === 'PENDING' && canCreate && (
                 <Menu.Item
                 fw={500}
                 leftSection={<AppIcon name="arrow-left-right" />}
@@ -512,7 +522,7 @@ export function DisbursementsPage() {
             )}
 
             {/* the divider only shows when there is a main action above it */}
-            {(r.stage === 'PENDING' || r.record?.glStatus === 'PENDING') && <Menu.Divider />}
+            {(canCreate && (r.stage === 'PENDING' || r.record?.glStatus === 'PENDING')) && <Menu.Divider />}
 
             <Menu.Item
                 leftSection={<AppIcon name="eye" />}

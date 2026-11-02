@@ -11,6 +11,8 @@ import { CURRENT_USER } from '../../loans/disbursementDialog'
 import { initials } from '../../applicants/applicantsData'
 import { ResetPasswordDialog, UserDialog, type UserInput } from './userDialogs'
 import { ROLES, ROLE_STYLE, SAMPLE_USERS, activityFor, type User } from './usersData'
+import { usePageAccess } from '../../auth/usePageAccess'
+import { Can } from '../../auth/requirePermission'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -161,22 +163,28 @@ function UserDrawerBody({ user: u, blocked, onEdit, onReset, onStatus }: DrawerP
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Button size="xs" leftSection={<AppIcon name="pencil" />} onClick={() => onEdit(u)}>
-          Edit
-        </Button>
-        <Button size="xs" variant="default" leftSection={<AppIcon name="key-round" />} onClick={() => onReset(u)}>
-          Reset password
-        </Button>
-        <Button
-          size="xs"
-          color={u.active ? 'red' : undefined}
-          variant="light"
-          disabled={u.active && !!blocked}
-          leftSection={<AppIcon name={u.active ? 'user-round-x' : 'circle-check'} />}
-          onClick={() => onStatus(u)}
-        >
-          {u.active ? 'Deactivate' : 'Activate'}
-        </Button>
+        <Can area="administration" page="users" action="edit">
+            <Button size="xs" leftSection={<AppIcon name="pencil" />} onClick={() => onEdit(u)}>
+              Edit
+            </Button>
+        </Can>
+        <Can area="administration" page="users" action="edit">
+            <Button size="xs" variant="default" leftSection={<AppIcon name="key-round" />} onClick={() => onReset(u)}>
+              Reset password
+            </Button>
+          </Can>
+        <Can area="administration" page="users" action="edit">
+          <Button
+            size="xs"
+            color={u.active ? 'red' : undefined}
+            variant="light"
+            disabled={u.active && !!blocked}
+            leftSection={<AppIcon name={u.active ? 'user-round-x' : 'circle-check'} />}
+            onClick={() => onStatus(u)}
+          >
+            {u.active ? 'Deactivate' : 'Activate'}
+          </Button>
+        </Can>
       </div>
     </div>
   )
@@ -192,6 +200,7 @@ export function UsersPage() {
   const [tab, setTab] = useState<TabKey>('all')
   const [dialog, setDialog] = useState<DialogState>(null)
   const [notice, setNotice] = useState<Notice>(null)
+  const { canCreate, canEdit } = usePageAccess('administration', 'users')
 
   // success banners fade away on their own
   useEffect(() => {
@@ -356,6 +365,8 @@ export function UsersPage() {
                 </ActionIcon>
               </Menu.Target>
               <Menu.Dropdown>
+              {canEdit && (
+                  <>
                 <Menu.Item fw={500} leftSection={<AppIcon name="pencil" />} onClick={() => setDialog({ kind: 'edit', id: u.id })}>
                   Edit user
                 </Menu.Item>
@@ -366,6 +377,8 @@ export function UsersPage() {
                   {u.twoFactor ? 'Turn off two-factor' : 'Turn on two-factor'}
                 </Menu.Item>
                 <Menu.Divider />
+                  </>
+                )}
                 <Menu.Item leftSection={<AppIcon name="eye" />} onClick={() => openView(u.id)}>
                   View details
                 </Menu.Item>
@@ -392,9 +405,11 @@ export function UsersPage() {
       subtitle="Staff who can sign in to the system"
       breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Administration' }, { label: 'Users' }]}
       actions={
+        canCreate ? (
         <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setDialog({ kind: 'create' })}>
           New user
         </Button>
+        ) : undefined
       }
     >
       <div className="space-y-4">

@@ -33,6 +33,7 @@ import {
   type LoanView,
   type PenaltyRecord,
 } from './loanApplicationsData'
+import { usePageAccess } from '../auth/usePageAccess'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -241,6 +242,7 @@ function GraceDialog({ opened, loans, activeLoanIds, onClose, onSubmit }: GraceD
 
 export function PenaltiesPage() {
   const navigate = useNavigate()
+  const { canCreate, canEdit } = usePageAccess('repayments', 'penalties')
   const [tab, setTab] = useState<TabKey>('charged')
   // UI only: changes made in this session, nothing is saved yet
   const [addedPenalties, setAddedPenalties] = useState<PenaltyRecord[]>([])
@@ -486,11 +488,13 @@ export function PenaltiesPage() {
       width: 120,
       render: (r) => (
         // stop the click so the row doesn't also open the loan
-        <div onClick={(e) => e.stopPropagation()}>
-          <Button size="compact-xs" leftSection={<AppIcon name="check" />} onClick={() => charge([r])}>
-            Charge
-          </Button>
-        </div>
+        canCreate ? (
+          <div onClick={(e) => e.stopPropagation()}>
+            <Button size="compact-xs" leftSection={<AppIcon name="check" />} onClick={() => charge([r])}>
+              Charge
+            </Button>
+          </div>
+        ) : null
       ),
     },
   ]
@@ -572,7 +576,7 @@ export function PenaltiesPage() {
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
-              {r.active && (
+              {r.active && canEdit && (
                 <>
                   <Menu.Item fw={500} leftSection={<AppIcon name="x" />} onClick={() => setEndId(r.id)}>
                     End grace period
@@ -597,18 +601,22 @@ export function PenaltiesPage() {
       breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Repayments' }, { label: 'Penalties & Grace' }]}
       actions={
         <>
-          <Button
-            size="xs"
-            variant="default"
-            disabled={due.length === 0}
-            leftSection={<AppIcon name="triangle-alert" />}
-            onClick={() => charge(due)}
-          >
-            Charge all now
-          </Button>
-          <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setGraceOpen(true)}>
-            Add grace period
-          </Button>
+          {canCreate && (
+            <Button
+              size="xs"
+              variant="default"
+              disabled={due.length === 0}
+              leftSection={<AppIcon name="triangle-alert" />}
+              onClick={() => charge(due)}
+            >
+              Charge all now
+            </Button>
+          )}
+          {canCreate && (
+            <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setGraceOpen(true)}>
+              Add grace period
+            </Button>
+          )}
         </>
       }
     >

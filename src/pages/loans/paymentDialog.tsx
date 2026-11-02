@@ -1,7 +1,7 @@
 import { AppIcon } from '../../components/appIcon'
 import { useState } from 'react'
 import dayjs from 'dayjs'
-import { Alert, Button, Modal, NumberInput, Select, SimpleGrid, Text, TextInput } from '@mantine/core'
+import { Alert, Button, Modal, NumberInput, Select, SimpleGrid, Text, TextInput, FileInput } from '@mantine/core'
 import { formatTzs } from '../../utils/format'
 import { CURRENT_USER, JournalPreview } from './disbursementDialog'
 import {
@@ -13,7 +13,14 @@ import {
   type PaymentMethod,
 } from './loanApplicationsData'
 
-export type PaymentInput = { amount: number; method: PaymentMethod; reference: string; receivedBy: string }
+export type PaymentInput = {
+  amount: number
+  method: PaymentMethod
+  reference: string
+  receivedBy: string
+  receiptName: string | null
+  receiptFile: File | null
+}
 
 type Props = {
   opened: boolean
@@ -48,6 +55,7 @@ export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubm
   const [accountId, setAccountId] = useState<string | null>(null)
   const [reference, setReference] = useState('')
   const [errors, setErrors] = useState<Errors>({})
+  const [receipt, setReceipt] = useState<File | null>(null)
 
   if (!v) return <Modal opened={false} onClose={onClose} />
 
@@ -86,6 +94,7 @@ export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubm
     setAccountId(null)
     setReference('')
     setErrors({})
+    setReceipt(null)
   }
 
   const close = () => {
@@ -115,7 +124,14 @@ export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubm
 
     // TODO: the "received into" account is not in the payment API yet, the ledger entry for the
     //       payment would be posted from the response (see the GL posting endpoints)
-    onSubmit({ amount, method, reference: ref, receivedBy: CURRENT_USER })
+    onSubmit({
+      amount,
+      method,
+      reference: ref,
+      receivedBy: CURRENT_USER,
+      receiptName: receipt?.name ?? null,
+      receiptFile: receipt,
+    })
     reset()
   }
 
@@ -206,6 +222,18 @@ export function PaymentDialog({ opened, loan: v, usedReferences, onClose, onSubm
             />
             <TextInput label="Received by" description="You, from your session" size="sm" readOnly value={CURRENT_USER} />
           </SimpleGrid>
+
+          <FileInput
+              label="Receipt or proof of payment (optional)"
+              description="A bank slip, or a screenshot of the mobile money message"
+              placeholder="Upload PDF or image"
+              size="sm"
+              accept="application/pdf,image/*"
+              clearable
+              leftSection={<AppIcon name="upload" />}
+              value={receipt}
+              onChange={setReceipt}
+            />
 
           <Alert color="blue" variant="light" icon={<AppIcon name="info" />}>
             <Text size="xs">

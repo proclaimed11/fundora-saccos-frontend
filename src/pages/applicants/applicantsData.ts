@@ -254,3 +254,47 @@ export function recheckKyc(history: KycRecord[]): RecheckResult {
     ? { valid: true, message: 'Existing KYC still valid; applicant may proceed', record }
     : { valid: false, message: 'No valid existing KYC found; full KYC required', record: null }
 }
+
+/* ---------- SAMPLE ONLY: identification, replaced by GET /api/applicant-identifications later ---------- */
+
+export type IdentificationType = 'NIDA' | 'TIN'
+
+export type ApplicantIdentification = {
+  id: number
+  type: IdentificationType
+  number: string
+  verified: boolean
+  verifiedBy: string | null
+  verifiedAt: string | null // ISO date
+}
+
+// the TIN is optional at registration, so only some applicants have one
+const TIN_NUMBERS: Record<number, string> = { 1: 'TIN123456789', 2: 'TIN234567890', 5: 'TIN345678901' }
+
+export function identificationsFor(a: Applicant): ApplicantIdentification[] {
+  const day = dayjs(a.registered).add(1, 'day').format('YYYY-MM-DD')
+  const nidaChecked = a.status === 'KYC_APPROVED'
+  const list: ApplicantIdentification[] = [
+    {
+      id: a.id * 10 + 1,
+      type: 'NIDA',
+      number: nidaFor(a),
+      verified: nidaChecked,
+      verifiedBy: nidaChecked ? 'Asha Mrema' : null,
+      verifiedAt: nidaChecked ? day : null,
+    },
+  ]
+  const tin = TIN_NUMBERS[a.id]
+  if (tin) {
+    const tinChecked = a.id === 1
+    list.push({
+      id: a.id * 10 + 2,
+      type: 'TIN',
+      number: tin,
+      verified: tinChecked,
+      verifiedBy: tinChecked ? 'Asha Mrema' : null,
+      verifiedAt: tinChecked ? day : null,
+    })
+  }
+  return list
+}

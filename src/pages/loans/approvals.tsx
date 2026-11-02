@@ -22,6 +22,7 @@ import {
   type ApprovalRow,
   type LoanApplication,
 } from './loanApplicationsData'
+import { usePageAccess } from '../auth/usePageAccess'
 
 // SAMPLE ONLY: the roles of the logged-in user, come from the session later.
 // In the preview this user holds two roles so the whole approval chain can be tried.
@@ -309,6 +310,7 @@ function DecisionForm({
 
 function ReviewDrawer({ row, onClose, onApprove, onReject }: DrawerProps) {
   const navigate = useNavigate()
+  const { canApprove } = usePageAccess('loans', 'approvals')
   if (!row) {
     return <Drawer opened={false} onClose={onClose} />
   }
@@ -419,7 +421,7 @@ function ReviewDrawer({ row, onClose, onApprove, onReject }: DrawerProps) {
         {r.current && (
           <div className="space-y-3 border-t border-gray-200 pt-5">
             <SectionTitle>{`Your decision · Level ${r.current.levelNo}: ${r.current.levelName}`}</SectionTitle>
-            {r.mine ? (
+            {r.mine && canApprove ? (
               <DecisionForm
                 key={`${r.id}-${r.current.levelNo}`}
                 row={r}
@@ -427,12 +429,13 @@ function ReviewDrawer({ row, onClose, onApprove, onReject }: DrawerProps) {
                 onReject={(c) => onReject(r, c)}
               />
             ) : (
-              <Alert color="yellow" variant="light" icon={<AppIcon name="lock-keyhole" />}>
-                <Text size="sm">
-                  This application is waiting for the {r.current.levelName} level. Only a user with the{' '}
-                  {r.current.role} role can decide it.
-                </Text>
-              </Alert>
+            <Alert color="yellow" variant="light" icon={<AppIcon name="lock-keyhole" />}>
+              <Text size="sm">
+                {r.mine
+                  ? 'Your role is not allowed to approve or reject applications.'
+                  : `This application is waiting for the ${r.current.levelName} level. Only a user with the ${r.current.role} role can decide it.`}
+              </Text>
+            </Alert>
             )}
           </div>
         )}

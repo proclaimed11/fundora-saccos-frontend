@@ -30,6 +30,8 @@ import {
   type CollectionActivity,
   type CollectionCase,
 } from './collectionsData'
+import { Can } from '../auth/requirePermission'
+import { usePageAccess } from '../auth/usePageAccess'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -204,24 +206,26 @@ function CaseDrawerBody({ row: r, onLog, onClose, onEscalate, onOpenLoan, onOpen
         <div className="rounded-md border border-brand/20 bg-brand-subtle p-4">
           <div className="text-xs font-semibold uppercase tracking-wide text-brand-dark">Next step</div>
           <p className="mt-1 text-sm text-gray-700">{nextStep(r)}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button size="xs" leftSection={<AppIcon name="phone" />} onClick={() => onLog(r)}>
-              Log activity
-            </Button>
-            <Button size="xs" variant="default" leftSection={<AppIcon name="check" />} onClick={() => onClose(r)}>
-              Close case
-            </Button>
-            <Button
-              size="xs"
-              color="orange"
-              variant="light"
-              disabled={!r.loan.isNpl}
-              leftSection={<AppIcon name="undo-2" />}
-              onClick={() => onEscalate(r)}
-            >
-              Escalate to recovery
-            </Button>
-          </div>
+          <Can area="collections" page="collection-cases" action="edit">
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button size="xs" leftSection={<AppIcon name="phone" />} onClick={() => onLog(r)}>
+                Log activity
+              </Button>
+              <Button size="xs" variant="default" leftSection={<AppIcon name="check" />} onClick={() => onClose(r)}>
+                Close case
+              </Button>
+              <Button
+                size="xs"
+                color="orange"
+                variant="light"
+                disabled={!r.loan.isNpl}
+                leftSection={<AppIcon name="undo-2" />}
+                onClick={() => onEscalate(r)}
+              >
+                Escalate to recovery
+              </Button>
+            </div>
+          </Can>
           {!r.loan.isNpl && (
             <p className="mt-2 text-xs text-gray-500">
               Escalation opens once the loan is 90 days overdue and non-performing.
@@ -311,6 +315,7 @@ function CaseDrawerBody({ row: r, onLog, onClose, onEscalate, onOpenLoan, onOpen
 
 export function CollectionCasesPage() {
   const navigate = useNavigate()
+  const { canCreate, canEdit } = usePageAccess('collections', 'collection-cases')
   const [params, setParams] = useSearchParams()
 
   // UI only: changes made in this session, nothing is saved yet
@@ -551,7 +556,7 @@ export function CollectionCasesPage() {
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
-              {r.status === 'OPEN' && (
+              {r.status === 'OPEN' && canEdit && (
                 <>
                   <Menu.Item fw={500} leftSection={<AppIcon name="phone" />} onClick={() => setDialog({ kind: 'activity', caseId: r.id })}>
                     Log activity
@@ -562,7 +567,7 @@ export function CollectionCasesPage() {
               <Menu.Item leftSection={<AppIcon name="eye" />} onClick={() => openView(r.id)}>
                 View case
               </Menu.Item>
-              {r.status === 'OPEN' && (
+              {r.status === 'OPEN' && canEdit && (
                 <>
                   <Menu.Item leftSection={<AppIcon name="check" />} onClick={() => setDialog({ kind: 'close', caseId: r.id })}>
                     Close case
@@ -636,11 +641,13 @@ export function CollectionCasesPage() {
       width: 130,
       render: (r) => (
         // stop the click so the row doesn't also open the loan
-        <div onClick={(e) => e.stopPropagation()}>
-          <Button size="compact-xs" leftSection={<AppIcon name="plus" />} onClick={() => setDialog({ kind: 'open', loanId: r.id })}>
-            Open case
-          </Button>
-        </div>
+        canCreate ? (
+          <div onClick={(e) => e.stopPropagation()}>
+            <Button size="compact-xs" leftSection={<AppIcon name="plus" />} onClick={() => setDialog({ kind: 'open', loanId: r.id })}>
+              Open case
+            </Button>
+          </div>
+        ) : null
       ),
     },
   ]
@@ -651,14 +658,16 @@ export function CollectionCasesPage() {
       subtitle="Follow up overdue loans until they pay"
       breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Collections' }, { label: 'Collection Cases' }]}
       actions={
-        <Button
-          size="xs"
-          disabled={needs.length === 0}
-          leftSection={<AppIcon name="plus" />}
-          onClick={() => setDialog({ kind: 'open', loanId: null })}
-        >
-          Open case
-        </Button>
+        canCreate ? (
+          <Button
+            size="xs"
+            disabled={needs.length === 0}
+            leftSection={<AppIcon name="plus" />}
+            onClick={() => setDialog({ kind: 'open', loanId: null })}
+          >
+            Open case
+          </Button>
+        ) : undefined
       }
     >
       <div className="space-y-4">

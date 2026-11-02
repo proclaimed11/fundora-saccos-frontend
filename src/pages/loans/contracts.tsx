@@ -20,6 +20,7 @@ import {
 } from './loanApplicationsData'
 import { defaultContent, printContract, valuesFor, type ContractContent } from './contractTemplate'
 import { DocumentViewer, type ViewableDocument } from '../../components/documentViewer'
+import { usePageAccess } from '../auth/usePageAccess'
 
 // our own rule, the API has no deadline: warn when a contract waits longer than this at one stage
 const LATE_AFTER_DAYS = 7
@@ -156,6 +157,7 @@ function Dots({ stage }: { stage: Stage }) {
 
 type DrawerBodyProps = {
   application: LoanApplication
+  canAct: boolean
   onAct: (a: LoanApplication) => void
   onPreview: (a: LoanApplication) => void
   onOpenApplication: (a: LoanApplication) => void
@@ -163,9 +165,10 @@ type DrawerBodyProps = {
   onPrint: (a: LoanApplication) => void
 }
 
-function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDisburse, onPrint }: DrawerBodyProps) {
+function DrawerBody({ application: a, canAct, onAct, onPreview, onOpenApplication, onDisburse, onPrint }: DrawerBodyProps) {
   const [copied, setCopied] = useState(false)
   const [viewing, setViewing] = useState<ViewableDocument | null>(null)
+  const { canCreate: canDisburse } = usePageAccess('loans', 'disbursements')
   const stage = stageOf(a)
   const contract = contractFor(a)
   if (!stage) return null
@@ -215,6 +218,7 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
             variant={next.kind ? 'filled' : 'default'}
             leftSection={<AppIcon name={next.icon} />}
             onClick={() => onAct(a)}
+            disabled={!canAct}
           >
             {next.label}
           </Button>
@@ -223,6 +227,7 @@ function DrawerBody({ application: a, onAct, onPreview, onOpenApplication, onDis
               size="xs"
               leftSection={<AppIcon name="banknote" />}
               onClick={() => onDisburse(a)}
+              disabled={!canDisburse}
             >
               Disburse
             </Button>
@@ -388,6 +393,10 @@ export function ContractsPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [params, setParams] = useSearchParams()
+  const access = usePageAccess('loans', 'contracts')
+  const { canCreate: canDisburse } = usePageAccess('loans', 'disbursements')
+  const allowedAt = (stage: Stage) =>
+    stage === 'READY' || stage === 'SIGNED' ? access.canCreate : stage === 'LOAN' ? true : access.canEdit
 
   // arriving from the Approvals page after the final approval
   const approvedId = (location.state as { approvedId?: number } | null)?.approvedId
@@ -457,6 +466,7 @@ export function ContractsPage() {
   const act = (a: LoanApplication) => {
     const stage = stageOf(a)
     if (!stage) return
+    if (!allowedAt(stage)) return
     const kind = NEXT[stage].kind
     if (kind) setDialog({ kind, id: a.id })
     else navigate(`/loan-applications/${a.id}`)
@@ -613,7 +623,7 @@ export function ContractsPage() {
                   size="sm"
                   aria-label={`Actions for ${a.applicationNo}`}
                 >
-                  <AppIcon name="ellipsis-vertical" />
+                  <AppIcon name="ellipsis-vertical" /> 
                 </ActionIcon>
               </Menu.Target>
 
@@ -623,6 +633,7 @@ export function ContractsPage() {
                   fw={500}
                   leftSection={<AppIcon name={next.icon} />}
                   onClick={() => act(a)}
+                  disabled={!allowedAt(stage)}
                 >
                   {next.label}
                 </Menu.Item>
@@ -633,6 +644,7 @@ export function ContractsPage() {
                     fw={500}
                     leftSection={<AppIcon name="banknote" />}
                     onClick={() => disburse(a)}
+                    disabled={!canDisburse}
                   >
                     Disburse
                   </Menu.Item>
@@ -774,6 +786,7 @@ export function ContractsPage() {
         {selected && (
           <DrawerBody
             application={selected}
+            canAct={allowedAt(stageOf(selected)!)}
             onAct={act}
             onPreview={(a) => setDialog({ kind: 'review', id: a.id })}
             onOpenApplication={(a) => navigate(`/loan-applications/${a.id}`)}
@@ -797,7 +810,7 @@ export function ContractsPage() {
       <ContractReviewDialog
         opened={dialog?.kind === 'review'}
         application={dialogApp ?? null}
-        canSend={!!dialogApp && stageOf(dialogApp) === 'GENERATED'}
+        canSend={!!dialogApp && stageOf(dialogApp) === 'GENERATED' && access.canEdit}
         edited={dialogApp ? (edits[dialogApp.id] ?? null) : null}
         uploadedName={dialogApp ? (uploads[dialogApp.id]?.name ?? null) : null}
         onUpload={(file) => {

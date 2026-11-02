@@ -14,7 +14,6 @@ import {
   documentsFor,
   financialFor,
   loansFor,
-  nidaFor,
   kycHistoryFor,
   type Applicant,
   type ApplicantAccount,
@@ -28,6 +27,8 @@ import { DebtDialog, FinancialProfileDialog, type DebtInput } from './financialD
 import { CURRENT_USER } from '../loans/disbursementDialog'
 import { DocumentViewer } from '../../components/documentViewer'
 import { DocumentDialog, isImage, sizeText, type DocumentInput } from './documentDialogs'
+import { Can } from '../auth/requirePermission'
+import { IdentificationSection } from './identificationSection'
 
 /* ---------- small helpers ---------- */
 
@@ -189,11 +190,12 @@ export function KycTab({
           {applicant.status === 'KYC_APPROVED' && (
             <Field label="Valid until" value={approvedOn.add(12, 'month').format('MMM D, YYYY')} />
           )}
-          <Field label="NIDA number" value={nidaFor(applicant)} />
-          <Field label="TIN number" value="TIN123" />
+
+          <IdentificationSection applicant={applicant} />
+
           {(applicant.status === 'PENDING_KYC' || (applicant.isReturning && applicant.status !== 'REJECTED')) && (
             <div className="mt-3 flex flex-wrap gap-2">
-              {applicant.status === 'PENDING_KYC' && (
+              {applicant.status === 'PENDING_KYC' && onReview && (
                 <Button size="xs" leftSection={<AppIcon name="contact-round" />} onClick={onReview}>
                   Review KYC
                 </Button>
@@ -215,9 +217,11 @@ export function KycTab({
         <div>
           <div className="mb-1 flex items-center justify-between gap-2">
             <SectionTitle>{`Documents (${docs.length})`}</SectionTitle>
-            <Button size="xs" variant="default" leftSection={<AppIcon name="upload" />} onClick={() => setDialog('add')}>
-              Upload
-            </Button>
+            <Can area="applicants" page="applicants" action="edit">
+              <Button size="xs" variant="default" leftSection={<AppIcon name="upload" />} onClick={() => setDialog('add')}>
+                Upload
+              </Button>
+            </Can>
           </div>
 
           {missing.length > 0 && (

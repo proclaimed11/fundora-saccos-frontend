@@ -18,6 +18,7 @@ import {
   type WriteOffEntry,
 } from './collectionsData'
 import { allWriteOffs, saveWriteOff } from './writeOffStore'
+import { usePageAccess } from '../auth/usePageAccess'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -225,6 +226,7 @@ function WriteOffDrawerBody({ entry: e, onOpenLoan, onOpenBorrower }: DrawerProp
 
 export function NplPage() {
   const navigate = useNavigate()
+  const { canEdit } = usePageAccess('collections', 'npl')
   const [params, setParams] = useSearchParams()
 
   // UI only: write-offs made in this session, nothing is saved yet
@@ -438,19 +440,23 @@ export function NplPage() {
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
-              <Menu.Item
-                fw={500}
-                color="red"
-                disabled={!r.isNpl}
-                leftSection={<AppIcon name="triangle-alert" />}
-                onClick={() => setDialogLoanId(r.id)}
-              >
-                {r.isNpl ? 'Write off loan' : 'Write off (NPL only)'}
-              </Menu.Item>
-              <Menu.Item leftSection={<AppIcon name="refresh-cw" />} onClick={() => classify(r)}>
-                Classify now
-              </Menu.Item>
-              <Menu.Divider />
+              {canEdit && (
+                <>
+                  <Menu.Item
+                    fw={500}
+                    color="red"
+                    disabled={!r.isNpl}
+                    leftSection={<AppIcon name="triangle-alert" />}
+                    onClick={() => setDialogLoanId(r.id)}
+                  >
+                    {r.isNpl ? 'Write off loan' : 'Write off (NPL only)'}
+                  </Menu.Item>
+                  <Menu.Item leftSection={<AppIcon name="refresh-cw" />} onClick={() => classify(r)}>
+                    Classify now
+                  </Menu.Item>
+                  <Menu.Divider />
+                </>
+              )}
               {r.followUp === 'RECOVERY' && (
                 <Menu.Item leftSection={<AppIcon name="undo-2" />} onClick={() => navigate('/recovery-cases')}>
                   Recovery case
@@ -566,9 +572,11 @@ export function NplPage() {
             </Popover.Dropdown>
           </Popover>
 
-          <Button size="xs" variant="default" leftSection={<AppIcon name="refresh-cw" />} onClick={classifyAll}>
-            Classify all now
-          </Button>
+          {canEdit && (
+            <Button size="xs" variant="default" leftSection={<AppIcon name="refresh-cw" />} onClick={classifyAll}>
+              Classify all now
+            </Button>
+          )}
         </>
       }
     >

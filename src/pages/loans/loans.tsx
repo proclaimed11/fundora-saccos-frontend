@@ -6,7 +6,12 @@ import { ActionIcon, Badge, Menu, Progress, SegmentedControl, Text } from '@mant
 import { DashboardLayout } from '../../components/layout/dashboardLayout'
 import { StatWidget } from '../../components/statsWidgets'
 import { CustomTable, type CustomTableColumn } from '../../components/customTable/customTable'
+import { PageState } from '../../components/pageState'
 import { formatTzs } from '../../utils/format'
+import { usePageAccess } from '../auth/usePageAccess'
+import { writeOffFor } from '../collections/writeOffStore'
+import type { WriteOffEntry } from '../collections/collectionsData'
+import { LoanBalanceDrawer } from './loanBalanceDrawer'
 import {
   LOANS,
   LOAN_STATE,
@@ -21,39 +26,68 @@ import {
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
-type TabKey = 'active' | 'overdue' | 'npl' | 'closed' | 'all'
+type TabKey = 'active' | 'overdue' | 'npl' | 'closed' | 'written' | 'all'
+type LoanStatus = LoanState | 'WRITTEN_OFF'
+
+// a loan with its write-off, when it has one
+type Row = LoanView & {
+  status: LoanStatus
+  writtenOff: WriteOffEntry | null
+  /** what the borrower still owes, zero once the loan is written off */
+  owed: number
+}
 
 const TAB_EMPTY: Record<TabKey, string> = {
   active: 'No loans are being repaid',
   overdue: 'No loans are overdue',
   npl: 'No loans are non-performing',
   closed: 'No loans have been fully repaid yet',
+  written: 'No loans have been written off',
   all: 'No loans have been disbursed yet',
 }
 
-const stateOptions = (Object.keys(LOAN_STATE) as LoanState[]).map((s) => ({
-  value: s,
-  label: LOAN_STATE[s].label,
-}))
+const STATUS_STYLE: Record<LoanStatus, { label: string; color: string }> = {
+  ...LOAN_STATE,
+  WRITTEN_OFF: { label: 'Written off', color: 'dark' },
+}
 
-// SAMPLE ONLY: replaced by GET /api/loans and the balance endpoint later
-const ROWS: LoanView[] = LOANS.map((l) => viewOf(l, SAMPLE_PAYMENTS, SAMPLE_PENALTIES))
+const statusOptions = (Object.keys(STATUS_STYLE) as LoanStatus[]).map((s) => ({
+  value: s,
+  label: STATUS_STYLE[s].label,
+}))
 
 export function LoansPage() {
   const navigate = useNavigate()
+  const { canCreate: canPay } = usePageAccess('repayments', 'payments')
   const [tab, setTab] = useState<TabKey>('active')
+  const [balanceId, setBalanceId] = useState<number | null>(null)
 
-  const active = ROWS.filter((r) => r.state !== 'CLOSED')
-  const overdue = ROWS.filter((r) => r.state === 'OVERDUE')
-  const npl = ROWS.filter((r) => r.isNpl)
-  const closed = ROWS.filter((r) => r.state === 'CLOSED')
-  const outstanding = active.reduce((s, r) => s + r.outstanding, 0)
+  // SAMPLE ONLY: replaced by GET /api/loans and the balance endpoint later.
+  // Write-offs made in this session come from the shared write-off store.
+  const rows: Row[] = LOANS.map((l) => {
+    const v = viewOf(l, SAMPLE_PAYMENTS, SAMPLE_PENALTIES)
+    const writtenOff = writeOffFor(l.id)
+    return {
+      ...v,
+      writtenOff,
+      status: writtenOff ? 'WRITTEN_OFF' : v.state,
+      owed: writtenOff ? 0 : v.outstanding,
+    }
+  })
+
+  const active = rows.filter((r) => r.status === 'ACTIVE' || r.status === 'OVERDUE')
+  const overdue = rows.filter((r) => r.status === 'OVERDUE')
+  const npl = rows.filter((r) => r.isNpl && !r.writtenOff)
+  const closed = rows.filter((r) => r.status === 'CLOSED')
+  const written = rows.filter((r) => r.writtenOff)
+  const outstanding = active.reduce((s, r) => s + r.owed, 0)
   const collected = SAMPLE_PAYMENTS.filter((p) => dayjs(p.date).isSame(dayjs(), 'month')).reduce(
     (s, p) => s + p.amount,
     0,
   )
 
-  const tabData: Record<TabKey, LoanView[]> = { active, overdue, npl, closed, all: ROWS }
+  const tabData: Record<TabKey, Row[]> = { active, overdue, npl, closed, written, all: rows }
+  const balanceRow = rows.find((r) => r.id === balanceId) ?? null
 
   // here `color` is the icon color
   const stats = [
@@ -64,7 +98,7 @@ export function LoansPage() {
     { label: 'Collected This Month', value: formatTzs(collected), miniLabel: 'TZS', icon: 'circle-check', color: 'var(--app-brand)' },
   ]
 
-  const columns: CustomTableColumn<LoanView>[] = [
+  const columns: CustomTableColumn<Row>[] = [
     {
       accessor: 'applicantName',
       header: 'Borrower',
@@ -90,22 +124,29 @@ export function LoansPage() {
       exportValue: (r) => r.principal,
     },
     {
-      accessor: 'outstanding',
+      accessor: 'owed',
       header: 'Outstanding',
-      render: (r) => (
-        <div className="w-36">
-          <div className="whitespace-nowrap text-sm font-medium text-gray-800">{formatTzs(r.outstanding)}</div>
-          <Progress value={r.repaidPct} size="xs" radius="xl" color="brand" mt={4} />
-          <div className="mt-0.5 text-[11px] text-gray-500">{r.repaidPct}% repaid</div>
-        </div>
-      ),
-      exportValue: (r) => r.outstanding,
+      render: (r) =>
+        r.writtenOff ? (
+          <div>
+            <div className="whitespace-nowrap text-sm font-medium text-gray-800">{formatTzs(0)}</div>
+            <div className="whitespace-nowrap text-xs text-gray-500">{formatTzs(r.writtenOff.amount)} written off</div>
+          </div>
+        ) : (
+          <div className="w-36">
+            <div className="whitespace-nowrap text-sm font-medium text-gray-800">{formatTzs(r.outstanding)}</div>
+            <Progress value={r.repaidPct} size="xs" radius="xl" color="brand" mt={4} />
+            <div className="mt-0.5 text-[11px] text-gray-500">{r.repaidPct}% repaid</div>
+          </div>
+        ),
+      exportValue: (r) => r.owed,
     },
     {
       // sorting by this puts the worst overdue loans first
       accessor: 'overdueDays',
       header: 'Next due',
       render: (r) => {
+        if (r.writtenOff) return <span className="text-xs text-gray-400">Written off</span>
         if (!r.next) return <span className="text-xs text-gray-400">Fully repaid</span>
 
         if (r.overdueDays > 0) {
@@ -133,15 +174,15 @@ export function LoansPage() {
       exportValue: (r) => r.overdueDays,
     },
     {
-      accessor: 'state',
+      accessor: 'status',
       header: 'Status',
       sortable: false,
       render: (r) => (
         <div className="space-y-1">
-          <Badge variant="light" color={LOAN_STATE[r.state].color} radius="sm" size="sm">
-            {LOAN_STATE[r.state].label}
+          <Badge variant={r.writtenOff ? 'filled' : 'light'} color={STATUS_STYLE[r.status].color} radius="sm" size="sm">
+            {STATUS_STYLE[r.status].label}
           </Badge>
-          {r.state === 'OVERDUE' && (
+          {r.status === 'OVERDUE' && (
             <div>
               <Badge variant="outline" color={NPL_STYLE[r.classification].color} radius="sm" size="sm">
                 {r.isNpl ? 'NPL · ' : ''}
@@ -151,7 +192,7 @@ export function LoansPage() {
           )}
         </div>
       ),
-      exportValue: (r) => LOAN_STATE[r.state].label,
+      exportValue: (r) => STATUS_STYLE[r.status].label,
     },
     {
       accessor: 'disbursed',
@@ -175,7 +216,7 @@ export function LoansPage() {
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
-              {r.state !== 'CLOSED' && (
+              {r.status !== 'CLOSED' && !r.writtenOff && canPay && (
                 <>
                   <Menu.Item
                     fw={500}
@@ -187,6 +228,9 @@ export function LoansPage() {
                   <Menu.Divider />
                 </>
               )}
+              <Menu.Item leftSection={<AppIcon name="scale" />} onClick={() => setBalanceId(r.id)}>
+                View balance
+              </Menu.Item>
               <Menu.Item leftSection={<AppIcon name="eye" />} onClick={() => navigate(`/loans/${r.id}`)}>
                 View loan
               </Menu.Item>
@@ -238,7 +282,8 @@ export function LoansPage() {
                   { value: 'overdue', label: `Overdue (${overdue.length})` },
                   { value: 'npl', label: `Non-performing (${npl.length})` },
                   { value: 'closed', label: `Closed (${closed.length})` },
-                  { value: 'all', label: `All (${ROWS.length})` },
+                  { value: 'written', label: `Written off (${written.length})` },
+                  { value: 'all', label: `All (${rows.length})` },
                 ]}
               />
             </div>
@@ -247,25 +292,37 @@ export function LoansPage() {
             </Text>
           </div>
 
-          <CustomTable<LoanView>
-            size="md"
-            data={tabData[tab]}
-            columns={columns}
-            searchInput
-            searchPlaceholder="Search borrower or loan"
-            searchKeys={['loanNo', 'applicantName', 'loanOfficer']}
-            filters={{ state: stateOptions, disbursed: 'date' }}
-            // the most overdue loans first
-            defaultSort={{ accessor: 'overdueDays', direction: 'desc' }}
-            noRecordText={TAB_EMPTY[tab]}
-            onRowClick={(row) => navigate(`/loans/${row.id}`)}
-            exportCsv
-            exportFileName="loans"
-            print
-            printTitle="Loans"
-          />
+          {/* TODO: pass loading, error and onRetry from the API call */}
+          <PageState>
+            <CustomTable<Row>
+              size="md"
+              data={tabData[tab]}
+              columns={columns}
+              searchInput
+              searchPlaceholder="Search borrower or loan"
+              searchKeys={['loanNo', 'applicantName', 'loanOfficer']}
+              filters={{ status: statusOptions, disbursed: 'date' }}
+              // the most overdue loans first
+              defaultSort={{ accessor: 'overdueDays', direction: 'desc' }}
+              noRecordText={TAB_EMPTY[tab]}
+              onRowClick={(row) => navigate(`/loans/${row.id}`)}
+              exportCsv
+              exportFileName="loans"
+              print
+              printTitle="Loans"
+            />
+          </PageState>
         </div>
       </div>
+
+      <LoanBalanceDrawer
+        loan={balanceRow}
+        writtenOff={balanceRow?.writtenOff ?? null}
+        canPay={canPay}
+        onClose={() => setBalanceId(null)}
+        onPay={(l) => navigate(`/loans/${l.id}?pay=1`)}
+        onOpenLoan={(l) => navigate(`/loans/${l.id}`)}
+      />
     </DashboardLayout>
   )
 }

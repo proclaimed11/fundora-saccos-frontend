@@ -8,6 +8,7 @@ import { StatWidget } from '../../components/statsWidgets'
 import { CustomTable, type CustomTableColumn } from '../../components/customTable/customTable'
 import { applicants, nidaFor, type Applicant } from './applicantsData'
 import { KycDecisionDialog } from './applicantKYCDecisionDialog'
+import { usePageAccess } from '../auth/usePageAccess'
 
 type Row = Applicant & { nida: string; waiting: number }
 
@@ -21,6 +22,7 @@ export function KycReview() {
   const [reviewing, setReviewing] = useState<Row | null>(null)
   // UI only: decided applicants just leave the queue for this session
   const [decided, setDecided] = useState<number[]>([])
+  const { canApprove } = usePageAccess('applicants', 'kyc-review')
 
   const rows: Row[] = applicants
     .filter((a) => a.status === 'PENDING_KYC' && !decided.includes(a.id))
@@ -92,18 +94,14 @@ export function KycReview() {
       header: '',
       sortable: false,
       align: 'right',
-      render: (a) => (
-        <Button
-          size="compact-xs"
-          leftSection={<AppIcon name="contact-round" />}
-          onClick={(e) => {
-            e.stopPropagation() // don't also open the profile
-            setReviewing(a)
-          }}
-        >
-          Review
-        </Button>
-      ),
+      render: (a) =>
+        canApprove ? (
+          <Button size="compact-xs" leftSection={<AppIcon name="contact-round" />} onClick={(e) => { e.stopPropagation(); setReviewing(a) }}>
+            Review
+          </Button>
+        ) : (
+          <span className="text-xs text-gray-400">View only</span>
+        ),
       exportValue: () => '',
     },
   ]

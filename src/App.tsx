@@ -1,4 +1,4 @@
-import { Navigate, Outlet, Route, Routes, useNavigate } from 'react-router-dom'
+import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from './auth/authContext'
 import { RequirePermission } from './pages/auth/requirePermission'
 import { Login } from './pages/auth/login'
@@ -40,6 +40,8 @@ import { SecurityPage } from './pages/administration/security/security'
 import { NotificationsPage } from './pages/administration/notifications/notifications'
 import { AuditPage } from './pages/administration/audit/audit'
 import { SecuritiesPage } from './pages/loans/securities'
+import { SessionWatcher } from './auth/sessionWatcher'
+import { ErrorBoundary } from './components/errorBoundary'
 
 // pages inside this route need a logged-in user
 function ProtectedRoute() {
@@ -87,9 +89,13 @@ function ResetPasswordRoute() {
 }
 
 function App() {
+  const { isAuthenticated } = useAuth()
+  const { pathname } = useLocation()
   return (
     <>
-      <Preloader />
+    <Preloader />
+      {isAuthenticated && <SessionWatcher />}
+      <ErrorBoundary resetKey={pathname}>
       <Routes>
         <Route path="/login" element={<LoginRoute />} />
         <Route path="/two-factor" element={<TwoFactorRoute />} />
@@ -201,6 +207,7 @@ function App() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </ErrorBoundary>
     </>
   )
 }

@@ -34,6 +34,9 @@ import {
 } from './loanApplicationsData'
 import { ScheduleDrawer } from './scheduleDrawer'
 import { printReceipt } from './printDocs'
+import { Can } from '../auth/requirePermission'
+import { DocumentViewer, type ViewableDocument } from '../../components/documentViewer'
+import { usePageAccess } from '../auth/usePageAccess'
 
 const CARD = 'rounded-md bg-white shadow-[0_10px_30px_rgba(76,87,125,0.12)]'
 
@@ -124,6 +127,7 @@ type BodyProps = {
 
 function ReceiptBody({ row: r, loan, onPay, onOpenLoan, onSchedule }: BodyProps) {
   const [copied, setCopied] = useState(false)
+  const [viewing, setViewing] = useState<ViewableDocument | null>(null)
   // SAMPLE ONLY: the real public link comes from the API (/api/receipts/**)
   const link = `${window.location.origin}/receipts/${r.id}`
 
@@ -211,6 +215,35 @@ function ReceiptBody({ row: r, loan, onPay, onOpenLoan, onSchedule }: BodyProps)
         <Field label="Applied in total" value={formatTzs(r.penalty + r.interest + r.principal)} />
       </div>
 
+      <div>
+        <SectionTitle>Proof of payment</SectionTitle>
+        {r.receiptName ? (
+          <div className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2.5">
+            <AppIcon name="file-text" className="text-gray-400" size={20} />
+            <div className="min-w-0 flex-1 truncate text-sm text-gray-800">{r.receiptName}</div>
+            <Button
+              size="compact-xs"
+              variant="subtle"
+              color="brand"
+              onClick={() =>
+                setViewing({
+                  title: 'Proof of payment',
+                  fileName: r.receiptName!,
+                  subtitle: `${r.applicantName} · ${dayjs(r.date).format('MMM D, YYYY')}`,
+                  file: r.receiptFile,
+                })
+              }
+            >
+              View
+            </Button>
+          </div>
+        ) : (
+          <div className="rounded-md border border-dashed border-gray-200 px-3 py-2.5 text-xs text-gray-500">
+            No receipt uploaded
+          </div>
+        )}
+      </div>
+
       <div className="rounded-md bg-gray-50 px-3 py-2.5">
         <div className="text-xs text-gray-500">Receipt link</div>
         <div className="mt-1 flex items-center gap-2">
@@ -242,11 +275,14 @@ function ReceiptBody({ row: r, loan, onPay, onOpenLoan, onSchedule }: BodyProps)
           View payment schedule
         </Button>
         {loan.state !== 'CLOSED' && (
+          <Can area="repayments" page="payments" action="create">
           <Button size="xs" leftSection={<AppIcon name="banknote" />} onClick={() => onPay(loan)}>
             Record another payment
           </Button>
+          </Can>
         )}
       </div>
+      <DocumentViewer document={viewing} onClose={() => setViewing(null)} />
     </div>
   )
 }
@@ -348,6 +384,7 @@ function ReminderDialog({ opened, views, onClose, onSent }: ReminderProps) {
 
 export function PaymentsPage() {
   const navigate = useNavigate()
+  const { canCreate } = usePageAccess('repayments', 'payments')
   const [params, setParams] = useSearchParams()
 
   // UI only: payments recorded in this session, nothing is saved yet
@@ -556,7 +593,7 @@ export function PaymentsPage() {
                 <Menu.Item leftSection={<AppIcon name="calendar-days" />} onClick={() => openSchedule(r)}>
                   View payment schedule
                 </Menu.Item>
-                {loan.state !== 'CLOSED' && (
+                {loan.state !== 'CLOSED' && canCreate && (
                   <Menu.Item leftSection={<AppIcon name="banknote" />} onClick={() => startPay(loan)}>
                     Record another payment
                   </Menu.Item>
@@ -586,12 +623,16 @@ export function PaymentsPage() {
       breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Repayments' }, { label: 'Payments' }]}
       actions={
         <>
-          <Button size="xs" variant="default" leftSection={<AppIcon name="send" />} onClick={() => setRemindOpen(true)}>
-            Send reminders
-          </Button>
-          <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setPickOpen(true)}>
-            Record payment
-          </Button>
+          {canCreate && (
+            <Button size="xs" variant="default" leftSection={<AppIcon name="send" />} onClick={() => setRemindOpen(true)}>
+              Send reminders
+            </Button>
+          )}
+          {canCreate && (
+            <Button size="xs" leftSection={<AppIcon name="plus" />} onClick={() => setPickOpen(true)}>
+              Record payment
+            </Button>
+          )}
         </>
       }
     >

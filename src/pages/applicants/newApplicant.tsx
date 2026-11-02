@@ -17,6 +17,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { DateInput } from '@mantine/dates'
 import { DashboardLayout } from '../../components/layout/dashboardLayout'
+import { ContractConfirmDialog } from '../loans/contractDialogs'
 
 type FormValues = {
   firstName: string
@@ -122,6 +123,17 @@ export function NewApplicantPage() {
   const [code, setCode] = useState('')
   const [codeError, setCodeError] = useState<string>()
   const [verified, setVerified] = useState(false)
+  const [cancelOpen, setCancelOpen] = useState(false)
+
+  // anything typed, or an applicant number already issued, means leaving loses something
+  const touched =
+    applicantNo !== '' ||
+    (Object.keys(values) as (keyof FormValues)[]).some((k) => values[k] !== emptyValues[k])
+  const cancelRegistration = () => (touched ? setCancelOpen(true) : goBack())
+  const leave = () => {
+    setCancelOpen(false)
+    goBack()
+  }
 
   const set = <K extends keyof FormValues>(key: K, value: FormValues[K]) => {
     setValues((prev) => ({ ...prev, [key]: value }))
@@ -205,14 +217,11 @@ export function NewApplicantPage() {
         { label: 'New applicant' },
         ]}
         actions={
-                // inactive for now: no click handler until the form is built
-            <Button
-                size="xs"
-                color="red"
-                leftSection={<AppIcon name="user-round-x" />}
-                >
-                Cancel registration
+          verified ? undefined : (
+            <Button size="xs" color="red" leftSection={<AppIcon name="user-round-x" />} onClick={cancelRegistration}>
+              Cancel registration
             </Button>
+          )
         }
     >
     <div className="rounded-md bg-white p-6 shadow-[0_10px_30px_rgba(76,87,125,0.12)]">
@@ -459,6 +468,19 @@ export function NewApplicantPage() {
           )}
         </form>
       </div>
+
+      <ContractConfirmDialog
+          opened={cancelOpen}
+          title="Cancel registration"
+          message={
+            applicantNo
+              ? `${applicantNo} is already registered and waiting for verification. If you leave now they stay in the Applicants list as Pending OTP, and you can verify them later from their profile.`
+              : 'Leave without registering? Everything you entered is lost.'
+          }
+          confirmLabel="Leave"
+          onClose={() => setCancelOpen(false)}
+          onConfirm={leave}
+        />
     </DashboardLayout>
   )
 }
