@@ -85,6 +85,8 @@ export function TrendChart({ data }: TrendChartProps) {
     },
     tooltip: {
       trigger: 'axis',
+      padding: [4, 8],
+      textStyle: { fontSize: 11, lineHeight: 14 },
       valueFormatter: (value) => formatTzs(Number(value)),
     },
     xAxis: {

@@ -64,13 +64,13 @@ export function Sidebar({
       >
         {/* user */}
         <div
-          className={`relative flex shrink-0 flex-col items-center border-b border-sidebar-border px-4 py-5 text-center ${
+          className={`relative flex shrink-0 flex-col items-center border-b border-sidebar-border px-4 py-4 text-center ${
             collapsed ? 'lg:px-1 lg:py-3' : ''
           } ${!open ? 'max-lg:px-1 max-lg:py-3' : ''}`}
         >
           <div className="relative">
             <div
-              className={`flex h-16 w-16 items-center justify-center rounded-full bg-sidebar-avatar text-xl font-medium text-brand ring-1 ring-brand/30 ${
+              className={`flex h-14 w-14 items-center justify-center rounded-full bg-sidebar-avatar text-lg font-medium text-brand ring-1 ring-brand/30 ${
                 collapsed ? 'lg:h-9 lg:w-9 lg:text-sm' : ''
               } ${!open ? 'max-lg:mt-3 max-lg:h-9 max-lg:w-9 max-lg:text-sm' : ''}`}
             >
@@ -109,7 +109,7 @@ export function Sidebar({
             </Menu>
           </div>
           <div className={`${collapsed ? 'lg:hidden' : ''} ${!open ? 'max-lg:hidden' : ''}`}>
-            <div className="mt-3 text-sm font-medium text-sidebar-text">{user.name}</div>
+            <div className="mt-2 text-sm font-medium text-sidebar-text">{user.name}</div>
             <div className="text-xs text-sidebar-muted">{user.role}</div>
           </div>
         </div>
